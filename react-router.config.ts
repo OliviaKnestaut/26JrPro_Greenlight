@@ -7,5 +7,5 @@ export default {
   // If the site is hosted under a sub-path (e.g. /~ojk25/jrProjGreenlight/), set
   // basename so route links and the router know the base URL. Include the
   // ~username segment used by your hosting provider.
-  basename: "/~ojk25/jrProjGreenlight",
+  basename: "/~ojk25/jrProjGreenlight/",
 } satisfies Config;

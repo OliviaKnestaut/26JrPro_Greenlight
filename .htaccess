@@ -1,8 +1,25 @@
+SetEnv DB_SERVER localhost
+SetEnv DB_USERNAME ojk25
+SetEnv DB_PASSWORD SSfxtBMLDDM6/CpE
+SetEnv DB_NAME ojk25_db
+
 <IfModule mod_rewrite.c>
-	RewriteEngine On
-	RewriteBase /jrProjGreenlight/
-	RewriteRule ^index\.html$ - [L]
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule . /jrProjGreenlight/index.html [L]
+    RewriteEngine On
+    # Rewrite base: when this .htaccess is placed inside the deployed
+    # directory (for example /home/ojk25/public_html/~ojk25/jrProjGreenlight/)
+    # set RewriteBase to "/" so rules are relative to the current folder.
+    # If you instead place .htaccess at a higher-level path, change this to
+    # the corresponding absolute path (for example: /~ojk25/jrProjGreenlight/).
+    RewriteBase /~ojk25/jrProjGreenlight/
+
+    # If the requested resource exists as a file or directory, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Allow direct access to the GraphQL API directory (don't rewrite)
+    RewriteRule ^graphql(/.*)?$ - [L]
+
+    # Otherwise rewrite to index.html (SPA fallback)
+    RewriteRule ^ index.html [L]
 </IfModule>
