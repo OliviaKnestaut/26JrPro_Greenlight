@@ -35,6 +35,36 @@ Create a production build:
 npm run build
 ```
 
+## Using Ant Design (v5)
+
+This project uses Ant Design v5 and imports the `reset.css` file which exposes
+design tokens as CSS variables. To make fine-grained, CSS-driven customizations
+you can edit `app/antd-custom.css` (already imported by `app/root.tsx`).
+
+Quick start:
+
+1. Install dependencies (if you haven't already):
+
+```bash
+npm install
+```
+
+2. Start the dev server and visit `/antd-example` to see the sample component:
+
+```bash
+npm run dev
+```
+
+3. Edit `app/antd-custom.css` to override token variables (examples included).
+
+Notes:
+- `app/antd-custom.css` is intentionally small and contains a primary color
+	example (`--ant-primary-color`) — use browser devtools to discover other
+	`--ant-...` CSS variables you can override.
+- If you need programmatic token control or runtime theme switching, we can
+	reintroduce `ConfigProvider` token overrides; CSS variables are best for
+	static, CSS-first overrides.
+
  <!--
 ## Deployment
 

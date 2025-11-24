@@ -1,0 +1,69 @@
+/*
+    Ant Design v5 CSS customization
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+body{
+    box-sizing: border-box;
+
+}
+/* Theme Variables */
+:root {
+	--background: #F9FAFB;
+	--background-2: #FFFFFF;
+    --primary: #0C5257;
+    --primary-active: #002C2F;
+    --primary-disabled: #447A7E;
+    --accent-gray-light: #D6D6D6;
+    --accent-gray-medium: #A0A0A0;
+    --accent-gray-dark: #919191;
+	--Work-Sans: "Work Sans", sans-serif;
+
+
+	--Instrument-Serif: "Instrument Serif", serif;
+    --color-primary-disabled: #929895;
+	--color-secondary: #3f8176;
+	--color-secondary-disabled: #9fc0ba;
+	--color-tertiary: #53370a;
+	--color-tertiary-disabled: #9f8f80;
+	--color-foreground-1: #c4bea9;
+	--color-foreground-2: #ded7bf;
+	--color-highlight: #ffffff;
+	--color-red-error: #cb5251;
+	--color-message-text: #333333;
+	--color-action-foreground: #3f5f76;
+	--color-action-disabled: #608ba9;
+	--color-message-transparent: rgba(51, 51, 51, 0.6);
+	--color-message-transparent-2: rgba(51, 51, 51, 0.4);
+}
+
+:root {
+    --ant-primary-color: #1e90ff;
+
+    /* Example overrides you may want to add:
+    --ant-border-radius-base: 8px;
+    --ant-font-size-base: 16px;
+    --ant-color-bg-layout: #fafafa;
+    */
+}
+
+.ap-wrapper {
+    padding: 12px;
+}
+
+
+/* TEXT STYLING */
+
+.logoText {
+	font-family: var(--Work-Sans);
+	font-weight: 600;
+	font-size: 16px;
+	line-height: 20px;
+	color: var(--color-background-2);
+
+}
+
+p{
+    margin-bottom: 0;
+}
