@@ -49,7 +49,7 @@ const resources = [
     ),
   },
   {
-    href: "antd-example",
+    href: "app-layout-example",
     text: "App Layout & Ant Design Setup",
     icon: (
       <AppstoreOutlined className="text-gray-600 group-hover:text-current dark:text-gray-300" style={{ fontSize: 20 }} />
