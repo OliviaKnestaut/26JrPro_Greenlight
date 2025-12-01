@@ -3,29 +3,16 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use GraphQL\GraphQL;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Schema;
+use GraphQL\Utils\BuildSchema;
+use GraphQL\Error\FormattedError;
+use GraphQL\Error\DebugFlag;
 
-// CORS Headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-// Database Configuration
+// Database Connection
 $db_host = 'localhost';
 $db_name = 'ojk25_db';
 $db_user = 'ojk25';
 $db_pass = 'SSfxtBMLDDM6/CpE';
-$table_name = 'jr-proj-greenlight';
 
-// Database Connection
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -34,233 +21,300 @@ try {
     exit;
 }
 
-// Define Item Type
-$itemType = new ObjectType([
-    'name' => 'Event',
-    'fields' => [
-        'id' => ['type' => Type::nonNull(Type::id())],
-        'eventName' => ['type' => Type::string()],
-        'eventDescription' => ['type' => Type::string()],
-        'eventDate' => ['type' => Type::string()],
-        'setupTime' => ['type' => Type::string()],
-        'startTime' => ['type' => Type::string()],
-        'endTime' => ['type' => Type::string()],
+$sdl = file_get_contents(__DIR__ . '/schema.graphql');
+
+if ($sdl === false || $sdl === null) {
+    header('Content-Type: application/json', true, 500);
+    echo json_encode(['errors' => [['message' => 'Failed to load schema.graphql']]]);
+    exit;
+}
+
+$schema = BuildSchema::build($sdl);
+
+// Column maps (GraphQL field -> DB column) if needed
+$COL_MAP = [
+    'Event' => [
+        'organizationId' => 'organization_id',
+        'title' => 'title',
+        'description' => 'description',
+        'eventDate' => 'event_date',
+        'setupTime' => 'setup_time',
+        'startTime' => 'start_time',
+        'endTime' => 'end_time',
+        'location' => 'location',
+        'eventStatus' => 'event_status',
+        'createdAt' => 'created_at',
+        'updatedAt' => 'updated_at',
     ],
-]);
-
-// Query Type
-$queryType = new ObjectType([
-    'name' => 'Query',
-    'fields' => [
-        'events' => [
-            'type' => Type::listOf($itemType),
-                'resolve' => function () use ($pdo, $table_name) {
-                // Select actual DB columns to match the Item type
-                $sql = "SELECT id, eventName, eventDate, setupTime, startTime, endTime, eventDescription FROM `{$table_name}` ORDER BY id DESC";
-                $stmt = $pdo->query($sql);
-                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                return $rows;
-            },
-        ],
-        'event' => [
-            'type' => $itemType,
-            'args' => [
-                'id' => ['type' => Type::nonNull(Type::id())],
-            ],
-            'resolve' => function ($root, $args) use ($pdo, $table_name) {
-                // Select actual DB columns to match the Item type
-                $stmt = $pdo->prepare("SELECT id, eventName, eventDate, setupTime, startTime, endTime, eventDescription FROM `{$table_name}` WHERE id = ?");
-                $stmt->execute([$args['id']]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                return $row;
-            },
-        ],
+    'Organization' => [
+        'orgName' => 'orgName',
+        'username' => 'username',
+        'password_hash' => 'password_hash',
+        'bio' => 'bio',
+        'createdAt' => 'created_at',
+        'updatedAt' => 'updated_at',
     ],
-]);
+];
 
-// Mutation Type
-$mutationType = new ObjectType([
-    'name' => 'Mutation',
-    'fields' => [
-        'createEvent' => [
-            'type' => $itemType,
-            'args' => [
-                'eventName' => ['type' => Type::nonNull(Type::string())],
-                'eventDescription' => ['type' => Type::string()],
-                'eventDate' => ['type' => Type::string()],
-                'setupTime' => ['type' => Type::string()],
-                'startTime' => ['type' => Type::string()],
-                'endTime' => ['type' => Type::string()],
-            ],
-            'resolve' => function ($root, $args) use ($pdo, $table_name) {
-                $stmt = $pdo->prepare("INSERT INTO `{$table_name}` (eventName, eventDescription, eventDate, setupTime, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->execute([
-                    $args['eventName'],
-                    $args['eventDescription'] ?? null,
-                    $args['eventDate'] ?? null,
-                    $args['setupTime'] ?? null,
-                    $args['startTime'] ?? null,
-                    $args['endTime'] ?? null,
-                ]);
-                $id = $pdo->lastInsertId();
+// Helper: map DB row (snake_case columns) to GraphQL field keys using $COL_MAP
+function mapDbRowToGraphQL(array $row, string $type, array $COL_MAP) : array {
+    $out = [];
+    if (!isset($COL_MAP[$type])) {
+        return $row;
+    }
+    foreach ($COL_MAP[$type] as $gk => $dbCol) {
+        if (array_key_exists($dbCol, $row)) {
+            $out[$gk] = $row[$dbCol];
+        } elseif (array_key_exists($gk, $row)) {
+            $out[$gk] = $row[$gk];
+        } else {
+            $out[$gk] = null;
+        }
+    }
+    // include any extra columns unchanged
+    foreach ($row as $k => $v) {
+        if (!in_array($k, $COL_MAP[$type], true)) {
+            $out[$k] = $v;
+        }
+    }
+    return $out;
+}
 
-                $stmt = $pdo->prepare("SELECT id, eventName, eventDate, setupTime, startTime, endTime, eventDescription FROM `{$table_name}` WHERE id = ?");
-                $stmt->execute([$id]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+// helper: fetch organization by id
+$fetchOrganization = function($pdo, $id) {
+    $stmt = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
+    $stmt->execute([':id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+};
 
-                return $row;
-            },
-        ],
-        'updateEvent' => [
-            'type' => $itemType,
-            'args' => [
-                'id' => ['type' => Type::nonNull(Type::id())],
-                'eventName' => ['type' => Type::string()],
-                'eventDescription' => ['type' => Type::string()],
-                'eventDate' => ['type' => Type::string()],
-                'setupTime' => ['type' => Type::string()],
-                'startTime' => ['type' => Type::string()],
-                'endTime' => ['type' => Type::string()],
-            ],
-            'resolve' => function ($root, $args) use ($pdo, $table_name) {
-                $updates = [];
-                $params = [];
+// CORS helper - allow requests from browser clients (adjust origin in production)
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+header('Access-Control-Allow-Origin: ' . $origin);
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 
-                if (isset($args['eventName'])) {
-                    $updates[] = 'eventName = ?';
-                    $params[] = $args['eventName'];
-                }
-                if (isset($args['eventDescription'])) {
-                    $updates[] = 'eventDescription = ?';
-                    $params[] = $args['eventDescription'];
-                }
-                if (isset($args['eventDate'])) {
-                    $updates[] = 'eventDate = ?';
-                    $params[] = $args['eventDate'];
-                }
-                if (isset($args['setupTime'])) {
-                    $updates[] = 'setupTime = ?';
-                    $params[] = $args['setupTime'];
-                }
-                if (isset($args['startTime'])) {
-                    $updates[] = 'startTime = ?';
-                    $params[] = $args['startTime'];
-                }
-                if (isset($args['endTime'])) {
-                    $updates[] = 'endTime = ?';
-                    $params[] = $args['endTime'];
-                }
-                if (empty($updates)) {
-                    throw new Exception('No fields to update');
-                }
+// Handle preflight OPTIONS requests early
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    // Return 200 for preflight
+    http_response_code(200);
+    exit;
+}
 
-                $params[] = $args['id'];
-                $sql = "UPDATE `{$table_name}` SET " . implode(', ', $updates) . " WHERE id = ?";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
-
-                $stmt = $pdo->prepare("SELECT id, eventName, eventDate, setupTime, startTime, endTime, eventDescription FROM `{$table_name}` WHERE id = ?");
-                $stmt->execute([$args['id']]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                return $row;
-            },
-        ],
-        'deleteEvent' => [
-            'type' => Type::boolean(),
-            'args' => [
-                'id' => ['type' => Type::nonNull(Type::id())],
-            ],
-            'resolve' => function ($root, $args) use ($pdo, $table_name) {
-                $stmt = $pdo->prepare("DELETE FROM `{$table_name}` WHERE id = ?");
-                $stmt->execute([$args['id']]);
-                return $stmt->rowCount() > 0;
-            },
-        ],
-    ],
-]);
-
-// Schema
-$schema = new Schema([
-    'query' => $queryType,
-    'mutation' => $mutationType,
-]);
-
-// Quick debug endpoints: ?debug=table (JSON) or ?debug=html (HTML table)
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['debug'])) {
-    $debug = $_GET['debug'];
-    try {
-        $stmt = $pdo->query("SELECT id, eventName, eventDate, setupTime, startTime, endTime, eventDescription FROM `{$table_name}` ORDER BY id DESC");
+// root resolvers for top-level fields
+$rootValue = [
+    'events' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $where = [];
+        $params = [];
+        if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
+        if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
+        if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        http_response_code(500);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['errors' => [['message' => 'Database query failed: ' . $e->getMessage()]]]);
-        exit;
-    }
+        // map DB rows to GraphQL field names and attach organization
+        $out = [];
+        foreach ($rows as $r) {
+            $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
+            $orgId = $r['organization_id'] ?? $r['organizationId'] ?? null;
+            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $out[] = $mapped;
+        }
+        return $out;
+    },
 
-    if ($debug === 'table') {
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($rows);
-        exit;
-    }
+    'event' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $args['id']]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $mapped = mapDbRowToGraphQL($row, 'Event', $COL_MAP);
+            $orgId = $row['organization_id'] ?? $row['organizationId'] ?? null;
+            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            return $mapped;
+        }
+        return null;
+    },
 
-    // default to HTML table for any other debug value (eg ?debug=html)
-    header('Content-Type: text/html; charset=utf-8');
-    echo '<!doctype html><html><head><meta charset="utf-8"><title>DB Table: ' . htmlspecialchars($table_name) . '</title></head><body>';
-    echo '<h1>Table: ' . htmlspecialchars($table_name) . '</h1>';
-    echo '<table border="1" cellpadding="6" style="border-collapse:collapse"><thead><tr>';
-    echo '<th>id</th><th>eventName</th><th>eventDate</th><th>setupTime</th><th>startTime</th><th>endTime</th><th>eventDescription</th>';
-    echo '</tr></thead><tbody>';
-    foreach ($rows as $r) {
-        echo '<tr>';
-        echo '<td>' . htmlspecialchars($r['id'] ?? '') . '</td>';
-        echo '<td>' . htmlspecialchars($r['eventName'] ?? '') . '</td>';
-        echo '<td>' . htmlspecialchars($r['eventDate'] ?? '') . '</td>';
-        echo '<td>' . htmlspecialchars($r['setupTime'] ?? '') . '</td>';
-        echo '<td>' . htmlspecialchars($r['startTime'] ?? '') . '</td>';
-        echo '<td>' . htmlspecialchars($r['endTime'] ?? '') . '</td>';
-        echo '<td>' . htmlspecialchars($r['eventDescription'] ?? '') . '</td>';
-        echo '</tr>';
-    }
-    echo '</tbody></table></body></html>';
+    'organizations' => function($root, $args) use ($pdo, $COL_MAP) {
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $where = [];
+        $params = [];
+        if (isset($args['username'])) { $where[] = "username = :username"; $params[':username'] = $args['username']; }
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT * FROM `greenlight-orgs` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) { $out[] = mapDbRowToGraphQL($r, 'Organization', $COL_MAP); }
+        return $out;
+    },
+
+    'organization' => function($root, $args) use ($pdo, $COL_MAP) {
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $args['id']]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? mapDbRowToGraphQL($row, 'Organization', $COL_MAP) : null;
+    },
+
+    // Mutations
+    'createEvent' => function($root, $args) use ($pdo, $COL_MAP) {
+        $in = $args['input'];
+        $cols = [];
+        $placeholders = [];
+        $params = [];
+        foreach ($in as $k => $v) {
+            if (!isset($COL_MAP['Event'][$k])) continue;
+            $dbCol = $COL_MAP['Event'][$k];
+            $cols[] = $dbCol;
+            $placeholders[] = ":$k";
+            $params[":$k"] = $v;
+        }
+        if (empty($cols)) throw new \Exception('No input provided');
+        $sqlCols = implode('`,`', $cols);
+        $placeholdersStr = implode(',', $placeholders);
+        $stmt = $pdo->prepare("INSERT INTO `greenlight-events` (`$sqlCols`) VALUES ($placeholdersStr)");
+        $stmt->execute($params);
+        $id = $pdo->lastInsertId();
+        $s = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
+        $s->execute([':id' => $id]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ? mapDbRowToGraphQL($row, 'Event', $COL_MAP) : null;
+    },
+
+    'updateEvent' => function($root, $args) use ($pdo, $COL_MAP) {
+        $id = $args['id'];
+        $in = $args['input'];
+        $set = [];
+        $params = [':id' => $id];
+        foreach ($in as $k => $v) {
+            if (!isset($COL_MAP['Event'][$k])) continue;
+            $dbCol = $COL_MAP['Event'][$k];
+            $set[] = "`$dbCol` = :$k";
+            $params[":$k"] = $v;
+        }
+        if (empty($set)) throw new \Exception('No fields to update');
+        $sql = "UPDATE `greenlight-events` SET " . implode(',', $set) . " WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $s = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
+        $s->execute([':id' => $id]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ? mapDbRowToGraphQL($row, 'Event', $COL_MAP) : null;
+    },
+
+    'deleteEvent' => function($root, $args) use ($pdo) {
+        $stmt = $pdo->prepare("DELETE FROM `greenlight-events` WHERE id = :id");
+        return $stmt->execute([':id' => $args['id']]);
+    },
+
+    'eventsByOrganization' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
+        $orgId = $args['orgId'];
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $where = ["organization_id = :orgId"];
+        $params = [':orgId' => $orgId];
+        if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
+        if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
+        if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
+        $whereSql = 'WHERE ' . implode(' AND ', $where);
+        $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) {
+            $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
+            $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $out[] = $mapped;
+        }
+        return $out;
+    },
+
+    'createOrganization' => function($root, $args) use ($pdo) {
+        $in = $args['input'];
+        // allowed org inputs per schema
+        $allowedOrg = ['orgName','username','password_hash','bio'];
+        $cols = [];
+        $params = [];
+        foreach ($allowedOrg as $c) {
+            if (isset($in[$c])) {
+                $cols[] = $c;
+                $params[":$c"] = $in[$c];
+            }
+        }
+        $sqlCols = implode('`,`', $cols);
+        $placeholders = implode(',', array_map(fn($c) => ":$c", $cols));
+        $stmt = $pdo->prepare("INSERT INTO `greenlight-orgs` (`$sqlCols`) VALUES ($placeholders)");
+        $stmt->execute($params);
+        $id = $pdo->lastInsertId();
+        $s = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
+        $s->execute([':id'=>$id]);
+        return $s->fetch(PDO::FETCH_ASSOC) ?: null;
+    },
+
+    'updateOrganization' => function($root, $args) use ($pdo, $COL_MAP) {
+        $id = $args['id'];
+        $in = $args['input'];
+        $set = [];
+        $params = [':id' => $id];
+        foreach ($in as $k=>$v) { $col = $COL_MAP['Organization'][$k] ?? $k; $set[] = "`$col` = :$k"; $params[":$k"]=$v; }
+        if (empty($set)) throw new \Exception('No fields to update');
+        $stmt = $pdo->prepare("UPDATE `greenlight-orgs` SET " . implode(',', $set) . " WHERE id = :id");
+        $stmt->execute($params);
+        $s = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
+        $s->execute([':id'=>$id]);
+        return $s->fetch(PDO::FETCH_ASSOC) ?: null;
+    },
+
+    'deleteOrganization' => function($root, $args) use ($pdo) {
+        $stmt = $pdo->prepare("DELETE FROM `greenlight-orgs` WHERE id = :id");
+        return $stmt->execute([':id' => $args['id']]);
+    },
+];
+
+// Read incoming request (GraphQL JSON)
+$raw = file_get_contents('php://input');
+$payload = json_decode($raw, true) ?: [];
+$query = $payload['query'] ?? ($_GET['query'] ?? null);
+$rawTrim = is_string($raw) ? trim($raw) : '';
+// Fallbacks: accept form-encoded POST (`$_POST['query']`) or raw GraphQL body (Content-Type: application/graphql)
+if ($query === null) {
+    $query = $_POST['query'] ?? null;
+}
+if ($query === null && $rawTrim !== '') {
+    // If body wasn't JSON-decoded but contains text, treat it as the query string.
+    $query = $rawTrim;
+}
+$variables = $payload['variables'] ?? ($_GET['variables'] ?? null);
+
+if ($query === null) {
+    header('Content-Type: application/json', true, 400);
+    echo json_encode(['errors' => [['message' => 'No GraphQL query provided']]]);
     exit;
 }
 
-// If a browser visits the endpoint with a GET and no debug or query, show a small landing page
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['debug']) && !isset($_GET['query'])) {
-    // prefer HTML for browsers
-    header('Content-Type: text/html; charset=utf-8');
-    echo '<!doctype html><html><head><meta charset="utf-8"><title>GraphQL PHP Endpoint</title></head><body>';
-    echo '<h1>GraphQL PHP Endpoint</h1>';
-    echo '<p>This endpoint accepts GraphQL POST requests. Quick links for testing:</p>';
-    echo '<ul>';
-    echo '<li><a href="?debug=html">Debug: view table (HTML)</a></li>';
-    echo '<li><a href="?debug=table">Debug: view table (JSON)</a></li>';
-    echo '</ul>';
-    echo '<p>To run a GraphQL query use a POST request with a JSON body. Example curl:</p>';
-    echo '<pre>curl -X POST "' . htmlspecialchars((isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'index.php')) . '" -H "Content-Type: application/json" -d \'' . json_encode(['query' => '{ items { id name description createdAt } }']) . '\'</pre>';
-    echo '<p>Or add <code>?query={items{id,name}}</code> to the URL for quick browser testing.</p>';
-    echo '</body></html>';
-    exit;
-}
-
-// Process Request
 try {
-    $rawInput = file_get_contents('php://input');
-    $input = json_decode($rawInput, true);
-    $query = $input['query'] ?? '';
-    $variableValues = $input['variables'] ?? null;
-
-    $result = GraphQL::executeQuery($schema, $query, null, null, $variableValues);
+    $result = GraphQL::executeQuery($schema, $query, $rootValue, null, $variables, null, null);
     $output = $result->toArray();
-} catch (Exception $e) {
-    $output = [
-        'errors' => [
-            [
-                'message' => $e->getMessage(),
-            ],
-        ],
-    ];
+    header('Content-Type: application/json');
+    echo json_encode($output);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(['errors' => [['message' => $e->getMessage()]]]);
 }
-
-echo json_encode($output);

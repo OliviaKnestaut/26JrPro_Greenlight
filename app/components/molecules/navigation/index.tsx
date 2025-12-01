@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Layout, Menu, Button, Drawer } from 'antd';
 import type { MenuProps } from 'antd';
 import {
-	HomeOutlined,
-	ContainerOutlined,
+	LineChartOutlined,
+	DollarOutlined,
 	CalendarOutlined,
-	MessageOutlined,
-	UserOutlined,
+	FolderOutlined,
+	BulbOutlined,
 	LogoutOutlined,
 	MenuOutlined,
 	CloseOutlined,
@@ -27,20 +27,19 @@ export interface NavigationProps {
 const { Sider } = Layout;
 
 const defaultNavItems: MenuProps['items'] = [
-	{ key: 'home', icon: <HomeOutlined />, label: 'Home' },
-	{ key: 'listings', icon: <ContainerOutlined />, label: 'My Listings' },
-	{ key: 'reservations', icon: <CalendarOutlined />, label: 'My Reservations' },
-	{ key: 'messages', icon: <MessageOutlined />, label: 'Messages' },
+	{ key: 'dashboard', icon: <LineChartOutlined />, label: 'Dashboard' },
+	{ key: 'events', icon: <CalendarOutlined />, label: 'Events' },
+	{ key: 'budget', icon: <DollarOutlined />, label: 'Budget' },
 	{
-		key: 'account',
-		icon: <UserOutlined />,
-		label: 'Account',
+		key: 'brainstorm',
+		icon: <BulbOutlined />,
+		label: 'Brainstorm',
 		children: [
-			{ key: 'profile', label: 'Profile' },
-			{ key: 'settings', label: 'Settings' },
-			{ key: 'admin-dashboard', label: 'Admin Dashboard' },
+			{ key: 'docs-overview', label: 'Docs' },
+			{ key: 'sheets-overview', label: 'Sheets' },
 		],
 	},
+	{ key: 'resources', icon: <FolderOutlined />, label: 'Resources' },
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -82,7 +81,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 		<>
 			{/* Hamburger for mobile (top right) - only if authenticated */}
 			{isAuthenticated && (
-				<div className={styles.hamburgerContainer} style={{ zIndex: 1020 }}>
+				<div className={styles.hamburgerContainer} style={{ zIndex: 1050 }}>
 					<Button
 						className={styles.hamburger ?? ''}
 						icon={mobileOpen ? <CloseOutlined /> : <MenuOutlined />}
@@ -98,12 +97,12 @@ export const Navigation: React.FC<NavigationProps> = ({
 					className={styles.sidebar ?? ''}
 					breakpoint="md"
 					collapsedWidth="0"
-					width={240}
+					width={260}
 					trigger={null}
 					collapsible
 					collapsed={collapsed}
 					onCollapse={setCollapsed}
-					style={{ position: 'fixed', left: 0, top: 64, zIndex: 1000 }}
+					style={{ position: 'fixed', left: 0, top: 68, zIndex: 1000 }}
 				>
 					<Menu
 						mode="inline"
@@ -131,7 +130,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 					placement="left"
 					open={mobileOpen}
 					onClose={() => setMobileOpen(false)}
-					width={240}
+					width={260}
 					className={styles.mobileDrawer ?? ''}
 				>
 					<Menu

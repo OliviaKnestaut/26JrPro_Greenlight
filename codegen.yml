@@ -1,0 +1,13 @@
+schema: "php-graphQL-server/schema.graphql"
+documents: "app/lib/graphql/**/*.graphql"
+generates:
+  app/lib/graphql/generated.tsx:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      withHooks: true
+      withHOC: false
+      withComponent: false
+      reactApolloVersion: 4

@@ -1,7 +1,7 @@
 import type React from 'react';
 import { Layout, Button } from 'antd';
 import styles from './index.module.css';
-import logoIcon from '../../assets/GreenlightTemp.png';
+import logoIcon from '../../assets/GreenlightTempIcon.png';
 
 export interface HeaderProps {
 	isAuthenticated?: boolean;
