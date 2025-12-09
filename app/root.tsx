@@ -10,6 +10,8 @@ import { ApolloProvider } from "@apollo/client/react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import "antd/dist/reset.css";
+import "./antd-custom.css";
 import { apolloClient } from "./lib/apollo-client";
 
 export const links: Route.LinksFunction = () => [

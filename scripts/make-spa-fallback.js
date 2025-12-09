@@ -10,7 +10,7 @@ const indexPath = path.join(buildDir, 'index.html');
 
 const routes = [
     'database-dump',
-    'graphql-example',
+    'app-layout-example',
 ];
 
 async function ensureDirAndCopy(route) {
