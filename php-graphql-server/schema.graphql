@@ -1,0 +1,106 @@
+# Custom scalars (implement or map to your GraphQL server's scalar libs)
+scalar Date       # YYYY-MM-DD (maps to SQL DATE)
+scalar Time       # HH:MM:SS (maps to SQL TIME)
+scalar DateTime   # YYYY-MM-DDTHH:MM:SSZ (maps to SQL TIMESTAMP)
+scalar JSON
+
+# Basic types
+type Organization {
+    id: ID!
+    orgName: String!            # maps to greenlight-orgs.orgName
+    username: String!           # maps to greenlight-orgs.username
+    bio: String                 # maps to greenlight-orgs.bio
+    createdAt: DateTime
+    updatedAt: DateTime
+    events(limit: Int, offset: Int, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
+}
+
+type Event {
+    id: ID!
+    organizationId: ID!        # maps to greenlight-events.organization_id
+    organization: Organization # resolver may fetch organization by organizationId
+    title: String!
+    description: String
+    eventDate: Date            # maps to greenlight-events.event_date
+    setupTime: Time            # maps to greenlight-events.setup_time
+    startTime: Time            # maps to greenlight-events.start_time
+    endTime: Time              # maps to greenlight-events.end_time
+    location: String
+    eventStatus: String!       # maps to greenlight-events.event_status
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+enum EventStatus {
+    DRAFT
+    SUBMITTED
+    APPROVED
+    REJECTED
+    CANCELLED
+}
+
+# Queries
+type Query {
+    # Organizations
+    organization(id: ID!): Organization
+    organizations(limit: Int = 25, offset: Int = 0, username: String): [Organization!]!
+
+    # Events
+    event(id: ID!): Event
+    events(limit: Int = 25, offset: Int = 0, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
+
+    # Events for a specific organization
+    eventsByOrganization(orgId: ID!, limit: Int = 25, offset: Int = 0, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
+}
+
+# Input types for mutations
+input CreateOrganizationInput {
+    orgName: String!
+    username: String!
+    password: String!    # server must hash before storing
+    bio: String
+}
+
+input UpdateOrganizationInput {
+    orgName: String
+    username: String
+    password: String     # server must hash before storing
+    bio: String
+}
+
+input CreateEventInput {
+    organizationId: ID!
+    title: String!
+    description: String
+    eventDate: Date
+    setupTime: Time
+    startTime: Time
+    endTime: Time
+    location: String
+    eventStatus: EventStatus = DRAFT
+}
+
+input UpdateEventInput {
+    title: String
+    description: String
+    eventDate: Date
+    setupTime: Time
+    startTime: Time
+    endTime: Time
+    location: String
+    eventStatus: EventStatus
+}
+
+# Mutations
+type Mutation {
+    # Organizations
+    createOrganization(input: CreateOrganizationInput!): Organization!
+    updateOrganization(id: ID!, input: UpdateOrganizationInput!): Organization!
+    deleteOrganization(id: ID!): Boolean! # cascades to events if DB is configured with FK ON DELETE CASCADE
+
+    # Events
+    createEvent(input: CreateEventInput!): Event!
+    updateEvent(id: ID!, input: UpdateEventInput!): Event!
+    deleteEvent(id: ID!): Boolean!
+    changeEventStatus(id: ID!, status: EventStatus!): Event!
+}

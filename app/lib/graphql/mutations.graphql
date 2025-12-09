@@ -1,0 +1,51 @@
+# Mutations for Events and Organizations
+
+mutation CreateEvent($input: CreateEventInput!) {
+    createEvent(input: $input) {
+        id
+        title
+        eventDate
+        eventStatus
+        organization { id orgName username }
+    }
+}
+
+mutation UpdateEvent($id: ID!, $input: UpdateEventInput!) {
+    updateEvent(id: $id, input: $input) {
+        id
+        title
+        eventDate
+        eventStatus
+    }
+}
+
+mutation DeleteEvent($id: ID!) {
+    deleteEvent(id: $id)
+}
+
+mutation ChangeEventStatus($id: ID!, $status: EventStatus!) {
+    updateEvent(id: $id, input: { eventStatus: $status }) {
+        id
+        eventStatus
+    }
+}
+
+mutation CreateOrganization($input: CreateOrganizationInput!) {
+    createOrganization(input: $input) {
+        id
+        orgName
+        username
+    }
+}
+
+mutation UpdateOrganization($id: ID!, $input: UpdateOrganizationInput!) {
+    updateOrganization(id: $id, input: $input) {
+        id
+        orgName
+        username
+    }
+}
+
+mutation DeleteOrganization($id: ID!) {
+    deleteOrganization(id: $id)
+}
