@@ -13,7 +13,6 @@ import {
 	CloseOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.css';
-import '../../styles/theme.css';
 import { useMatch } from 'react-router';
 
 export interface NavigationProps {
