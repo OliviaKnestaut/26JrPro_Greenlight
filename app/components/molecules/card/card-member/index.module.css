@@ -1,0 +1,7 @@
+.card { border-radius:8px }
+
+.meta { display:flex; align-items:center; gap:8px }
+
+.role { color:#666 }
+
+.content { margin-top:8px }
