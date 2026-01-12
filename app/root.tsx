@@ -13,6 +13,7 @@ import "./app.css";
 import "antd/dist/reset.css";
 import "./antd-custom.css";
 import { apolloClient } from "./lib/apollo-client";
+import { ConfigProvider } from "antd";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

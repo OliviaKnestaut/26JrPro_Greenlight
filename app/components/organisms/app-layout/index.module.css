@@ -27,7 +27,7 @@
 }
 
 :global(.ant-layout-has-sider) .content {
-	margin-left: 240px;
+	margin-left: 188px;
 }
 @media (max-width: 768px) {
 	.bodyWrapper {
