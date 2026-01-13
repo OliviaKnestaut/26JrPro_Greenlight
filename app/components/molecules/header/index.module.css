@@ -15,9 +15,11 @@
 	display: flex;
 	align-items: center;
 	height: 68px;
-	width: 260px;
+	width: 208px;
+	padding: 16px;
 	background: var(--primary);
-	border-bottom: 1px solid var(--primary-disabled);
+	border-bottom: 1px solid var(--accent-gray-light);
+	gap: 4px;
 }
 
 .logoSection > div{
@@ -26,22 +28,20 @@
 }
 
 .logo {
-	height: 30px;
-	width: 30px;
-	margin:  4px 20px;
-	margin-right: 8px;
+	height: 32px;
+	width: 28px;
 }
 
 .logoText{
-	font-weight: 600;
+	font-weight: 700;
 	color: var(--background-2);
-	line-height: 20px;
+	line-height: 22px;
+	font-size: 18px;
 }
 
 .orgName{
-	color: var(--accent-gray-medium);
-	font-family: var(--Work-Sans);
+	color: var(--background-2);
 	font-weight: 400;
-	font-size: 14px;
+	font-size: 12px;
 	line-height: 20px;
 }

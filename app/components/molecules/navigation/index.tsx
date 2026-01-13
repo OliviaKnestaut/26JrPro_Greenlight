@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { Layout, Menu, Button, Drawer } from 'antd';
+import { Layout, Menu, Button, Drawer, ConfigProvider, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	LineChartOutlined,
@@ -11,6 +11,8 @@ import {
 	LogoutOutlined,
 	MenuOutlined,
 	CloseOutlined,
+	HomeOutlined,
+	UserOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.css';
 import { useMatch } from 'react-router';
@@ -26,9 +28,10 @@ export interface NavigationProps {
 const { Sider } = Layout;
 
 const defaultNavItems: MenuProps['items'] = [
-	{ key: 'dashboard', icon: <LineChartOutlined />, label: 'Dashboard' },
-	{ key: 'events', icon: <CalendarOutlined />, label: 'Events' },
-	{ key: 'budget', icon: <DollarOutlined />, label: 'Budget' },
+	{ key: 'dashboard', icon: <HomeOutlined />, label: 'Dashboard' },
+	{ key: 'event-submissions', icon: <CalendarOutlined />, label: 'Event Submissions' },
+	{ key: 'purchase-requests', icon: <DollarOutlined />, label: 'Purchase Requests' },
+	{ key: 'budget', icon: <LineChartOutlined />, label: 'Budget' },
 	{
 		key: 'brainstorm',
 		icon: <BulbOutlined />,
@@ -39,6 +42,9 @@ const defaultNavItems: MenuProps['items'] = [
 		],
 	},
 	{ key: 'resources', icon: <FolderOutlined />, label: 'Resources' },
+	{ key: 'calendar', icon: <CalendarOutlined />, label: 'Calendar' },
+	{ key: 'org-members', icon: <UserOutlined />, label: 'Org Members' },
+
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -77,7 +83,23 @@ export const Navigation: React.FC<NavigationProps> = ({
 
 	// Responsive: show Drawer on mobile, Sider on desktop
 	return (
-		<>
+		<ConfigProvider
+            theme={{
+                "components": {
+                    "Menu": {
+					"colorBgContainer": "var(--primary)",
+					"colorFillAlter": "var(--primary)",
+					"colorText": "var(--background-2)",
+					"itemHoverBg": "var(--primary-active)",
+					"itemActiveBg": "var(--primary-disabled)",
+					"colorBgElevated": "var(--primary)",
+					},
+					"Button": {
+						"colorText": "var(--background-2)",
+					}
+                }
+            }}
+        >
 			{/* Hamburger for mobile (top right) - only if authenticated */}
 			{isAuthenticated && (
 				<div className={styles.hamburgerContainer} style={{ zIndex: 1050 }}>
@@ -96,7 +118,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 					className={styles.sidebar ?? ''}
 					breakpoint="md"
 					collapsedWidth="0"
-					width={260}
+					width={208}
 					trigger={null}
 					collapsible
 					collapsed={collapsed}
@@ -112,15 +134,18 @@ export const Navigation: React.FC<NavigationProps> = ({
 						openKeys={openKeys}
 						onOpenChange={onMenuOpenChange}
 					/>
-					<Button
-						className={styles.logoutDesktop ?? ''}
-						icon={<LogoutOutlined />}
-						type="link"
-						onClick={onLogout}
-						style={{ width: '100%', marginTop: 24 }}
-					>
-						Log Out
-					</Button>
+					<div className={styles.userSection}>
+						<Avatar size="large" icon={<UserOutlined />} />
+						<div>
+							<span className={styles.userName}>Serati Ma</span>
+						</div>
+						<Button
+							className={styles.logout}
+							icon={<LogoutOutlined />}
+							type="link"
+							onClick={onLogout}>
+						</Button>
+					</div>
 				</Sider>
 			)}
 			{/* Mobile Drawer */}
@@ -129,8 +154,8 @@ export const Navigation: React.FC<NavigationProps> = ({
 					placement="left"
 					open={mobileOpen}
 					onClose={() => setMobileOpen(false)}
-					width={260}
-					className={styles.mobileDrawer ?? ''}
+					width={208}
+					style={{ top: 68, zIndex: 1000 }}
 				>
 					<Menu
 						mode="inline"
@@ -142,7 +167,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 					<Button
 						className={styles.logoutMobile ?? ''}
 						icon={<LogoutOutlined />}
-						type="link"
+						type="text"
 						onClick={onLogout}
 						style={{ width: '100%', marginTop: 24 }}
 					>
@@ -150,6 +175,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 					</Button>
 				</Drawer>
 			)}
-		</>
+		</ConfigProvider>
 	);
 };

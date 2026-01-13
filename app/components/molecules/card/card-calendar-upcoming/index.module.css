@@ -1,0 +1,9 @@
+.card { border-radius: 8px; }
+
+.item { display:flex; justify-content:space-between; padding:8px 0; }
+
+.eventTitle { font-weight:500 }
+
+.eventDate { color:#999; font-size:12px }
+
+.content { margin-top:8px }

@@ -1,0 +1,16 @@
+.card {
+  border-radius: 8px;
+}
+
+.meta {
+  display: flex;
+  gap: 12px;
+  color: #888;
+  font-size: 12px;
+}
+
+.date { }
+
+.location { }
+
+.content { margin-top: 8px; }

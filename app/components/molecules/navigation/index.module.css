@@ -1,10 +1,9 @@
 .sidebar {
-	background: var(--primary);
+	background-color: var(--primary);
 	height: 100%;
 	align-self: stretch;
 	display: flex;
 	flex-direction: column;
-	padding: 8px;
 }
 
 .hamburgerContainer {
@@ -22,10 +21,10 @@
 	cursor: pointer;
 	z-index: 1020;
 }
+
 .hamburgerBar {
 	width: 24px;
 	height: 3px;
-	background: #222;
 	border-radius: 2px;
 	display: block;
 }
@@ -39,9 +38,40 @@
 	z-index: 900;
 }
 
-.logoutDesktop,
-.logoutMobile {
+.userSection {
+	display: flex;
+	align-items: center;
+	height: 54px;
+	width: 208px;
+	padding: 6px 16px;
+	background: var(--primary);
+	border-top: 1px solid var(--accent-gray-light);
+	gap: 8px;
+	position: fixed;
+	bottom: 0;
+}
+
+.userSection > div{
+	display: flex;
+	flex-direction: column;
+}
+
+.logo {
+	height: 32px;
+	width: 28px;
+}
+
+.userName{
+	font-weight: 400;
+	color: var(--background-2);
+	line-height: 22px;
+	font-size: 14px;
+	width: 88px;
+}
+
+.logout{
 	color: var(--background-2) !important;
+	align-self:flex-end;
 }
 
 @media (max-width: 768px) {
@@ -76,9 +106,7 @@
 		max-width: 320px;
 		box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
 	}
-	.sidebar.open {
-		transform: translateX(0);
-	}
+
 	.hamburgerContainer {
 		display: flex;
 		position: fixed;
