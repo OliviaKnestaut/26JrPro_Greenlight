@@ -1,7 +1,7 @@
 import type React from 'react';
 import { Layout, Button } from 'antd';
 import styles from './index.module.css';
-import logoIcon from '../../assets/GreenlightTempIcon.png';
+import logoIcon from '../../assets/GreenlightLogo.svg';
 
 export interface HeaderProps {
 	isAuthenticated?: boolean;
@@ -16,10 +16,10 @@ export const Header: React.FC<HeaderProps> = ({
 	return (
 		<AntHeader className={styles.header}>
 			<div className={styles.logoSection}>
-				<img src={logoIcon} alt="Sharethrift Logo" className={styles.logo} />
+				<img src={logoIcon} alt="Greenlight Logo" className={styles.logo} />
 				<div>
 					<span className={styles.logoText}>Greenlight</span>
-					<span className={styles.orgName}>DU WOMEN IN BUSINESS</span>
+					<span className={styles.orgName}>DU WOMEN IN BUSI</span>
 				</div>
 			</div>
 		</AntHeader>

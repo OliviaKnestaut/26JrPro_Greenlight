@@ -1,0 +1,7 @@
+.card { border-radius:8px }
+
+.header { display:flex; align-items:center; gap:8px }
+
+.subtitle { color:#666 }
+
+.content { margin-top:8px }

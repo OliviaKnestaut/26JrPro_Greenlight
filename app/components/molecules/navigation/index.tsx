@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { Layout, Menu, Button, Drawer } from 'antd';
+import { Layout, Menu, Button, Drawer, ConfigProvider, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	LineChartOutlined,
@@ -11,9 +11,11 @@ import {
 	LogoutOutlined,
 	MenuOutlined,
 	CloseOutlined,
+	HomeOutlined,
+	UserOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.css';
-import { useMatch } from 'react-router';
+import { useMatch, useNavigate, useLocation, Link } from 'react-router';
 
 export interface NavigationProps {
 	isAuthenticated: boolean;
@@ -26,9 +28,10 @@ export interface NavigationProps {
 const { Sider } = Layout;
 
 const defaultNavItems: MenuProps['items'] = [
-	{ key: 'dashboard', icon: <LineChartOutlined />, label: 'Dashboard' },
-	{ key: 'events', icon: <CalendarOutlined />, label: 'Events' },
-	{ key: 'budget', icon: <DollarOutlined />, label: 'Budget' },
+	{ key: 'dashboard', icon: <HomeOutlined />, label: <Link to="/">Dashboard</Link> },
+	{ key: 'event-submissions', icon: <CalendarOutlined />, label: <Link to="/event-submissions">Event Submissions</Link> },
+	{ key: 'purchase-requests', icon: <DollarOutlined />, label: <Link to="/purchase-requests">Purchase Requests</Link> },
+	{ key: 'budget', icon: <LineChartOutlined />, label: <Link to="/budget">Budget</Link> },
 	{
 		key: 'brainstorm',
 		icon: <BulbOutlined />,
@@ -38,7 +41,10 @@ const defaultNavItems: MenuProps['items'] = [
 			{ key: 'sheets-overview', label: 'Sheets' },
 		],
 	},
-	{ key: 'resources', icon: <FolderOutlined />, label: 'Resources' },
+	{ key: 'resources', icon: <FolderOutlined />, label: <Link to="/resources">Resources</Link> },
+	{ key: 'calendar', icon: <CalendarOutlined />, label: <Link to="/calendar">Calendar</Link> },
+	{ key: 'org-members', icon: <UserOutlined />, label: <Link to="/org-members">Org Members</Link> },
+
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -61,13 +67,17 @@ export const Navigation: React.FC<NavigationProps> = ({
 
 	const navItems = customNavItems || defaultNavItems;
 
+	// router hooks (call at top-level of component)
+	const navigate = useNavigate();
+	const location = useLocation();
+
 	const handleMenuClick: React.ComponentProps<typeof Menu>['onClick'] = (e) => {
-		// Use keyPath for nested menu items
 		const { key } = e;
 		setOpenKeys(e.keyPath);
 		if (onNavigate) {
 			onNavigate(key);
 		}
+
 		setMobileOpen(false);
 	};
 
@@ -77,7 +87,29 @@ export const Navigation: React.FC<NavigationProps> = ({
 
 	// Responsive: show Drawer on mobile, Sider on desktop
 	return (
-		<>
+		<ConfigProvider
+            theme={{
+                "components": {
+                    "Menu": {
+					"colorBgContainer": "var(--primary)",
+					"colorFillAlter": "var(--primary)",
+					"colorText": "var(--background-2)",
+					"itemHoverBg": "var(--primary-active)",
+					"itemSelectedBg": "var(--primary-active)",
+					"itemActiveBg": "var(--primary-disabled)",
+					"itemColor": "var(--background-2)",
+					"itemSelectedColor": "var(--background-2)",
+					"colorBgElevated": "var(--primary)",
+					"itemBorderRadius": 0,
+					"itemMarginInline": 0,
+					"itemMarginBlock": 0,
+					},
+					"Button": {
+						"colorText": "var(--background-2)",
+					}
+                }
+            }}
+        >
 			{/* Hamburger for mobile (top right) - only if authenticated */}
 			{isAuthenticated && (
 				<div className={styles.hamburgerContainer} style={{ zIndex: 1050 }}>
@@ -96,31 +128,34 @@ export const Navigation: React.FC<NavigationProps> = ({
 					className={styles.sidebar ?? ''}
 					breakpoint="md"
 					collapsedWidth="0"
-					width={260}
+					width={208}
 					trigger={null}
 					collapsible
 					collapsed={collapsed}
 					onCollapse={setCollapsed}
-					style={{ position: 'fixed', left: 0, top: 68, zIndex: 1000 }}
+					style={{ position: 'fixed', left: 0, top: 64, zIndex: 1000 }}
 				>
 					<Menu
 						mode="inline"
 						items={navItems}
 						onClick={handleMenuClick}
 						style={{ border: 'none', flex: 1 }}
-						selectedKeys={[selectedKey || 'home']}
+						selectedKeys={[selectedKey || (location.pathname === '/' ? 'dashboard' : location.pathname.replace(/^\//, '').split('/')[0]) ]}
 						openKeys={openKeys}
 						onOpenChange={onMenuOpenChange}
 					/>
-					<Button
-						className={styles.logoutDesktop ?? ''}
-						icon={<LogoutOutlined />}
-						type="link"
-						onClick={onLogout}
-						style={{ width: '100%', marginTop: 24 }}
-					>
-						Log Out
-					</Button>
+					<div className={styles.userSection}>
+						<Avatar size="large" icon={<UserOutlined />} />
+						<div>
+							<span className={styles.userName}>Serati Ma</span>
+						</div>
+						<Button
+							className={styles.logout}
+							icon={<LogoutOutlined />}
+							type="link"
+							onClick={onLogout}>
+						</Button>
+					</div>
 				</Sider>
 			)}
 			{/* Mobile Drawer */}
@@ -129,20 +164,20 @@ export const Navigation: React.FC<NavigationProps> = ({
 					placement="left"
 					open={mobileOpen}
 					onClose={() => setMobileOpen(false)}
-					width={260}
-					className={styles.mobileDrawer ?? ''}
+					width={208}
+					style={{ top: 68, zIndex: 1000 }}
 				>
 					<Menu
 						mode="inline"
 						items={navItems}
 						onClick={handleMenuClick}
 						style={{ border: 'none', flex: 1 }}
-						selectedKeys={[selectedKey || 'home']}
+						selectedKeys={[selectedKey || (location.pathname === '/' ? 'dashboard' : location.pathname.replace(/^\//, '').split('/')[0]) ]}
 					/>
 					<Button
 						className={styles.logoutMobile ?? ''}
 						icon={<LogoutOutlined />}
-						type="link"
+						type="text"
 						onClick={onLogout}
 						style={{ width: '100%', marginTop: 24 }}
 					>
@@ -150,6 +185,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 					</Button>
 				</Drawer>
 			)}
-		</>
+		</ConfigProvider>
 	);
 };

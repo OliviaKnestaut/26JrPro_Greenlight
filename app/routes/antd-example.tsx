@@ -27,6 +27,26 @@ import {
     Tooltip,
     Typography,
 } from 'antd';
+import {
+    HomeOutlined,
+    BellOutlined,
+    CalendarOutlined,
+    FileTextOutlined,
+    TeamOutlined,
+    UserOutlined,
+} from '@ant-design/icons';
+
+import NavMini from '../components/molecules/nav-mini';
+import ProgressCircle from '../components/molecules/progress-circle';
+import {
+    CardWelcome,
+    CardAnnouncements,
+    CardEvent,
+    CardCalendarUpcoming,
+    CardResource,
+    CardOrg,
+    CardMember,
+} from '../components/molecules/card';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -216,6 +236,40 @@ export default function AntdExample() {
                     ]}
                     renderItem={(item) => <List.Item>{item}</List.Item>}
                 />
+                <Divider orientation="left">Molecules</Divider>
+                <div style={{ display: 'grid', gap: 16 }}>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                        <CardWelcome title="Welcome" subtitle="Glad you're here">
+                            <p>Welcome content</p>
+                        </CardWelcome>
+                        <CardAnnouncements
+                            title="Announcements"
+                            items={[{ id: 'a1', title: 'Site update', description: 'We updated the site.' }]}
+                        />
+                        <CardEvent title="Meetup" date="Jan 20" location="Online">
+                            <p>Event details</p>
+                        </CardEvent>
+                        <CardCalendarUpcoming
+                            title="Upcoming"
+                            events={[{ id: 'e1', title: 'Release', date: 'Jan 25' }]}
+                        />
+                        <CardResource title="Resources" tags={["Guide", "API"]}>
+                            <p>Resource content</p>
+                        </CardResource>
+                        <CardOrg title="Organization" avatarSrc="https://via.placeholder.com/40" subtitle="Nonprofit">
+                            <p>Org details</p>
+                        </CardOrg>
+                        <CardMember title="Member" avatarSrc="https://via.placeholder.com/40" role="Admin">
+                            <p>Member bio</p>
+                        </CardMember>
+                    </div>
+
+                    <NavMini />
+
+                    <div>
+                        <ProgressCircle total={10000} spent={2500} />
+                    </div>
+                </div>
             </Space>
         </div>
     );
