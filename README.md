@@ -5,7 +5,7 @@ Live Site: [https://digmstudents.westphal.drexel.edu/~ojk25/jrProjGreenlight/](h
 Status Post Framer Site: [https://26jrprojgreenlight.framer.website](https://26jrprojgreenlight.framer.website)
 
 
-## React Support
+## Running Project Locally
 
 [React Router Docs](https://reactrouter.com/)
 
@@ -39,7 +39,7 @@ Start the development server with HMR:
 npm run dev
 ```
 
-Your application will be available at `[http://localhost:5173](http://localhost:5173/~ojk25/jrProjGreenlight/)`.
+Your application will be available at [http://localhost:5173](http://localhost:5173/~ojk25/jrProjGreenlight/).
 
 ## Building for Production
 
@@ -55,7 +55,7 @@ This project uses Ant Design v5 and imports the `reset.css` file which exposes
 design tokens as CSS variables. To make fine-grained, CSS-driven customizations
 you can edit `app/antd-custom.css` (already imported by `app/root.tsx`).
 
-Start the dev server and visit `[http://localhost:5173/~ojk25/jrProjGreenlight/antd-example](http://localhost:5173/~ojk25/jrProjGreenlight/antd-example)` to see the sample component:
+Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/antd-example](http://localhost:5173/~ojk25/jrProjGreenlight/antd-example) to see the sample component:
 
 Edit `app/antd-custom.css` to override token variables (examples included).
 
