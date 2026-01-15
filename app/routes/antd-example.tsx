@@ -36,8 +36,8 @@ import {
     UserOutlined,
 } from '@ant-design/icons';
 
-import NavMini from './molecules/nav-mini';
-import ProgressCircle from './molecules/progress-circle';
+import NavMini from '../components/molecules/nav-mini';
+import ProgressCircle from '../components/molecules/progress-circle';
 import {
     CardWelcome,
     CardAnnouncements,
@@ -46,7 +46,7 @@ import {
     CardResource,
     CardOrg,
     CardMember,
-} from './molecules/card';
+} from '../components/molecules/card';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;

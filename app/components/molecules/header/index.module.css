@@ -4,7 +4,7 @@
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	height: 68px !important;
+	height: 64px !important;
 	padding: 0;
 	background: var(--background-2);
 	box-shadow: inset 0 -1px 0 var(--accent-gray-light);
@@ -14,7 +14,7 @@
 .logoSection {
 	display: flex;
 	align-items: center;
-	height: 68px;
+	height: 64px;
 	width: 208px;
 	padding: 16px;
 	background: var(--primary);
