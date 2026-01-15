@@ -58,20 +58,22 @@ Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/an
 - Edit `app/antd-custom.css` to override token variables (examples included).
   - `app/antd-custom.css` is intentionally small — use [https://ant.design/theme-editor](https://ant.design/theme-editor) to identify CSS variables you can override.
 - Also use `ConfigProvider` token overrides: example
-  ```<ConfigProvider
-            theme={{
-                "components": {
-                    "Menu": {
-					"colorBgContainer": "var(--primary)",
-					"colorText": "var(--background-2)",
-					"itemHoverBg": "var(--primary-active)",
-					"itemBorderRadius": 0,
-					"itemMarginInline": 0,
-					"itemMarginBlock": 0,
-					},
-					"Button": {
-						"colorText": "var(--background-2)",
-					}
-                }
-            }}
-        > COMPONENT HERE <ConfigProvider/>```
+  ```
+  <ConfigProvider
+	theme={{
+		"components": {
+			"Menu": {
+			"colorBgContainer": "var(--primary)",
+			"colorText": "var(--background-2)",
+			"itemHoverBg": "var(--primary-active)",
+			"itemBorderRadius": 0,
+			"itemMarginInline": 0,
+			"itemMarginBlock": 0,
+			},
+			"Button": {
+				"colorText": "var(--background-2)",
+			}
+		}
+	}}
+> COMPONENT HERE <ConfigProvider/>
+```
