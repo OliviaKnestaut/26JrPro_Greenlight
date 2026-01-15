@@ -9,7 +9,7 @@ Status Post Framer Site: [https://26jrprojgreenlight.framer.website](https://26j
 
 [React Router Docs](https://reactrouter.com/)
 
-### Git Commands
+#### Git Commands
 
 Git pull on personal branch and main branch:
 
@@ -23,7 +23,7 @@ If personal is behind main, on personal branch:
 git merge main
 ```
 
-### Installation
+#### Installation
 
 Install the dependencies:
 
@@ -31,7 +31,7 @@ Install the dependencies:
 npm install
 ```
 
-### Development
+#### Development
 
 Start the development server with HMR:
 
@@ -49,20 +49,29 @@ Create a production build:
 npm run build
 ```
 
-## Using Ant Design (v5)
+## Using and Styling Ant Design (v5)
 
-This project uses Ant Design v5 and imports the `reset.css` file which exposes
-design tokens as CSS variables. To make fine-grained, CSS-driven customizations
-you can edit `app/antd-custom.css` (already imported by `app/root.tsx`).
+This project uses Ant Design v5 and imports the `reset.css` file which exposes design tokens as CSS variables. To make fine-grained, CSS-driven customizations you can edit `app/antd-custom.css` (already imported by `app/root.tsx`).
 
 Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/antd-example](http://localhost:5173/~ojk25/jrProjGreenlight/antd-example) to see the sample component:
 
-Edit `app/antd-custom.css` to override token variables (examples included).
-
-Notes:
-- `app/antd-custom.css` is intentionally small and contains a primary color
-	example (`--ant-primary-color`) — use browser devtools to discover other
-	`--ant-...` CSS variables you can override.
-- If you need programmatic token control or runtime theme switching, we can
-	reintroduce `ConfigProvider` token overrides; CSS variables are best for
-	static, CSS-first overrides.
+- Edit `app/antd-custom.css` to override token variables (examples included).
+  - `app/antd-custom.css` is intentionally small — use [https://ant.design/theme-editor](https://ant.design/theme-editor) to identify CSS variables you can override.
+- Also use `ConfigProvider` token overrides: example
+  '''<ConfigProvider
+            theme={{
+                "components": {
+                    "Menu": {
+					"colorBgContainer": "var(--primary)",
+					"colorText": "var(--background-2)",
+					"itemHoverBg": "var(--primary-active)",
+					"itemBorderRadius": 0,
+					"itemMarginInline": 0,
+					"itemMarginBlock": 0,
+					},
+					"Button": {
+						"colorText": "var(--background-2)",
+					}
+                }
+            }}
+        > COMPONENT HERE <ConfigProvider/>'''
