@@ -74,5 +74,4 @@ Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/an
 				"colorText": "var(--background-2)",
 			}
 		}
-	}} >  <ConfigProvider/>
-```
+	}} >  <ConfigProvider/>```
