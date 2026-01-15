@@ -58,7 +58,7 @@ Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/an
 - Edit `app/antd-custom.css` to override token variables (examples included).
   - `app/antd-custom.css` is intentionally small — use [https://ant.design/theme-editor](https://ant.design/theme-editor) to identify CSS variables you can override.
 - Also use `ConfigProvider` token overrides: example
-  '''<ConfigProvider
+  ```<ConfigProvider
             theme={{
                 "components": {
                     "Menu": {
@@ -74,4 +74,4 @@ Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/an
 					}
                 }
             }}
-        > COMPONENT HERE <ConfigProvider/>'''
+        > COMPONENT HERE <ConfigProvider/>```
