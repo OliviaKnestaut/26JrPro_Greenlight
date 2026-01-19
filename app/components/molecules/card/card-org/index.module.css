@@ -1,15 +1,26 @@
 .card { 
     border-radius:8px; 
     width: 100%;
+}
+
+.image { 
+    gap:8px; 
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.subtitle { 
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.content {
+    display: flex; 
+    flex-direction: column;}
+
+.all{
     display: flex;
     flex-direction: row;
 }
-
-.header { 
-    gap:8px; 
-    margin-right: 15px;
-}
-
-.subtitle { color:#666 }
-
-.content { margin-top:8px; display: flex; flex-direction: column;}
