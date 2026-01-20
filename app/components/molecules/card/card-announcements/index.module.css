@@ -1,11 +1,85 @@
+/* ---------------- Card Container ---------------- */
 .card {
   border-radius: 8px;
+  overflow: hidden;
+  width: 670px; /* will need to be looked at again */
+  height: 160px;
+  background-color: #D4F1E8;
+  padding: 24px 24px 16px 24px;
 }
 
-.item {
-  padding: 8px 0;
+.card :global(.ant-card-body) {
+  padding: 0;
 }
 
-.content {
-  padding: 8px 0;
+/* ---------------- Card Header ---------------- */
+.card :global(.ant-card-head) {
+  padding: 0;
+  min-height: auto;
+  border-bottom: none;
+}
+
+.card :global(.ant-card-head-title) {
+  margin: 0 0 16px 0;
+  padding: 0;
+  font-size: 24px; 
+  line-height: 1.2;
+}
+
+/* ---------------- Typography Reset ---------------- */
+.card :global(.ant-typography),
+.card :global(.ant-typography-title),
+.card :global(.ant-typography-paragraph) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ---------------- List Styling ---------------- */
+.card :global(.ant-list) {
+  margin: 0;
+  padding: 0;
+}
+
+.card :global(.ant-list-items) {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card :global(.ant-list-item) {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+.card :global(.ant-list-item-meta) {
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------------- List Item Content ---------------- */
+.card :global(.ant-list-item-meta-content) {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+}
+
+.card :global(.ant-list-item-meta-title),
+.card :global(.ant-list-item-meta-description) {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-weight: normal !important; 
+  line-height: 1;
+}
+
+/* bulletpoint */
+.card :global(.ant-list-item-meta-title)::before {
+  content: "•";
+  display: inline-block;
+  width: 1em;   
+  color: #000;
+  font-size: 18px;
+  line-height: 1;
 }
