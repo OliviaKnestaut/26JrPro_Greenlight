@@ -3,7 +3,7 @@
   background-image: url("../../../assets/welcome-bg.svg");
   border-radius: 8px;
   overflow: hidden;
-  width: 474px;  /* will need to be looked at again */
+  width: 39%;  /* 474px will need to be looked at again */
   height: 160px;     
 }
 
