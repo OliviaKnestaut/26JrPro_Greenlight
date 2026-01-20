@@ -237,7 +237,7 @@ export default function AntdExample() {
                     renderItem={(item) => <List.Item>{item}</List.Item>}
                 />
                 <Divider orientation="left">Molecules</Divider>
-                <div style={{ display: 'flex', flexWrap: 'wrap' , gap: 16  }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
                     <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?">
                         </CardWelcome>
                         <CardAnnouncements
