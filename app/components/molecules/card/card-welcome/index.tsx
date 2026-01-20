@@ -1,16 +1,54 @@
-import React from 'react';
-import { Card } from 'antd';
-import styles from './index.module.css';
+import React from "react";
+import { Card, Button, Typography } from "antd";
+import styles from "./index.module.css";
 
 export type CardWelcomeProps = React.ComponentProps<typeof Card> & {
     subtitle?: React.ReactNode;
 };
 
-const CardWelcome: React.FC<CardWelcomeProps> = ({ children, title, subtitle, ...rest }) => (
-    <Card className={styles.card} title={title} {...rest}>
-        {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
-        <div className={styles.content}>{children}</div>
-    </Card>
-);
+const { Title, Text } = Typography;
+
+const CardWelcome: React.FC<CardWelcomeProps> = ({
+    children,
+    title,
+    subtitle,
+    ...rest
+}) => {
+    return (
+        <Card
+        bordered={false}
+        bodyStyle={{ padding: 0 }}
+        className={styles.card}
+        {...rest}
+        >
+        {/* Header */}
+        <div className={styles.header}>
+            {title && (
+            <Title level={4} className={styles.title}>
+                {title}
+            </Title>
+            )}
+
+            {subtitle && (
+            <Text className={styles.subtitle}>{subtitle}</Text>
+            )}
+        </div>
+
+        {/* Content and buttons */}
+        <div className={styles.content}>
+            <div className={styles.childrenWrapper}>{children}</div>
+
+            <div className={styles.actions}>
+            <Button type="primary" className={styles.btn}>
+                New event
+            </Button>
+            <Button className={styles.btn}>
+                New brainstorm
+            </Button>
+            </div>
+        </div>
+        </Card>
+    );
+};
 
 export default CardWelcome;
