@@ -1,0 +1,30 @@
+<svg width="474" height="160" viewBox="0 0 474 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_2104_12911)">
+<rect width="474" height="160" rx="8" fill="url(#paint0_linear_2104_12911)"/>
+<circle opacity="0.34" cx="363" cy="125" r="56" fill="#86D9D6"/>
+<circle opacity="0.59" cx="474" cy="-8" r="56" fill="#86D9D6"/>
+<circle opacity="0.31" cx="42" cy="-1" r="56" fill="#86D9D6"/>
+<circle opacity="0.16" cx="242" cy="149" r="24" fill="#D4FFF7"/>
+<circle opacity="0.16" cx="266" cy="118" r="7" fill="#D4FFF7"/>
+<circle opacity="0.16" cx="269.5" cy="132.5" r="3.5" fill="#D4FFF7"/>
+<circle cx="8.5" cy="144.5" r="36" stroke="#C6E6E0" stroke-width="11"/>
+<circle cx="-2" cy="153" r="23.5" stroke="#C6E6E0" stroke-width="11"/>
+<circle opacity="0.73" cx="456" cy="120" r="5" fill="#86D9D6"/>
+<circle opacity="0.73" cx="464.5" cy="128.5" r="1.5" fill="#86D9D6"/>
+<circle opacity="0.35" cx="473.5" cy="95.5" r="17" stroke="#C6E6E0" stroke-width="5"/>
+<circle opacity="0.35" cx="473.5" cy="95.5" r="7.5" fill="#B3E6E2"/>
+<g opacity="0.92">
+<circle opacity="0.35" cx="312.5" cy="14.5" r="27" stroke="#C6E6E0" stroke-width="5"/>
+<circle opacity="0.35" cx="312.5" cy="14.5" r="11.3462" fill="#B3E6E2"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2104_12911" x1="484.112" y1="167.907" x2="36.2254" y2="-284.244" gradientUnits="userSpaceOnUse">
+<stop stop-color="#77C1C6"/>
+<stop offset="1" stop-color="#E9F9DA"/>
+</linearGradient>
+<clipPath id="clip0_2104_12911">
+<rect width="474" height="160" fill="white"/>
+</clipPath>
+</defs>
+</svg>
