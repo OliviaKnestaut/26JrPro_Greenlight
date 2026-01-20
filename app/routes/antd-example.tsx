@@ -238,8 +238,7 @@ export default function AntdExample() {
                 />
                 <Divider orientation="left">Molecules</Divider>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-                    <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?">
-                        </CardWelcome>
+                    <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?" />
                         <CardAnnouncements
                             title="Announcements"
                             items={[
