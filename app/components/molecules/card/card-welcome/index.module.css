@@ -1,10 +1,14 @@
 /* ---------------- Card Container ---------------- */
 .card {
   background-image: url("../../../assets/welcome-bg.svg");
+  background-repeat: no-repeat;    
+  background-position: center;      
+  background-size: cover;          
+
   border-radius: 8px;
   overflow: hidden;
-  width: 39%;  /* 474px will need to be looked at again */
-  height: 160px;     
+  width: 39%;
+  height: 160px;    
 }
 
 .card :global(.ant-card-body) {
