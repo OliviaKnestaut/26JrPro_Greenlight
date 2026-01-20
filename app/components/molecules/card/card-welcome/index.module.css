@@ -1,7 +1,7 @@
 /* ---------------- Card Container ---------------- */
 .card {
   background-image: url("../../../assets/welcome-bg.svg");
-  background-repeat: no-repeat;    
+  background-repeat: no-repeat;   
   background-position: center;      
   background-size: cover;          
 
