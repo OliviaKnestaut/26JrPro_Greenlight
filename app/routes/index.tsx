@@ -1,5 +1,8 @@
-import { Welcome } from "../welcome/welcome";
+import React from "react";
+import { DashboardContent } from "~/components/organisms/dashboard";
 
-export default function Home() {
-    return <Welcome />;
+export default function Dashboard() {
+    return (
+        <DashboardContent />
+    );
 }

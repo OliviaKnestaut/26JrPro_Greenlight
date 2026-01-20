@@ -7,13 +7,14 @@ export type CardMemberProps = React.ComponentProps<typeof Card> & {
     role?: string;
 };
 
-const CardMember: React.FC<CardMemberProps> = ({ children, title, avatarSrc, role, ...rest }) => (
-    <Card className={styles.card} title={title} {...rest}>
+const CardMember: React.FC<CardMemberProps> = ({ children, avatarSrc, role, ...rest }) => (
+    <Card className={styles.card}>
         <div className={styles.meta}>
-        {avatarSrc && <Avatar src={avatarSrc} />}
-        {role && <div className={styles.role}>{role}</div>}
+        {avatarSrc && <Avatar src={avatarSrc} size={64}/>}
         </div>
-        <div className={styles.content}>{children}</div>
+        <div className={styles.name}>Hannah Desmond</div>
+        {role && <div className={styles.role}>President</div>}
+        <div className={styles.content}>hd434@drexel.edu</div>
     </Card>
 );
 

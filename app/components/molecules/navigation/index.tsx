@@ -15,7 +15,7 @@ import {
 	UserOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.css';
-import { useMatch } from 'react-router';
+import { useMatch, useNavigate, useLocation, Link } from 'react-router';
 
 export interface NavigationProps {
 	isAuthenticated: boolean;
@@ -28,10 +28,10 @@ export interface NavigationProps {
 const { Sider } = Layout;
 
 const defaultNavItems: MenuProps['items'] = [
-	{ key: 'dashboard', icon: <HomeOutlined />, label: 'Dashboard' },
-	{ key: 'event-submissions', icon: <CalendarOutlined />, label: 'Event Submissions' },
-	{ key: 'purchase-requests', icon: <DollarOutlined />, label: 'Purchase Requests' },
-	{ key: 'budget', icon: <LineChartOutlined />, label: 'Budget' },
+	{ key: 'dashboard', icon: <HomeOutlined />, label: <Link to="/">Dashboard</Link> },
+	{ key: 'event-submissions', icon: <CalendarOutlined />, label: <Link to="/event-submissions">Event Submissions</Link> },
+	{ key: 'purchase-requests', icon: <DollarOutlined />, label: <Link to="/purchase-requests">Purchase Requests</Link> },
+	{ key: 'budget', icon: <LineChartOutlined />, label: <Link to="/budget">Budget</Link> },
 	{
 		key: 'brainstorm',
 		icon: <BulbOutlined />,
@@ -41,9 +41,9 @@ const defaultNavItems: MenuProps['items'] = [
 			{ key: 'sheets-overview', label: 'Sheets' },
 		],
 	},
-	{ key: 'resources', icon: <FolderOutlined />, label: 'Resources' },
-	{ key: 'calendar', icon: <CalendarOutlined />, label: 'Calendar' },
-	{ key: 'org-members', icon: <UserOutlined />, label: 'Org Members' },
+	{ key: 'resources', icon: <FolderOutlined />, label: <Link to="/resources">Resources</Link> },
+	{ key: 'calendar', icon: <CalendarOutlined />, label: <Link to="/calendar">Calendar</Link> },
+	{ key: 'org-members', icon: <UserOutlined />, label: <Link to="/org-members">Org Members</Link> },
 
 ];
 
@@ -67,13 +67,17 @@ export const Navigation: React.FC<NavigationProps> = ({
 
 	const navItems = customNavItems || defaultNavItems;
 
+	// router hooks (call at top-level of component)
+	const navigate = useNavigate();
+	const location = useLocation();
+
 	const handleMenuClick: React.ComponentProps<typeof Menu>['onClick'] = (e) => {
-		// Use keyPath for nested menu items
 		const { key } = e;
 		setOpenKeys(e.keyPath);
 		if (onNavigate) {
 			onNavigate(key);
 		}
+
 		setMobileOpen(false);
 	};
 
@@ -91,8 +95,14 @@ export const Navigation: React.FC<NavigationProps> = ({
 					"colorFillAlter": "var(--primary)",
 					"colorText": "var(--background-2)",
 					"itemHoverBg": "var(--primary-active)",
+					"itemSelectedBg": "var(--primary-active)",
 					"itemActiveBg": "var(--primary-disabled)",
+					"itemColor": "var(--background-2)",
+					"itemSelectedColor": "var(--background-2)",
 					"colorBgElevated": "var(--primary)",
+					"itemBorderRadius": 0,
+					"itemMarginInline": 0,
+					"itemMarginBlock": 0,
 					},
 					"Button": {
 						"colorText": "var(--background-2)",
@@ -123,14 +133,14 @@ export const Navigation: React.FC<NavigationProps> = ({
 					collapsible
 					collapsed={collapsed}
 					onCollapse={setCollapsed}
-					style={{ position: 'fixed', left: 0, top: 68, zIndex: 1000 }}
+					style={{ position: 'fixed', left: 0, top: 64, zIndex: 1000 }}
 				>
 					<Menu
 						mode="inline"
 						items={navItems}
 						onClick={handleMenuClick}
 						style={{ border: 'none', flex: 1 }}
-						selectedKeys={[selectedKey || 'home']}
+						selectedKeys={[selectedKey || (location.pathname === '/' ? 'dashboard' : location.pathname.replace(/^\//, '').split('/')[0]) ]}
 						openKeys={openKeys}
 						onOpenChange={onMenuOpenChange}
 					/>
@@ -162,7 +172,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 						items={navItems}
 						onClick={handleMenuClick}
 						style={{ border: 'none', flex: 1 }}
-						selectedKeys={[selectedKey || 'home']}
+						selectedKeys={[selectedKey || (location.pathname === '/' ? 'dashboard' : location.pathname.replace(/^\//, '').split('/')[0]) ]}
 					/>
 					<Button
 						className={styles.logoutMobile ?? ''}

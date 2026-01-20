@@ -36,8 +36,8 @@ import {
     UserOutlined,
 } from '@ant-design/icons';
 
-import NavMini from './molecules/nav-mini';
-import ProgressCircle from './molecules/progress-circle';
+import NavMini from '../components/molecules/nav-mini';
+import ProgressCircle from '../components/molecules/progress-circle';
 import {
     CardWelcome,
     CardAnnouncements,
@@ -46,7 +46,7 @@ import {
     CardResource,
     CardOrg,
     CardMember,
-} from './molecules/card';
+} from '../components/molecules/card';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -237,15 +237,23 @@ export default function AntdExample() {
                     renderItem={(item) => <List.Item>{item}</List.Item>}
                 />
                 <Divider orientation="left">Molecules</Divider>
-                <div style={{ display: 'grid', gap: 16 }}>
-                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        <CardWelcome title="Welcome" subtitle="Glad you're here">
-                            <p>Welcome content</p>
-                        </CardWelcome>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                    <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?" />
                         <CardAnnouncements
                             title="Announcements"
-                            items={[{ id: 'a1', title: 'Site update', description: 'We updated the site.' }]}
+                            items={[
+                                { 
+                                    id: 'a1', 
+                                    title: '“Coffee Chat With Women in Tech” has 1 new comment; update submission' 
+                                },
+                                { 
+                                    id: 'a2', 
+                                    title: 'John Doe has submitted “Public Speaking Workshop” for review', 
+                                }
+                            ]}
                         />
+
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                         <CardEvent title="Meetup" date="Jan 20" location="Online">
                             <p>Event details</p>
                         </CardEvent>

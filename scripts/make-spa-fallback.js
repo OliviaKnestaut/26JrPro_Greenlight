@@ -10,7 +10,13 @@ const indexPath = path.join(buildDir, 'index.html');
 
 const routes = [
     'database-dump',
-    'app-layout-example',
+    'antd-example',
+    'event-submissions',
+    'purchase-requests',
+    'budget',
+    'resources',
+    'calendar',
+    'org-members'
 ];
 
 async function ensureDirAndCopy(route) {

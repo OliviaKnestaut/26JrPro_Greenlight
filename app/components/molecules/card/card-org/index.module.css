@@ -1,7 +1,26 @@
-.card { border-radius:8px }
+.card { 
+    border-radius:8px; 
+    width: 100%;
+}
 
-.header { display:flex; align-items:center; gap:8px }
+.image { 
+    gap:8px; 
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
 
-.subtitle { color:#666 }
+.subtitle { 
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
 
-.content { margin-top:8px }
+.content {
+    display: flex; 
+    flex-direction: column;}
+
+.all{
+    display: flex;
+    flex-direction: row;
+}
