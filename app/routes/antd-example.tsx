@@ -246,12 +246,10 @@ export default function AntdExample() {
                                 { 
                                     id: 'a1', 
                                     title: '“Coffee Chat With Women in Tech” has 1 new comment; update submission' 
-                                    // description: 'We updated the site.' 
                                 },
                                 { 
                                     id: 'a2', 
                                     title: 'John Doe has submitted “Public Speaking Workshop” for review', 
-                                    // description: 'blah' 
                                 }
                             ]}
                         />
