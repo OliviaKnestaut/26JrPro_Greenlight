@@ -254,8 +254,6 @@ export default function AntdExample() {
                         />
 
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        
-                        
                         <CardEvent title="Meetup" date="Jan 20" location="Online">
                             <p>Event details</p>
                         </CardEvent>
