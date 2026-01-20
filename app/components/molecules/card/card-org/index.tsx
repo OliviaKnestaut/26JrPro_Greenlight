@@ -8,7 +8,7 @@ export type CardOrgProps = React.ComponentProps<typeof Card> & {
 };
 
 const CardOrg: React.FC<CardOrgProps> = ({ children, title, avatarSrc, subtitle, ...rest }) => (
-    <Card className={styles.card} {...rest}>
+    <Card className={styles.card} title={title} {...rest}>
         <div className={styles.all}>
             <div className={styles.image}>
             {avatarSrc && <Avatar src={avatarSrc} size={96}/>}
