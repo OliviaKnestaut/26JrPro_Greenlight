@@ -1,14 +1,75 @@
+/* ---------------- Card Container ---------------- */
 .card {
+  background-image: url("../../../assets/welcome-bg.svg");
   border-radius: 8px;
   overflow: hidden;
+  width: 39%;  /* 474px will need to be looked at again */
+  height: 160px;     
+}
+
+.card :global(.ant-card-body) {
+  padding: 0;
+}
+
+.card :global(.ant-typography),
+.card :global(.ant-typography-title),
+.card :global(.ant-typography-paragraph) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ---------------- Card Header ---------------- */
+.header {
+  padding: 24px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.title {
+  font-size: 30px !important;
+  margin: 0;
+  padding: 0;
 }
 
 .subtitle {
-  color: #666;
-  font-size: 12px;
-  margin-bottom: 8px;
+  font-size: 16px;
+  color: #000000;
+  margin: 0;
+  padding: 0;
 }
 
+/* ---------------- Content Wrapper ---------------- */
 .content {
-  margin-top: 8px;
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.childrenWrapper {
+  margin: 0;
+  padding: 0;
+}
+
+.childrenWrapper > * {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ---------------- Button Alignment ---------------- */
+.actions {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  align-items: flex-start;
+}
+
+/* ---------------- button styling but should be moved to General CSS ---------------- */
+.btn {
+  height: 32px;
+  padding: 4px 15px;
+  font-size: 14px;
+  border-radius: 8px;
 }
