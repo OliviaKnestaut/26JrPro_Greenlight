@@ -300,7 +300,7 @@ export type ChangeEventStatusMutationVariables = Exact<{
 }>;
 
 
-export type ChangeEventStatusMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, eventStatus: EventStatus } };
+export type ChangeEventStatusMutation = { __typename?: 'Mutation', changeEventStatus: { __typename?: 'Event', id: string, eventStatus: EventStatus } };
 
 export type CreateOrganizationMutationVariables = Exact<{
   input: CreateOrganizationInput;
@@ -520,7 +520,7 @@ export type DeleteEventMutationResult = ApolloReactCommon.MutationResult<DeleteE
 export type DeleteEventMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteEventMutation, DeleteEventMutationVariables>;
 export const ChangeEventStatusDocument = gql`
     mutation ChangeEventStatus($id: ID!, $status: EventStatus!) {
-  updateEvent(id: $id, input: {eventStatus: $status}) {
+  changeEventStatus(id: $id, status: $status) {
     id
     eventStatus
   }
