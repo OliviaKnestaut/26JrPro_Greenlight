@@ -15,18 +15,19 @@
     "@apollo/client": "^4.0.9",
     "@react-router/node": "^7.9.6",
     "@react-router/serve": "^7.9.6",
+    "@react-router/express": "^7.12.0",
     "antd": "^5.3.2",
     "isbot": "^5.1.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router": "^7.9.2"
+    "react-router": "^7.12.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^6.1.0",
     "@graphql-codegen/typescript": "^5.0.6",
     "@graphql-codegen/typescript-operations": "^5.0.6",
     "@graphql-codegen/typescript-react-apollo": "^4.3.3",
-    "@react-router/dev": "^7.9.6",
+    "@react-router/dev": "^7.12.0",
     "@tailwindcss/vite": "^4.1.13",
     "@types/node": "^22",
     "@types/react": "^18.2.21",
