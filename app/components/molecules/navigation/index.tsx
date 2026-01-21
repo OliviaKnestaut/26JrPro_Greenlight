@@ -151,7 +151,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 					<div className={styles.userSection}>
 						{(() => {
 							const src = user?.profileImg;
-							console.log('Profile image src:', src);
 							if (!src) return <Avatar icon={<UserOutlined />} />;
 							const base = (import.meta as any).env?.BASE_URL ?? '/';
 							const normalizedBase = base.endsWith('/') ? base : `${base}/`;
