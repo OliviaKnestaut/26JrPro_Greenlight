@@ -153,7 +153,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 							if (!src) return <Avatar icon={<UserOutlined />} />;
 							const base = (import.meta as any).env?.BASE_URL ?? '/';
 							const normalizedBase = base.endsWith('/') ? base : `${base}/`;
-							const profilePath = `${normalizedBase}public/uploads/profile_img/${src}`.replace(/\\/g, '/');
+							const profilePath = `${normalizedBase}uploads/profile_img/${src}`.replace(/\\/g, '/');
 							return <Avatar className={styles.avatar} src={profilePath} />;
 						})()}
 

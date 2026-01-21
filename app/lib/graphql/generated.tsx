@@ -63,13 +63,14 @@ export type Event = {
   description?: Maybe<Scalars['String']['output']>;
   endTime?: Maybe<Scalars['Time']['output']>;
   eventDate?: Maybe<Scalars['Date']['output']>;
-  eventStatus: Scalars['String']['output'];
+  eventStatus: EventStatus;
   id: Scalars['ID']['output'];
   location?: Maybe<Scalars['String']['output']>;
   organization?: Maybe<Organization>;
   organizationId: Scalars['ID']['output'];
   setupTime?: Maybe<Scalars['Time']['output']>;
   startTime?: Maybe<Scalars['Time']['output']>;
+  submittedAt?: Maybe<Scalars['DateTime']['output']>;
   title: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -78,8 +79,9 @@ export enum EventStatus {
   Approved = 'APPROVED',
   Cancelled = 'CANCELLED',
   Draft = 'DRAFT',
+  Past = 'PAST',
   Rejected = 'REJECTED',
-  Submitted = 'SUBMITTED'
+  Review = 'REVIEW'
 }
 
 export type Mutation = {
@@ -275,7 +277,7 @@ export type CreateEventMutationVariables = Exact<{
 }>;
 
 
-export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: string, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
+export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: EventStatus, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
 
 export type UpdateEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -283,7 +285,7 @@ export type UpdateEventMutationVariables = Exact<{
 }>;
 
 
-export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: string } };
+export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: EventStatus } };
 
 export type DeleteEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -298,7 +300,7 @@ export type ChangeEventStatusMutationVariables = Exact<{
 }>;
 
 
-export type ChangeEventStatusMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, eventStatus: string } };
+export type ChangeEventStatusMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, eventStatus: EventStatus } };
 
 export type CreateOrganizationMutationVariables = Exact<{
   input: CreateOrganizationInput;
@@ -353,14 +355,14 @@ export type GetEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
 
 export type GetEventByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
+export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
 
 export type GetOrganizationsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -381,7 +383,7 @@ export type EventsByOrganizationQueryVariables = Exact<{
 }>;
 
 
-export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, title: string, eventDate?: any | null, startTime?: any | null, endTime?: any | null, eventStatus: string }> };
+export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type GetDbDumpQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -389,7 +391,7 @@ export type GetDbDumpQueryVariables = Exact<{
 }>;
 
 
-export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
 
 export type GetUsersQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -792,6 +794,7 @@ export const GetEventsDocument = gql`
     endTime
     location
     eventStatus
+    submittedAt
     createdAt
     updatedAt
     organization {
@@ -853,6 +856,7 @@ export const GetEventByIdDocument = gql`
     endTime
     location
     eventStatus
+    submittedAt
     createdAt
     updatedAt
     organization {
@@ -955,11 +959,18 @@ export const EventsByOrganizationDocument = gql`
     toDate: $toDate
   ) {
     id
+    organizationId
     title
+    description
     eventDate
+    setupTime
     startTime
     endTime
+    location
     eventStatus
+    submittedAt
+    createdAt
+    updatedAt
   }
 }
     `;
@@ -1014,6 +1025,7 @@ export const GetDbDumpDocument = gql`
     endTime
     location
     eventStatus
+    submittedAt
     createdAt
     updatedAt
     organization {

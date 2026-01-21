@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Button, Typography } from "antd";
 import styles from "./index.module.css";
 
+
 export type CardWelcomeProps = React.ComponentProps<typeof Card> & {
     subtitle?: React.ReactNode;
 };
@@ -40,10 +41,10 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
 
             <div className={styles.actions}>
             <Button type="primary" className={styles.btn}>
-                New event
+                New Event
             </Button>
             <Button className={styles.btn}>
-                New brainstorm
+                New Brainstorm
             </Button>
             </div>
         </div>
