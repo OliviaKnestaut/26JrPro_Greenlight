@@ -7,8 +7,7 @@
 
   border-radius: 8px;
   overflow: hidden;
-  width: 39%;
-  height: 160px;    
+  width: 40%;    
 }
 
 .card :global(.ant-card-body) {

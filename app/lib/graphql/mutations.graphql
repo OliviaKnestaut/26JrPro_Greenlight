@@ -24,7 +24,7 @@ mutation DeleteEvent($id: ID!) {
 }
 
 mutation ChangeEventStatus($id: ID!, $status: EventStatus!) {
-    updateEvent(id: $id, input: { eventStatus: $status }) {
+    changeEventStatus(id: $id, status: $status) {
         id
         eventStatus
     }

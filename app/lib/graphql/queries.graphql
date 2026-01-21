@@ -12,6 +12,7 @@ query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromD
         endTime
         location
         eventStatus
+        submittedAt
         createdAt
         updatedAt
         organization {
@@ -35,6 +36,7 @@ query GetEventById($id: ID!) {
         endTime
         location
         eventStatus
+        submittedAt
         createdAt
         updatedAt
         organization { 
@@ -60,11 +62,18 @@ query GetOrganizations($limit: Int = 25, $offset: Int = 0, $username: String) {
 query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
     eventsByOrganization(orgId: $orgId, limit: $limit, offset: $offset, status: $status, fromDate: $fromDate, toDate: $toDate) {
         id
+        organizationId
         title
+        description
         eventDate
+        setupTime
         startTime
         endTime
+        location
         eventStatus
+        submittedAt
+        createdAt
+        updatedAt
     }
 }
 
@@ -80,6 +89,7 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
         endTime
         location
         eventStatus
+        submittedAt
         createdAt
         updatedAt
         organization { 

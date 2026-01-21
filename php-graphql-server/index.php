@@ -43,6 +43,7 @@ $COL_MAP = [
         'endTime' => 'end_time',
         'location' => 'location',
         'eventStatus' => 'event_status',
+        'submittedAt' => 'submitted_at',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
     ],
@@ -256,6 +257,19 @@ $rootValue = [
         $sql = "UPDATE `greenlight-events` SET " . implode(',', $set) . " WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+        $s = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
+        $s->execute([':id' => $id]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ? mapDbRowToGraphQL($row, 'Event', $COL_MAP) : null;
+    },
+
+    'changeEventStatus' => function($root, $args) use ($pdo, $COL_MAP) {
+        $id = $args['id'];
+        $status = $args['status'];
+        if (!$id) throw new \Exception('Missing id');
+        if (!isset($status)) throw new \Exception('Missing status');
+        $stmt = $pdo->prepare("UPDATE `greenlight-events` SET `event_status` = :status WHERE id = :id");
+        $stmt->execute([':status' => $status, ':id' => $id]);
         $s = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
         $s->execute([':id' => $id]);
         $row = $s->fetch(PDO::FETCH_ASSOC);
