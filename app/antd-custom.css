@@ -1,20 +1,21 @@
-body{
-    box-sizing: border-box;
+body {
+	box-sizing: border-box;
 
 }
+
 /* Theme Variables */
 :root {
 	--background: #F9FAFB;
 	--background-2: #FFFFFF;
-    --primary: #045966;
-    --primary-active: #003540;
-    --primary-disabled: #447A7E;
-    --accent-gray-light: #D6D6D6;
-    --accent-gray-medium: #A0A0A0;
-    --accent-gray-dark: #919191;
+	--primary: #045966;
+	--primary-active: #003540;
+	--primary-disabled: #447A7E;
+	--accent-gray-light: #D6D6D6;
+	--accent-gray-medium: #A0A0A0;
+	--accent-gray-dark: #919191;
 	--Work-Sans: "Work Sans", sans-serif;
 
-    --color-primary-disabled: #929895;
+	--color-primary-disabled: #929895;
 	--color-secondary: #3f8176;
 	--color-secondary-disabled: #9fc0ba;
 	--color-highlight: #ffffff;
@@ -25,26 +26,29 @@ body{
 }
 
 .ap-wrapper {
-    padding: 12px;
+	padding: 12px;
 }
 
 /* Typography */
 
-h1{
+h1 {
 	font-weight: 500;
 	font-size: 38px;
 	line-height: 46px;
 }
+
 h2 {
 	font-weight: 500;
 	font-size: 30px;
 	line-height: 40px;
 }
+
 h3 {
 	font-weight: 500;
 	font-size: 24px;
 	line-height: 32px;
 }
+
 h4 {
 	font-weight: 500;
 	font-size: 20px;
@@ -65,7 +69,7 @@ p {
 
 /*NAVIGATION*/
 
-.ant-drawer-header{
+.ant-drawer-header {
 	height: 64px !important;
 	padding: 26px !important;
 }
@@ -73,4 +77,42 @@ p {
 .ant-drawer-body {
 	padding: 0 !important;
 	background-color: var(--primary);
+}
+
+.ant-collapse-header {
+	border-radius: 2px !important;
+}
+
+.ant-collapse-item {
+	border-radius: 2px !important;
+}
+
+.ant-input {
+	border-radius: 2px;
+}
+
+.ant-input-textarea .ant-input {
+	border-radius: 2px !important;
+}
+
+.ant-checkbox-group,
+.ant-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ant-upload-select {
+	display: flex;
+	padding: 0.3125rem 1rem;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+	border-radius: 0.125rem;
+	border: 1px solid var(--Neutral-5, #D9D9D9);
+	background: var(--Neutral-1, #FFF);
+
+	/* drop-shadow/button-secondary */
+	box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.02);
+	cursor: pointer;
 }
