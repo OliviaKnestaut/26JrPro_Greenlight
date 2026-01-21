@@ -1,5 +1,42 @@
-.card { border-radius:8px }
+.card { border-radius:8px;
+width: 69%}
 
 .tags { margin-bottom:8px }
 
 .content { margin-top:8px }
+
+.resource{
+    border: 2px solid #D9D9D9;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    width: 250px;
+    margin-top: 16px;
+    max-height: 78px;
+}
+
+.image{
+    width: 26.4%;
+    height:fit-content;
+    align-self: top;
+}
+
+.resource a{
+    font-size: 1rem;
+    color: black;
+    font-style: none;
+    font-weight: 500;
+}
+
+.resource p{
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 0.875rem;
+}
+
+title{
+    font-size: 1.25rem;
+    font-weight: 500;
+}

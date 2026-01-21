@@ -1,9 +1,41 @@
-.card { border-radius: 8px; }
+.card { 
+    border-radius: 8px;
+    width:49%;
+    max-width: 190px;
+    max-height: 62px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    background-color: #F6FFED;
+    border-left: 5px solid #95DE64 ;
+}
 
-.item { display:flex; justify-content:space-between; padding:8px 0; }
+.item { display:flex; 
+    align-items: center;
+    gap: 8px;
+    max-width: 190px;
+    max-height: 62px;
+}
 
-.eventTitle { font-weight:500 }
+.eventTitle { 
+    font-weight:500;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    margin-top: 8px;
+    color: #135200;
+}
 
-.eventDate { color:#999; font-size:12px }
+.eventTitle p{
+    font-size: 12px;
+}
+.eventDate { color:#999; 
+    font-size:14px;
+    width: 25px;
+    display: flex;
+    align-items: center;
+    color: #135200;
+    }
 
-.content { margin-top:8px }
+.content { margin-top:8px ;}
