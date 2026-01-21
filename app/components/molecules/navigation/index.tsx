@@ -19,6 +19,7 @@ import { useMatch, useNavigate, useLocation, Link } from 'react-router';
 
 export interface NavigationProps {
 	isAuthenticated: boolean;
+	user?: any;
 	onLogout?: () => void;
 	onNavigate?: (route: string) => void;
 	selectedKey?: string;
@@ -49,6 +50,7 @@ const defaultNavItems: MenuProps['items'] = [
 
 export const Navigation: React.FC<NavigationProps> = ({
 	isAuthenticated,
+	user,
 	onLogout,
 	onNavigate,
 	selectedKey,
@@ -57,6 +59,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 	const [collapsed, setCollapsed] = useState(false);
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [openKeys, setOpenKeys] = useState<string[]>([]);
+	const [imgError, setImgError] = useState(false);
 	const accountPath = useMatch('/account/*');
 
 	useEffect(() => {
@@ -86,6 +89,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 	};
 
 	// Responsive: show Drawer on mobile, Sider on desktop
+
 	return (
 		<ConfigProvider
             theme={{
@@ -145,9 +149,18 @@ export const Navigation: React.FC<NavigationProps> = ({
 						onOpenChange={onMenuOpenChange}
 					/>
 					<div className={styles.userSection}>
-						<Avatar size="large" icon={<UserOutlined />} />
+						{(() => {
+							const src = user?.profileImg;
+							console.log('Profile image src:', src);
+							if (!src) return <Avatar icon={<UserOutlined />} />;
+							const base = (import.meta as any).env?.BASE_URL ?? '/';
+							const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+							const profilePath = `${normalizedBase}public/uploads/profile_img/${src}`.replace(/\\/g, '/');
+							return <Avatar className={styles.avatar} src={profilePath} />;
+						})()}
+
 						<div>
-							<span className={styles.userName}>Serati Ma</span>
+							<span className={styles.userName}>{user?.firstName} {user?.lastName ? user.lastName.charAt(0) + '.' : ''}</span>
 						</div>
 						<Button
 							className={styles.logout}

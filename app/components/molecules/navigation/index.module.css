@@ -43,7 +43,7 @@
 	align-items: center;
 	height: 54px;
 	width: 208px;
-	padding: 6px 16px;
+	padding: 10px;
 	background: var(--primary);
 	border-top: 1px solid var(--accent-gray-light);
 	gap: 8px;
@@ -54,6 +54,13 @@
 .userSection > div{
 	display: flex;
 	flex-direction: column;
+}
+
+.avatar{
+	height: 34px;
+	width: 34px;
+	border-radius: 50%;
+	object-fit: cover;
 }
 
 .logo {

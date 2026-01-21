@@ -49,8 +49,17 @@ $COL_MAP = [
     'Organization' => [
         'orgName' => 'orgName',
         'username' => 'username',
-        'password_hash' => 'password_hash',
         'bio' => 'bio',
+        'createdAt' => 'created_at',
+        'updatedAt' => 'updated_at',
+    ],
+    'User' => [
+        'firstName' => 'first_name',
+        'lastName' => 'last_name',
+        'username' => 'username',
+        'password' => 'password',
+        'profileImg' => 'profile_img',
+        'organizationId' => 'organization_id',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
     ],
@@ -169,6 +178,44 @@ $rootValue = [
         return $row ? mapDbRowToGraphQL($row, 'Organization', $COL_MAP) : null;
     },
 
+    // Users
+    'users' => function($root, $args) use ($pdo, $COL_MAP, $fetchOrganization) {
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $where = [];
+        $params = [];
+        if (isset($args['username'])) { $where[] = "username = :username"; $params[':username'] = $args['username']; }
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT * FROM `greenlight-users` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) {
+            $mapped = mapDbRowToGraphQL($r, 'User', $COL_MAP);
+            $orgId = $r['organization_id'] ?? $r['organizationId'] ?? null;
+            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $out[] = $mapped;
+        }
+        return $out;
+    },
+
+    'user' => function($root, $args) use ($pdo, $COL_MAP, $fetchOrganization) {
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-users` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $args['id']]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $mapped = mapDbRowToGraphQL($row, 'User', $COL_MAP);
+            $orgId = $row['organization_id'] ?? $row['organizationId'] ?? null;
+            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            return $mapped;
+        }
+        return null;
+    },
+
     // Mutations
     'createEvent' => function($root, $args) use ($pdo, $COL_MAP) {
         $in = $args['input'];
@@ -249,7 +296,7 @@ $rootValue = [
     'createOrganization' => function($root, $args) use ($pdo) {
         $in = $args['input'];
         // allowed org inputs per schema
-        $allowedOrg = ['orgName','username','password_hash','bio'];
+        $allowedOrg = ['orgName','username','bio'];
         $cols = [];
         $params = [];
         foreach ($allowedOrg as $c) {
@@ -266,6 +313,57 @@ $rootValue = [
         $s = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
         $s->execute([':id'=>$id]);
         return $s->fetch(PDO::FETCH_ASSOC) ?: null;
+    },
+
+    // Create, update, delete users
+    'createUser' => function($root, $args) use ($pdo, $COL_MAP) {
+        $in = $args['input'];
+        $cols = [];
+        $placeholders = [];
+        $params = [];
+        foreach ($in as $k => $v) {
+            if (!isset($COL_MAP['User'][$k])) continue;
+            $dbCol = $COL_MAP['User'][$k];
+            $cols[] = $dbCol;
+            $placeholders[] = ":$k";
+            $params[":$k"] = $v;
+        }
+        if (empty($cols)) throw new \Exception('No input provided');
+        $sqlCols = implode('`,`', $cols);
+        $placeholdersStr = implode(',', $placeholders);
+        $stmt = $pdo->prepare("INSERT INTO `greenlight-users` (`$sqlCols`) VALUES ($placeholdersStr)");
+        $stmt->execute($params);
+        $id = $pdo->lastInsertId();
+        $s = $pdo->prepare("SELECT * FROM `greenlight-users` WHERE id = :id LIMIT 1");
+        $s->execute([':id' => $id]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ? mapDbRowToGraphQL($row, 'User', $COL_MAP) : null;
+    },
+
+    'updateUser' => function($root, $args) use ($pdo, $COL_MAP) {
+        $id = $args['id'];
+        $in = $args['input'];
+        $set = [];
+        $params = [':id' => $id];
+        foreach ($in as $k => $v) {
+            if (!isset($COL_MAP['User'][$k])) continue;
+            $dbCol = $COL_MAP['User'][$k];
+            $set[] = "`$dbCol` = :$k";
+            $params[":$k"] = $v;
+        }
+        if (empty($set)) throw new \Exception('No fields to update');
+        $sql = "UPDATE `greenlight-users` SET " . implode(',', $set) . " WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $s = $pdo->prepare("SELECT * FROM `greenlight-users` WHERE id = :id LIMIT 1");
+        $s->execute([':id' => $id]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+        return $row ? mapDbRowToGraphQL($row, 'User', $COL_MAP) : null;
+    },
+
+    'deleteUser' => function($root, $args) use ($pdo) {
+        $stmt = $pdo->prepare("DELETE FROM `greenlight-users` WHERE id = :id");
+        return $stmt->execute([':id' => $args['id']]);
     },
 
     'updateOrganization' => function($root, $args) use ($pdo, $COL_MAP) {

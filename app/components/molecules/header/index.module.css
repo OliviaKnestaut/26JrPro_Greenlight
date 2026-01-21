@@ -44,4 +44,9 @@
 	font-weight: 400;
 	font-size: 12px;
 	line-height: 20px;
+	width: 140px;
+	display: inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }

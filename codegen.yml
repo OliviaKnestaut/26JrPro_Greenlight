@@ -3,6 +3,15 @@ documents: "app/lib/graphql/**/*.graphql"
 generates:
   app/lib/graphql/generated.tsx:
     plugins:
+      - add:
+          content: |-
+            /* -------------------------------------------------------------------------- */
+            /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT BY HAND.                            */
+            /* To update, run: `npx graphql-codegen --config codegen.yml`                   */
+            /* The header below disables TypeScript and ESLint checks for this generated file. */
+            /* -------------------------------------------------------------------------- */
+            /* eslint-disable */
+            // @ts-nocheck
       - typescript
       - typescript-operations
       - typescript-react-apollo
@@ -11,3 +20,5 @@ generates:
       withHOC: false
       withComponent: false
       reactApolloVersion: 4
+      apolloReactHooksImportFrom: '@apollo/client/react'
+      apolloReactCommonImportFrom: '@apollo/client'
