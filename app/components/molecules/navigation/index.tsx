@@ -59,7 +59,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 	const [collapsed, setCollapsed] = useState(false);
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [openKeys, setOpenKeys] = useState<string[]>([]);
-	const [imgError, setImgError] = useState(false);
 	const accountPath = useMatch('/account/*');
 
 	useEffect(() => {
