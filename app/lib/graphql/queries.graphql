@@ -37,7 +37,12 @@ query GetEventById($id: ID!) {
         eventStatus
         createdAt
         updatedAt
-        organization { id orgName username }
+        organization { 
+            id
+            orgName
+            username
+            bio
+        }
     }
 }
 
@@ -77,13 +82,62 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
         eventStatus
         createdAt
         updatedAt
-        organization { id orgName username bio }
+        organization { 
+            id
+            orgName
+            username
+            bio
+        }
     }
     organizations(limit: $limit, offset: $offset) {
         id
         orgName
         username
         bio
+        createdAt
+        updatedAt
+    }
+    users(limit: $limit, offset: $offset) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        password
+        organization {
+            id
+            orgName
+            username
+            bio
+        }
+        createdAt
+        updatedAt
+    }
+}
+
+query GetUsers($limit: Int = 25, $offset: Int = 0) {
+    users(limit: $limit, offset: $offset) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        password
+        organization { id orgName username }
+        createdAt
+        updatedAt
+    }
+}
+
+query GetUser($id: ID!) {
+    user(id: $id) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        password
+        organization { id orgName username }
         createdAt
         updatedAt
     }

@@ -7,6 +7,7 @@ import styles from './index.module.css';
 
 export interface AppLayoutProps {
 	isAuthenticated: boolean;
+	user?: any;
 	onLogin?: () => void;
 	onLogout?: () => void;
 	onSignUp?: () => void;
@@ -18,6 +19,7 @@ export interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
 	isAuthenticated,
+	user,
 	onLogin,
 	onLogout,
 	onSignUp,
@@ -29,10 +31,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 		<Layout className={styles.appLayout}>
 			<Header
 				isAuthenticated={isAuthenticated}
+				user={user}
 			/>
 			<div className={styles.bodyWrapper}>
 				<Navigation
 					isAuthenticated={isAuthenticated}
+					user={user}
 					onLogout={
 						onLogout ??
 						(() => {
