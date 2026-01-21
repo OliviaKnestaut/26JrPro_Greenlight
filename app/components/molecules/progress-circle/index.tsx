@@ -50,8 +50,8 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
             theme={{
                 "components": {
                     "Progress": {
-                    "defaultColor": "#39BBBF",
-                    "remainingColor": "#f0f0f0"
+                    "defaultColor": "var(--primary-bright)",
+                    "remainingColor": "var(--accent-gray-light)",
                     }
                 }
             }}

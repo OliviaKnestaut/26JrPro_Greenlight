@@ -24,7 +24,7 @@ mutation DeleteEvent($id: ID!) {
 }
 
 mutation ChangeEventStatus($id: ID!, $status: EventStatus!) {
-    updateEvent(id: $id, input: { eventStatus: $status }) {
+    changeEventStatus(id: $id, status: $status) {
         id
         eventStatus
     }
@@ -48,4 +48,34 @@ mutation UpdateOrganization($id: ID!, $input: UpdateOrganizationInput!) {
 
 mutation DeleteOrganization($id: ID!) {
     deleteOrganization(id: $id)
+}
+
+mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+        id
+        firstName
+        lastName
+        profileImg
+        username
+        organization { id orgName username }
+        createdAt
+        updatedAt
+    }
+}
+
+mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+        id
+        firstName
+        lastName
+        profileImg
+        username
+        organization { id orgName username }
+        createdAt
+        updatedAt
+    }
+}
+
+mutation DeleteUser($id: ID!) {
+    deleteUser(id: $id)
 }

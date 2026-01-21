@@ -17,17 +17,18 @@
 	min-height: 0;
 	overflow-x: hidden;
 }
+
 .content {
 	flex: 1 1 0;
-	padding: 32px;
+	padding: 0;
 	background: var(--color-background);
 	min-height: 0;
 	overflow-x: hidden;
-	margin-top: 32px;
+	margin-top: 64px;
 }
 
 :global(.ant-layout-has-sider) .content {
-	margin-left: 188px;
+	margin-left: 208px;
 }
 @media (max-width: 768px) {
 	.bodyWrapper {
