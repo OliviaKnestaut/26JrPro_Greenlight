@@ -1,17 +1,12 @@
-import { Form, Button, Collapse } from "antd"
+import { Form, Button, Collapse, Steps } from "antd"
 import { useForm, useWatch } from "react-hook-form"
-const { Panel } = Collapse
-
-
-
 import EventDetailsSection from "../event-form/sections/EventDetailsSection"
 import DateLocationSection from "../event-form/sections/DateLocationSection"
 import EventElementsSection from "../event-form/sections/EventElementsSection"
 import BudgetPurchaseSection from "../event-form/sections/BudgetPurchasesSection"
-
-
 import styles from "./eventform.module.css"
-import Budget from "~/routes/budget"
+const { Panel } = Collapse
+
 
 // Define the branching logic for nested sections
 const formBranching = [
@@ -52,7 +47,7 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
 
         return (
             <Panel
-                header={<h3 style={{ margin: 0 }}>{panel.header}</h3>}
+                header={<h4 style={{ margin: 0 }}>{panel.header}</h4>}
                 key={panel.key}
                 style={{ marginLeft: panel.indent || 0 }}>
                 <PanelComponent control={control} />
@@ -65,8 +60,6 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
 
 export function EventForm() {
     const { control, handleSubmit } = useForm()
-
-    // Add isSelected using useWatch to observe form values
     const isSelected = useWatch({ control });
 
     const onSubmit = (data: any) => {
@@ -83,7 +76,7 @@ export function EventForm() {
                     <Collapse defaultActiveKey={["eventDetails"]} expandIconPosition="end">
 
                         {/* ! Event Details Section */}
-                        <Panel header={<h3 style={{ margin: 0 }}>Event Details</h3>} key="eventDetails">
+                        <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
                             <EventDetailsSection control={control} />
                         </Panel>
 
@@ -92,7 +85,7 @@ export function EventForm() {
 
 
                         {/* Date & Location Section */}
-                        <Panel header={<h3 style={{ margin: 0 }}>Date & Location</h3>} key="dateLocation">
+                        <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
                             {/* Date & Location Section Component */}
                             <DateLocationSection control={control} />
                         </Panel>
@@ -101,7 +94,7 @@ export function EventForm() {
                         {formNesting("dateLocation", isSelected, control)}
 
                         {/* Event Elements Section */}
-                        <Panel header={<h3 style={{ margin: 0 }}>Event Elements</h3>} key="eventElements">
+                        <Panel header={<h4 style={{ margin: 0 }}>Event Elements</h4>} key="eventElements">
                             <EventElementsSection control={control} />
                         </Panel>
 
@@ -109,7 +102,7 @@ export function EventForm() {
                         {formNesting("eventElements", isSelected, control)}
 
                         {/* Budget & Purchases Section */}
-                        <Panel header={<h3 style={{ margin: 0 }}>Budget & Purchases</h3>} key="budgetPurchase">
+                        <Panel header={<h4 style={{ margin: 0 }}>Budget & Purchases</h4>} key="budgetPurchase">
                             <BudgetPurchaseSection control={control} />
                         </Panel>
 

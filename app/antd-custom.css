@@ -44,7 +44,7 @@ body {
 
 @font-face {
 	font-family: "Pangea";
-	src: url("public/fonts/pangea-variable-fontwerk.woff2") format("woff2-variations");
+	src: url("/fonts/pangea-variable-fontwerk.woff2") format("woff2-variations");
 	font-weight: 100 900;
 	font-style: normal;
 	font-display: swap;
@@ -52,7 +52,7 @@ body {
 
 @font-face {
 	font-family: "Pretendard";
-	src: url("public/fonts/pretendard-variable-Hyung-jin-Kil.woff2") format("woff2-variations");
+	src: url("/fonts/pretendard-variable-Hyung-jin-Kil.woff2") format("woff2-variations");
 	font-weight: 100 900;
 	font-style: normal;
 	font-display: swap;
@@ -98,6 +98,14 @@ h5.ant-typography {
 	font-size: 16px;
 	line-height: 24px;
 	margin: 0 0 8px 0;
+}
+
+p.ant-typography {
+	font-family: var(--font-body);
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 22px;
+	margin: 0 0 12px 0;
 }
 
 /* Semantic Fallback Typography */
@@ -173,6 +181,8 @@ p {
 	padding: 0 !important;
 	background-color: var(--primary);
 }
+
+/* ! FORM COMPONENTS  */
 
 .ant-collapse-header {
 	border-radius: 2px !important;
