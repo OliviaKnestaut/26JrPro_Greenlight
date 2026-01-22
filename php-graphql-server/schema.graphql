@@ -39,15 +39,17 @@ type Event {
     startTime: Time            # maps to greenlight-events.start_time
     endTime: Time              # maps to greenlight-events.end_time
     location: String
-    eventStatus: String!       # maps to greenlight-events.event_status
+    eventStatus: EventStatus!       # maps to greenlight-events.event_status
+    submittedAt: DateTime
     createdAt: DateTime
     updatedAt: DateTime
 }
 
 enum EventStatus {
     DRAFT
-    SUBMITTED
+    REVIEW
     APPROVED
+    PAST
     REJECTED
     CANCELLED
 }

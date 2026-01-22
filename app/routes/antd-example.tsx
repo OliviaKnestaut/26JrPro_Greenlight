@@ -27,14 +27,6 @@ import {
     Tooltip,
     Typography,
 } from 'antd';
-import {
-    HomeOutlined,
-    BellOutlined,
-    CalendarOutlined,
-    FileTextOutlined,
-    TeamOutlined,
-    UserOutlined,
-} from '@ant-design/icons';
 
 import NavMini from '../components/molecules/nav-mini';
 import ProgressCircle from '../components/molecules/progress-circle';
@@ -47,6 +39,7 @@ import {
     CardOrg,
     CardMember,
 } from '../components/molecules/card';
+import StyledCalendar from '../components/molecules/calendar';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -239,24 +232,30 @@ export default function AntdExample() {
                 <Divider orientation="left">Molecules</Divider>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
                     <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?" />
-                        <CardAnnouncements
-                            title="Announcements"
-                            items={[
-                                { 
-                                    id: 'a1', 
-                                    title: '“Coffee Chat With Women in Tech” has 1 new comment; update submission' 
-                                },
-                                { 
-                                    id: 'a2', 
-                                    title: 'John Doe has submitted “Public Speaking Workshop” for review', 
-                                }
-                            ]}
-                        />
+                    <CardAnnouncements
+                        title="Announcements"
+                        items={[
+                            { 
+                                id: 'a1', 
+                                title: '“Coffee Chat With Women in Tech” has 1 new comment; update submission' 
+                            },
+                            { 
+                                id: 'a2', 
+                                title: 'John Doe has submitted “Public Speaking Workshop” for review', 
+                            }
+                        ]}
+                    />
 
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        <CardEvent title="Meetup" date="Jan 20" location="Online">
-                            <p>Event details</p>
-                        </CardEvent>
+                        <CardEvent
+                            title="Coffee Chat With Women in Tech"
+                            date="01/09/2026"
+                            location="Bossone"
+                            startTime="10:30 AM"
+                            description="An informal networking event connecting WIB members with female professionals working in UX."
+                            submissionDate="11/18/2025"
+                        />
+                        
                         <CardCalendarUpcoming
                             title="Upcoming"
                             events={[{ id: 'e1', title: 'Release', date: 'Jan 25' }]}
@@ -276,6 +275,9 @@ export default function AntdExample() {
 
                     <div>
                         <ProgressCircle total={10000} spent={2500} />
+                    </div>
+                    <div>
+                        <StyledCalendar/>
                     </div>
                 </div>
             </Space>

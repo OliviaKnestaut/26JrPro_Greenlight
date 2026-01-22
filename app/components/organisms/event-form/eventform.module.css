@@ -1,0 +1,29 @@
+
+.collapseWrapper :global(.ant-collapse) {
+    background-color: transparent;
+    border: none;
+}
+
+.collapseWrapper :global(.ant-collapse-item) {
+    border: 1px solid var(--Neutral-5, #D9D9D9);
+    background: var(--Neutral-1, #FFF);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.collapseWrapper :global(.ant-collapse-header) {
+    background-color: #ffffff;
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+    border: none;
+}
+
+.collapseWrapper :global(.ant-collapse-content) {
+    background-color: white;
+    border: none;
+}
+
+.collapseWrapper :global(.ant-collapse-content-box) {
+    padding: 1.5rem;
+}
+

@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
 			</div>
 			<div className={`${styles.userSection} px-8`}>
 				<Button type="primary" className={styles.btn}>
-                	New event
+                	New Event
             	</Button>
 			</div>
 		</AntHeader>

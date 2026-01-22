@@ -7,7 +7,7 @@ export type CardAnnouncementsProps = React.ComponentProps<typeof Card> & {
 };
 
 const CardAnnouncements: React.FC<CardAnnouncementsProps> = ({ items = [], children, title, ...rest }) => (
-    <Card className={styles.card} title={title} {...rest}>
+    <Card className={styles.card} title ={title} {...rest}>
         {items.length > 0 ? (
         <List
             dataSource={items}

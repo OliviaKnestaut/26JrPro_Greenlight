@@ -12,6 +12,6 @@ export default [
         route("resources", "routes/resources.tsx"),
         route("calendar", "routes/calendar.tsx"),
         route("org-members", "routes/org-members.tsx"),
-        route("test-form", "routes/test-form.tsx"),
+        route("event-form", "routes/event-form.tsx"),
     ]),
 ] satisfies RouteConfig;

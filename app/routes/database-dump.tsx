@@ -23,6 +23,7 @@ interface EventItem {
   endTime?: string;
   location?: string;
   eventStatus?: string;
+  submittedAt?: string;
   createdAt?: string;
   updatedAt?: string;
   organization?: OrganizationItem | null;
@@ -79,6 +80,7 @@ export default function DatabaseDump() {
               { title: 'End', dataIndex: 'endTime', key: 'endTime' },
               { title: 'Location', dataIndex: 'location', key: 'location' },
               { title: 'Status', dataIndex: 'eventStatus', key: 'eventStatus' },
+              { title: 'Submitted At', dataIndex: 'submittedAt', key: 'submittedAt' },
               {
                 title: 'Organization',
                 dataIndex: 'organization',
@@ -109,7 +111,7 @@ export default function DatabaseDump() {
                 render: (src: string | undefined) => {
                   if (!src) return <Avatar size={60} icon={<UserOutlined style={{ fontSize: 30 }} />} />;
                   const base = (import.meta as any).env?.BASE_URL ?? '/';
-                  const profilePath = `${base}public/uploads/profile_img/${src}`.replace(/\\/g, '/');
+                  const profilePath = `${base}uploads/profile_img/${src}`.replace(/\\/g, '/');
                   return <Avatar size={60} src={profilePath} />;
                 },
               },
