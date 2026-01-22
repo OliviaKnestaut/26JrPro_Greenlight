@@ -5,17 +5,19 @@ body {
 
 /* Theme Variables */
 :root {
+
+	/* ! COLOR TOKENS  */
 	--background: #F9FAFB;
 	--background-2: #FFFFFF;
-    --primary: #045966;
-    --primary-active: #003540;
-    --primary-disabled: #447A7E;
+	--primary: #045966;
+	--primary-active: #003540;
+	--primary-disabled: #447A7E;
 	--primary-bright: #39BBBF;
 
 	--accent-green-light: #D4F1E8;
-    --accent-gray-light: #f0f0f0;
-    --accent-gray-medium: #A0A0A0;
-    --accent-gray-dark: #919191;
+	--accent-gray-light: #f0f0f0;
+	--accent-gray-medium: #A0A0A0;
+	--accent-gray-dark: #919191;
 	--Work-Sans: "Work Sans", sans-serif;
 
 	--color-primary-disabled: #929895;
@@ -26,48 +28,126 @@ body {
 	--color-message-text: #333333;
 	--color-message-transparent: rgba(51, 51, 51, 0.6);
 	--color-message-transparent-2: rgba(51, 51, 51, 0.4);
+
+	/* ! FONT FAMILIES */
+	--font-heading: "Pangea", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-body: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .ap-wrapper {
 	padding: 12px;
 }
 
-/* Typography */
+/* ! Typography */
 
-h1 {
+/* *Font Declarations */
+
+@font-face {
+	font-family: "Pangea";
+	src: url("public/fonts/pangea-variable-fontwerk.woff2") format("woff2-variations");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Pretendard";
+	src: url("public/fonts/pretendard-variable-Hyung-jin-Kil.woff2") format("woff2-variations");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Ant System Typography */
+
+h1.ant-typography {
+	font-family: var(--font-heading);
 	font-weight: 500;
 	font-size: 38px;
-	line-height: 30px;
+	line-height: 46px;
+	margin: 0 0 16px 0;
 }
 
-h2 {
+h2.ant-typography {
+	font-family: var(--font-heading);
 	font-weight: 500;
 	font-size: 30px;
-	line-height: 40px;
+	line-height: 38px;
+	margin: 0 0 14px 0;
 }
 
-h3 {
+h3.ant-typography {
+	font-family: var(--font-heading);
 	font-weight: 500;
 	font-size: 24px;
 	line-height: 32px;
+	margin: 0 0 12px 0;
+}
+
+h4.ant-typography {
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 20px;
+	line-height: 28px;
+	margin: 0 0 10px 0;
+}
+
+h5.ant-typography {
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 24px;
+	margin: 0 0 8px 0;
+}
+
+/* Semantic Fallback Typography */
+
+h1 {
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 38px;
+	line-height: 46px;
+	margin: 0 0 16px 0;
+}
+
+h2 {
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 30px;
+	line-height: 38px;
+	margin: 0 0 14px 0;
+}
+
+h3 {
+	font-family: var(--font-heading);
+	font-weight: 500;
+	font-size: 24px;
+	line-height: 32px;
+	margin: 0 0 12px 0;
 }
 
 h4 {
+	font-family: var(--font-body);
 	font-weight: 500;
 	font-size: 20px;
-	line-height: 24px;
+	line-height: 28px;
+	margin: 0 0 10px 0;
 }
 
 h5 {
-	font-weight: 600;
+	font-family: var(--font-body);
+	font-weight: 500;
 	font-size: 16px;
 	line-height: 24px;
+	margin: 0 0 8px 0;
 }
 
 p {
+	font-family: var(--font-body);
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
+	margin: 0 0 12px 0;
 }
 
 .regular {
@@ -112,9 +192,9 @@ p {
 
 .ant-checkbox-group,
 .ant-radio-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 }
 
 .ant-upload-select {
@@ -131,9 +211,10 @@ p {
 	box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.02);
 	cursor: pointer;
 }
+
 /* TAGS */
 
-.eventDetailTag{
+.eventDetailTag {
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
@@ -152,8 +233,7 @@ p {
 
 /* DIVIDER */
 
-.divider{
+.divider {
 	border-block-start: 2px solid var(--accent-gray-light) !important;
 	margin: 16px 0 !important;
 }
-
