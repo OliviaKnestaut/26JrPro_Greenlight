@@ -1,13 +1,27 @@
+@font-face {
+ 	font-family: "PangeaVAR";
+  	src: url("components/assets/fonts/PangeaVAR-Light.ttf") format("truetype");
+  	font-weight: 100 900;
+  	font-style: normal;
+}
+
+@font-face {
+  	font-family: "Pretendard";
+  	src: url("components/assets/fonts/PretendardVariable.ttf") format("truetype");
+  	font-weight: 100 900; 
+  	font-style: normal;
+}
+
 body{
     box-sizing: border-box;
-
 }
+
 /* Theme Variables */
 :root {
-	--background: #F9FAFB;
+	--background: #FAFAFA;
 	--background-2: #FFFFFF;
     --primary: #045966;
-    --primary-active: #003540;
+    --primary-active: #0D7F8C;
     --primary-disabled: #447A7E;
     --accent-gray-light: #D6D6D6;
     --accent-gray-medium: #A0A0A0;
@@ -17,9 +31,9 @@ body{
     --color-primary-disabled: #929895;
 	--color-secondary: #3f8176;
 	--color-secondary-disabled: #9fc0ba;
-	--color-highlight: #ffffff;
+	--color-highlight: #000000;
 	--color-red-error: #cb5251;
-	--color-message-text: #333333;
+;
 	--color-message-transparent: rgba(51, 51, 51, 0.6);
 	--color-message-transparent-2: rgba(51, 51, 51, 0.4);
 }
@@ -31,33 +45,42 @@ body{
 /* Typography */
 
 h1{
+	font-family: "PangeaVAR", sans-serif;
 	font-weight: 500;
 	font-size: 38px;
 	line-height: 46px;
 }
+
 h2 {
+	font-family: "PangeaVAR", sans-serif;
 	font-weight: 500;
 	font-size: 30px;
 	line-height: 40px;
 }
+
 h3 {
+	font-family: "PangeaVAR", sans-serif;
 	font-weight: 500;
 	font-size: 24px;
 	line-height: 32px;
 }
+
 h4 {
+	font-family: "PangeaVAR", sans-serif;
 	font-weight: 500;
 	font-size: 20px;
 	line-height: 24px;
 }
 
 h5 {
+	font-family: "PangeaVAR", sans-serif;
 	font-weight: 600;
 	font-size: 16px;
 	line-height: 24px;
 }
 
 p {
+	font-family: "Pretendard", sans-serif;
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
