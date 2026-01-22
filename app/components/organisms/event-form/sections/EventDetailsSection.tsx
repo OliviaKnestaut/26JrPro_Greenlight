@@ -29,7 +29,7 @@ export default function EventDetailsSection({ control }: Props) {
                 field.onChange(file)
               }}
             >
-              <div style={{ marginTop: 8 }}>
+              <div>
                 <UploadOutlined /> Click to Upload
               </div>
             </Upload>

@@ -25,7 +25,7 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
         {/* Header */}
         <div className={styles.header}>
             {title && (
-            <Title level={4} className={styles.title}>
+            <Title level={2} className={styles.title}>
                 {title}
             </Title>
             )}
