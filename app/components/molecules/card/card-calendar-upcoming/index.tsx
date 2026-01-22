@@ -14,7 +14,8 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
             renderItem={(e) => (
             <List.Item key={e.id} className={styles.item}>
                 {e.date && <div className={styles.eventDate}>{e.date}</div>}
-                <div className={styles.eventTitle}>{e.title}
+                <div className={styles.eventTitle}>
+                    <span className={styles.titleText}>{"Global Marketing Event".slice(0, 13) + "…"}</span>
                     <p>2:00PM - 3:30PM</p>
                 </div>
                 

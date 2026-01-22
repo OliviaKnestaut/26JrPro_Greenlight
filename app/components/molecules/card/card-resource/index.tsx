@@ -9,18 +9,13 @@ export type CardResourceProps = React.ComponentProps<typeof Card> & {
 
 const CardResource: React.FC<CardResourceProps> = ({ children, title, tags = [], ...rest }) => (
     <Card className={styles.card}{...rest}>
-        <div className={styles.content}>
-            <h4>Training Videos</h4>
-            <div className={styles.resource}>
                 <img src={img} alt='video-icon' className={styles.image}></img>
                 <div className={styles.words}>
-                <a href=''>
-                    Officer Training
-                </a>
-                <p>Provides a quick ove...</p>
+                    <a href=''>
+                        Officer Training
+                    </a>
+                    <span className={styles.resourceDescription}>{"Provides a quick overview".slice(0, 20) + "…"}</span>
                 </div>
-            </div>
-        </div>
     </Card>
 );
 

@@ -1,41 +1,54 @@
+.card :global(.ant-card-body) {
+  padding-left: 8px;   /* or 0px if you want it flush */
+  padding-right: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
 .card { 
     border-radius: 8px;
     width:49%;
-    max-width: 190px;
+    max-width: 160px;
     max-height: 62px;
     display: flex;
-    justify-content: start;
+    justify-content: flex-start;
     align-items: center;
     background-color: #F6FFED;
-    border-left: 5px solid #95DE64 ;
+    border-left: 2.4px solid #95DE64 ;
 }
 
 .item { display:flex; 
-    align-items: center;
+    align-items: flex-start;
+    margin: 0px;
+    width: 100%;
+    min-width: 0;
+    padding: 0px;
     gap: 8px;
-    max-width: 190px;
-    max-height: 62px;
 }
 
 .eventTitle { 
+    font-size: 14px;
     font-weight:500;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: center;
-    margin-top: 8px;
+    align-self: center;
     color: #135200;
+    width: 100%;
+    min-width: 0;  
+    flex-wrap: nowrap; 
 }
 
 .eventTitle p{
     font-size: 12px;
+    margin: 0px;
 }
 .eventDate { color:#999; 
     font-size:14px;
-    width: 25px;
     display: flex;
     align-items: center;
     color: #135200;
     }
 
 .content { margin-top:8px ;}
+
