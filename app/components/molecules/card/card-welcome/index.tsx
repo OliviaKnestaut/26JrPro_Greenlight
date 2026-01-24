@@ -17,7 +17,6 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
 }) => {
     return (
         <Card
-        bordered={false}
         bodyStyle={{ padding: 0 }}
         className={styles.card}
         {...rest}

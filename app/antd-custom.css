@@ -225,10 +225,48 @@ p {
 	margin-right: 4px;
 	margin-bottom: 4px;
 	border-radius: 20px;
-	color: var(--color-message-text);
 	max-width: 135px;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.statusTag{
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 22px;
+
+	width: fit-content;
+	border: none;
+	padding: 4px 12px;
+	margin-right: 0;
+	margin-bottom: 0;
+	border-radius: 20px;
+	overflow: hidden;
+}
+
+.inReviewTag {
+	color: #874D00;
+	background-color: #FFF1B8;
+}
+
+.inDraftTag {
+	color: #045966;
+	background-color: #B3E6E2;
+}
+
+.approvedTag {
+	color: #135200;
+	background-color: #D9F7BE;
+}
+
+.cancelledTag {
+	color: #D9D9D9;
+	background-color: #595959;
+}
+
+.pastTag {
+	color: #595959;
+	background-color: #D9D9D9;
 }
 
 /* DIVIDER */
@@ -236,4 +274,43 @@ p {
 .divider {
 	border-block-start: 2px solid var(--accent-gray-light) !important;
 	margin: 16px 0 !important;
+}
+
+/* COLLAPSE */
+
+.ant-collapse {
+	background: var(--background-2);
+    border: 1px solid var(--accent-gray-light);
+    width: 100%;
+}
+
+.ant-collapse-content{
+	border-top: none !important;
+}
+
+.ant-collapse-content-box {
+	padding-top: 0 !important;
+}
+
+.ant-collapse-expand-icon{
+	height: 28px !important;
+}
+
+.ant-collapse-header {
+	flex-direction: row-reverse;
+}
+
+/* SEARCH */
+
+.ant-input-search-button {
+	border-radius: 0 !important;
+	border: 0;
+	width: 46px !important;
+}
+
+.reviewCard {
+	border: 1px solid var(--accent-gray-light) !important;
+}
+.draftCard {
+	border: 1.5px dashed var(--accent-gray-light) !important;
 }
