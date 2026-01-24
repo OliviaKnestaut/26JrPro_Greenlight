@@ -5,7 +5,7 @@ import { EventsByOrganizationDocument } from "~/lib/graphql/generated";
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Card, Badge, Input, Button } from "antd";
+import { Typography, Badge, Input, Button } from "antd";
 const { Title, Paragraph } = Typography;
 import { Footer } from '../../molecules/footer/index';
 import { Collapse } from "antd"

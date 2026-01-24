@@ -40,6 +40,8 @@ import {
     CardMember,
 } from '../components/molecules/card';
 import StyledCalendar from '../components/molecules/calendar';
+import { serverToUi } from '~/lib/eventStatusMap';
+import { formatDateMDY } from '~/lib/formatters';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -230,7 +232,7 @@ export default function AntdExample() {
                     renderItem={(item) => <List.Item>{item}</List.Item>}
                 />
                 <Divider orientation="left">Molecules</Divider>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                <div  className='flex flex-wrap gap-4 flex-col'>
                     <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?" />
                     <CardAnnouncements
                         title="Announcements"
@@ -245,16 +247,31 @@ export default function AntdExample() {
                             }
                         ]}
                     />
+                    <CardEvent
+                        key={"1"}
+                        style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
+                        title={"Women in Leadership Panel"}
+                        date={formatDateMDY("2025-2-14")}
+                        location={"URBN Annex Screening Room"}
+                        submissionDate={formatDateMDY("2025-11-30")}
+                        startTime={"19:00"}
+                        description={"A panel discussion featuring women leaders sharing their experiences and insights on leadership."}
+                        status={"in-review"}
+                        className='h-auto'
+                    />
+                    <CardEvent className="visual-card"
+                        key={"1"}
+                        style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
+                        title={"Public Speaking Workshop"}
+                        date={formatDateMDY("2025-12-30")}
+                        location={"Lebow 111"}
+                        startTime={"16:00"}
+                        description={"A workshop teaching students how to speak convincingly during presentations, pitches, and interviews."}
+                        status={"in-review"}
+                    />
 
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        <CardEvent
-                            title="Coffee Chat With Women in Tech"
-                            date="01/09/2026"
-                            location="Bossone"
-                            startTime="10:30 AM"
-                            description="An informal networking event connecting WIB members with female professionals working in UX."
-                            submissionDate="11/18/2025"
-                        />
+
                         
                         <CardCalendarUpcoming
                             title="Upcoming"
