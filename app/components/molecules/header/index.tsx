@@ -2,6 +2,7 @@ import type React from 'react';
 import { Layout, Button } from 'antd';
 import styles from './index.module.css';
 import logoIcon from '../../assets/GreenlightLogo.svg';
+import { useNavigate } from 'react-router';
 
 export interface HeaderProps {
 	isAuthenticated?: boolean;
@@ -15,6 +16,8 @@ export const Header: React.FC<HeaderProps> = ({
 	user,
 }) => {
     const noop = () => undefined;
+	const navigate = useNavigate();
+
 	return (
 		<AntHeader className={styles.header}>
 			<div className={styles.logoSection}>
@@ -25,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
 				</div>
 			</div>
 			<div className={`${styles.userSection} px-8`}>
-				<Button type="primary" className={styles.btn}>
+				<Button type="primary" className={styles.btn} onClick={() => navigate('/event-form')}>
                 	New Event
             	</Button>
 			</div>

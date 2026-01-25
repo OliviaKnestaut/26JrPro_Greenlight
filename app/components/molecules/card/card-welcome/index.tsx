@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Button, Typography } from "antd";
 import styles from "./index.module.css";
+import { useNavigate } from "react-router";
 
 
 export type CardWelcomeProps = React.ComponentProps<typeof Card> & {
@@ -15,6 +16,8 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
     subtitle,
     ...rest
 }) => {
+    const navigate = useNavigate();
+
     return (
         <Card
         bodyStyle={{ padding: 0 }}
@@ -39,7 +42,7 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
             <div className={styles.childrenWrapper}>{children}</div>
 
             <div className={styles.actions}>
-            <Button type="primary" className={styles.btn}>
+            <Button type="primary" className={styles.btn} onClick={() => navigate('/event-form')}>
                 New Event
             </Button>
             <Button className={styles.btn}>

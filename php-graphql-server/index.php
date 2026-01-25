@@ -42,6 +42,7 @@ $COL_MAP = [
         'startTime' => 'start_time',
         'endTime' => 'end_time',
         'location' => 'location',
+        'eventImg' => 'event_img',
         'eventStatus' => 'event_status',
         'submittedAt' => 'submitted_at',
         'createdAt' => 'created_at',

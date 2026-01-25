@@ -16,8 +16,10 @@ body {
 
 	--accent-green-light: #D4F1E8;
 	--accent-gray-light: #f0f0f0;
+	--accent-gray-light-2: #D9D9D9;
 	--accent-gray-medium: #A0A0A0;
 	--accent-gray-dark: #919191;
+	--accent-gray-dark-2: #595959;
 	--Work-Sans: "Work Sans", sans-serif;
 
 	--color-primary-disabled: #929895;
@@ -220,7 +222,7 @@ p {
 	line-height: 22px;
 	color: var(--accent-gray-dark) !important;
 	background-color: var(--background);
-	border: 1px solid var(--accent-gray-light);
+	border: 1px solid var(--accent-gray-light-2);
 	padding: 4px 8px;
 	margin-right: 4px;
 	margin-bottom: 4px;
@@ -228,6 +230,11 @@ p {
 	max-width: 135px;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.eventDetailTagCancelled {
+	color: var(--accent-gray-dark) !important;
+	background-color: var(--accent-gray-light);
 }
 
 .statusTag{
@@ -269,10 +276,15 @@ p {
 	background-color: #D9D9D9;
 }
 
+.deniedTag {
+	color: #820014;
+	background-color: #FFCCC7;
+}
+
 /* DIVIDER */
 
 .divider {
-	border-block-start: 2px solid var(--accent-gray-light) !important;
+	border-block-start: 2px solid var(--accent-gray-light-2) !important;
 	margin: 16px 0 !important;
 }
 
@@ -280,7 +292,7 @@ p {
 
 .ant-collapse {
 	background: var(--background-2);
-    border: 1px solid var(--accent-gray-light);
+    border: 1px solid var(--accent-gray-light-2);
     width: 100%;
 }
 
@@ -298,19 +310,4 @@ p {
 
 .ant-collapse-header {
 	flex-direction: row-reverse;
-}
-
-/* SEARCH */
-
-.ant-input-search-button {
-	border-radius: 0 !important;
-	border: 0;
-	width: 46px !important;
-}
-
-.reviewCard {
-	border: 1px solid var(--accent-gray-light) !important;
-}
-.draftCard {
-	border: 1.5px dashed var(--accent-gray-light) !important;
 }

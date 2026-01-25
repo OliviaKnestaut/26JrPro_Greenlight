@@ -50,6 +50,8 @@ export default function AntdExample() {
     const [switchOn, setSwitchOn] = useState(true);
     const [sliderValue, setSliderValue] = useState(30);
     const [currentPage, setCurrentPage] = useState(1);
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
     const tableColumns = [
         { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -252,6 +254,7 @@ export default function AntdExample() {
                         style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
                         title={"Women in Leadership Panel"}
                         date={formatDateMDY("2025-2-14")}
+                        isPast={new Date("2025-2-14").getTime() < today.getTime()}
                         location={"URBN Annex Screening Room"}
                         submissionDate={formatDateMDY("2025-11-30")}
                         startTime={"19:00"}
@@ -264,6 +267,7 @@ export default function AntdExample() {
                         style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
                         title={"Public Speaking Workshop"}
                         date={formatDateMDY("2025-12-30")}
+                        isPast={new Date("2025-12-30").getTime() < today.getTime()}
                         location={"Lebow 111"}
                         startTime={"16:00"}
                         description={"A workshop teaching students how to speak convincingly during presentations, pitches, and interviews."}

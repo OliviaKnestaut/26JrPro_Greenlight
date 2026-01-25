@@ -21,10 +21,3 @@
   font-size: 14px;
   margin-bottom: 0 !important;
 }
-
-/* Force dashed border when AntD's runtime rules would override it */
-:global(.ant-card.ant-card-bordered.draftCard),
-:global(.css-dev-only-do-not-override-1id0ya.ant-card.ant-card-bordered.draftCard) {
-  border: 1.5px dashed var(--accent-gray-light) !important;
-  box-sizing: border-box !important;
-}

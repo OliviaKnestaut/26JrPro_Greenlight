@@ -39,6 +39,7 @@ type Event {
     startTime: Time            # maps to greenlight-events.start_time
     endTime: Time              # maps to greenlight-events.end_time
     location: String
+    eventImg: String
     eventStatus: EventStatus!       # maps to greenlight-events.event_status
     submittedAt: DateTime
     createdAt: DateTime
