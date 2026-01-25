@@ -186,7 +186,7 @@ export function EventSubmissionsContent() {
                                     case 'approved': return 'approvedTag statusTag';
                                     case 'cancelled': return 'cancelledTag statusTag';
                                     case 'past': return 'pastTag statusTag';
-                                    case 'rejected': return 'cancelledTag statusTag';
+                                    case 'rejected': return 'deniedTag statusTag';
                                     default: return 'statusTag';
                                 }
                             })();
