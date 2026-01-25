@@ -56,6 +56,7 @@ query GetOrganizations($limit: Int = 25, $offset: Int = 0, $username: String) {
         orgName
         username
         bio
+        orgImg
         createdAt
         updatedAt
     }
@@ -108,6 +109,7 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
         orgName
         username
         bio
+        orgImg
         createdAt
         updatedAt
     }
@@ -123,6 +125,7 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
             orgName
             username
             bio
+            orgImg
         }
         createdAt
         updatedAt
@@ -137,7 +140,7 @@ query GetUsers($limit: Int = 25, $offset: Int = 0) {
         username
         profileImg
         password
-        organization { id orgName username }
+        organization { id orgName username bio orgImg }
         createdAt
         updatedAt
     }
@@ -151,7 +154,7 @@ query GetUser($id: ID!) {
         username
         profileImg
         password
-        organization { id orgName username }
+        organization { id orgName username bio orgImg }
         createdAt
         updatedAt
     }

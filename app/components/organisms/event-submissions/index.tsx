@@ -5,11 +5,9 @@ import { EventsByOrganizationDocument } from "~/lib/graphql/generated";
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Badge, Input, Button, Space, Switch, Popover, Checkbox, Tag } from "antd";
+import { Typography, Badge, Input, Button, Space, Switch, Popover, Checkbox, Tag, Collapse } from "antd";
 import { useSearchParams, useNavigate } from 'react-router';
 const { Title, Paragraph, Link } = Typography;
-import { Footer } from '../../molecules/footer/index';
-import { Collapse } from "antd"
 import { FilterOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 
 import { CardEvent } from '../../../components/molecules/card';
@@ -73,7 +71,6 @@ export function EventSubmissionsContent() {
         }
     };
 
-    // initialize from URL params on mount
     useEffect(() => {
         const q = searchParams.get('q') ?? '';
         const statusParam = searchParams.get('status');
@@ -84,7 +81,6 @@ export function EventSubmissionsContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // update URL when criteria change
     useEffect(() => {
         const params = new URLSearchParams();
         if (query && query.trim() !== '') params.set('q', query.trim());
@@ -324,7 +320,6 @@ export function EventSubmissionsContent() {
                 })()}
             </div>
         </div >
-        <Footer />
         </>
     );
 }

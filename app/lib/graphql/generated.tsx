@@ -159,6 +159,7 @@ export type Organization = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   events: Array<Event>;
   id: Scalars['ID']['output'];
+  orgImg?: Maybe<Scalars['String']['output']>;
   orgName: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   username: Scalars['String']['output'];
@@ -372,7 +373,7 @@ export type GetOrganizationsQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganizationsQuery = { __typename?: 'Query', organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, createdAt?: any | null, updatedAt?: any | null }> };
+export type GetOrganizationsQuery = { __typename?: 'Query', organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type EventsByOrganizationQueryVariables = Exact<{
   orgId: Scalars['ID']['input'];
@@ -392,7 +393,7 @@ export type GetDbDumpQueryVariables = Exact<{
 }>;
 
 
-export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
 
 export type GetUsersQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -400,14 +401,14 @@ export type GetUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null }> };
+export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
 
 export type GetUserQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } | null };
+export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null } | null };
 
 
 export const CreateEventDocument = gql`
@@ -911,6 +912,7 @@ export const GetOrganizationsDocument = gql`
     orgName
     username
     bio
+    orgImg
     createdAt
     updatedAt
   }
@@ -1045,6 +1047,7 @@ export const GetDbDumpDocument = gql`
     orgName
     username
     bio
+    orgImg
     createdAt
     updatedAt
   }
@@ -1060,6 +1063,7 @@ export const GetDbDumpDocument = gql`
       orgName
       username
       bio
+      orgImg
     }
     createdAt
     updatedAt
@@ -1113,6 +1117,8 @@ export const GetUsersDocument = gql`
       id
       orgName
       username
+      bio
+      orgImg
     }
     createdAt
     updatedAt
@@ -1166,6 +1172,8 @@ export const GetUserDocument = gql`
       id
       orgName
       username
+      bio
+      orgImg
     }
     createdAt
     updatedAt

@@ -40,7 +40,6 @@ import {
     CardMember,
 } from '../components/molecules/card';
 import StyledCalendar from '../components/molecules/calendar';
-import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
 
 export default function AntdExample() {
@@ -284,9 +283,12 @@ export default function AntdExample() {
                         <CardResource title="Resources" tags={["Guide", "API"]}>
                             <p>Resource content</p>
                         </CardResource>
-                        <CardOrg title="Organization" avatarSrc="https://via.placeholder.com/40" subtitle="Nonprofit">
-                            <p>Org details</p>
-                        </CardOrg>
+
+                        <CardOrg
+                        orgName="DU Women in Business"
+                        description="Organization descriptionDrexel Women in Business is a joint student organization. Drexel Women in Business (DWIB) is a network of dynamic, like-minded women achieving their business goals through support, inclusion, inspiration, and mentoring. DWIB maintains a strong network of women in the business community by coordinating networking events, speaker series, workshops, and similar activities. These events are open to the entire Drexel University community in order to foster growth, relationships, and future opportunities. This organization emphasizes LeBow's ties to the alumni network and to the greater Philadelphia business community, and upholds LeBow's commitment to excellence."
+                        imageSrc="./uploads/org_img/drexel-wib-logo.png" />
+
                         <CardMember title="Member" avatarSrc="https://via.placeholder.com/40" role="Admin">
                             <p>Member bio</p>
                         </CardMember>

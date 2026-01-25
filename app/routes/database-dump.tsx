@@ -1,6 +1,7 @@
 import { useGetEventsQuery, useGetOrganizationsQuery, useGetUsersQuery } from '~/lib/graphql/generated';
 import type { GetDbDumpQuery } from '~/lib/graphql/generated';
-import { Table, Avatar } from 'antd';
+import React, { useState } from 'react';
+import { Table, Avatar, Image, Pagination } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -9,42 +10,7 @@ interface OrganizationItem {
   orgName: string;
   username?: string;
   bio?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface EventItem {
-  id: string;
-  title?: string;
-  description?: string;
-  eventDate?: string;
-  setupTime?: string;
-  startTime?: string;
-  endTime?: string;
-  location?: string;
-  eventStatus?: string;
-  submittedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  organization?: OrganizationItem | null;
-}
-
-interface UserItem {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  profileImg?: string;
-  password?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  organization?: OrganizationItem | null;
-}
-
-interface DbDumpData {
-  events: EventItem[];
-  organizations: OrganizationItem[];
-  users: UserItem[];
+  orgImg?: string;
 }
 
 // Table row types include `key` required by antd Table
@@ -56,6 +22,7 @@ export default function DatabaseDump() {
   const { data: eventsData, loading: eventsLoading, error: eventsError } = useGetEventsQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
   const { data: orgsData, loading: orgsLoading, error: orgsError } = useGetOrganizationsQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
   const { data: usersData, loading: usersLoading, error: usersError } = useGetUsersQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
+  const [eventsPage, setEventsPage] = useState<number>(1);
 
   return (
     <div className="container mx-auto p-8">
@@ -79,7 +46,16 @@ export default function DatabaseDump() {
           (() => {
             const columns: ColumnsType<EventRow> = [
               { title: 'ID', dataIndex: 'id', key: 'id' },
+              { title: 'Event Image', dataIndex: 'eventImg', key: 'eventImg',
+                render: (src: string | undefined) => {
+                  if (!src) return <Avatar shape="square" size={60} icon={<UserOutlined style={{ fontSize: 30 }} />} />;
+                  const base = (import.meta as any).env?.BASE_URL ?? '/';
+                  const profilePath = `${base}uploads/event_img/${src}`.replace(/\\/g, '/');
+                  return <Image src={profilePath} style={{height: 50}}/>
+                },
+              },
               { title: 'Title', dataIndex: 'title', key: 'title' },
+              { title: 'Description', dataIndex: 'description', key: 'description' },
               { title: 'Date', dataIndex: 'eventDate', key: 'eventDate' },
               { title: 'Start', dataIndex: 'startTime', key: 'startTime' },
               { title: 'End', dataIndex: 'endTime', key: 'endTime' },
@@ -95,8 +71,22 @@ export default function DatabaseDump() {
             ];
 
             const dataSource = eventsData!.events.map((e) => ({ ...e, key: e.id }));
+            const eventsPageSize = 12;
+            const eventsTotal = dataSource.length;
+            const pagedData = dataSource.slice((eventsPage - 1) * eventsPageSize, eventsPage * eventsPageSize);
 
-            return <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 12 }} loading={eventsLoading} />;
+            return (
+              <>
+                <div style={{ overflowX: 'auto' }}>
+                  <div style={{ minWidth: columns.length * 150 }}>
+                    <Table columns={columns} dataSource={pagedData} pagination={false} loading={eventsLoading} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8 }}>
+                  <Pagination current={eventsPage} pageSize={eventsPageSize} total={eventsTotal} onChange={(p) => setEventsPage(p)} />
+                </div>
+              </>
+            );
           })()
         ) : (
           <p>No events found.</p>
@@ -130,8 +120,6 @@ export default function DatabaseDump() {
                 key: 'organization',
                 render: (_: any, record: any) => (record.organization ? record.organization.orgName : '-'),
               },
-              { title: 'Created', dataIndex: 'createdAt', key: 'createdAt' },
-              { title: 'Updated', dataIndex: 'updatedAt', key: 'updatedAt' },
             ];
 
             const dataSource = usersData!.users.map((u: any) => ({ ...u, key: u.id }));
@@ -149,6 +137,14 @@ export default function DatabaseDump() {
           (() => {
             const columns: ColumnsType<OrgRow> = [
               { title: 'ID', dataIndex: 'id', key: 'id' },
+              { title: 'Org Image', dataIndex: 'orgImg', key: 'orgImg',
+                render: (src: string | undefined) => {
+                  if (!src) return <Avatar shape="square" size={60} icon={<UserOutlined style={{ fontSize: 30 }} />} />;
+                  const base = (import.meta as any).env?.BASE_URL ?? '/';
+                  const profilePath = `${base}uploads/org_img/${src}`.replace(/\\/g, '/');
+                  return <Image src={profilePath}/>
+                },
+              },
               { title: 'Org Name', dataIndex: 'orgName', key: 'orgName' },
               { title: 'Username', dataIndex: 'username', key: 'username' },
               { title: 'Bio', dataIndex: 'bio', key: 'bio' },
