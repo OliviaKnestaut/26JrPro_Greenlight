@@ -47,6 +47,11 @@ interface DbDumpData {
   users: UserItem[];
 }
 
+// Table row types include `key` required by antd Table
+type EventRow = GetDbDumpQuery['events'][number] & { key: string };
+type UserRow = GetDbDumpQuery['users'][number] & { key: string };
+type OrgRow = GetDbDumpQuery['organizations'][number] & { key: string };
+
 export default function DatabaseDump() {
   const { data: eventsData, loading: eventsLoading, error: eventsError } = useGetEventsQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
   const { data: orgsData, loading: orgsLoading, error: orgsError } = useGetOrganizationsQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
@@ -72,7 +77,7 @@ export default function DatabaseDump() {
         <h2 className="text-xl font-semibold mb-4">Events</h2>
         {eventsData?.events?.length ? (
           (() => {
-            const columns: ColumnsType<GetDbDumpQuery['events'][number]> = [
+            const columns: ColumnsType<EventRow> = [
               { title: 'ID', dataIndex: 'id', key: 'id' },
               { title: 'Title', dataIndex: 'title', key: 'title' },
               { title: 'Date', dataIndex: 'eventDate', key: 'eventDate' },
@@ -102,7 +107,7 @@ export default function DatabaseDump() {
         <h2 className="text-xl font-semibold mb-4">Users</h2>
         {usersData?.users?.length ? (
           (() => {
-            const columns: ColumnsType<GetDbDumpQuery['users'][number]> = [
+            const columns: ColumnsType<UserRow> = [
               { title: 'ID', dataIndex: 'id', key: 'id' },
               {
                 title: 'Profile',
@@ -142,7 +147,7 @@ export default function DatabaseDump() {
         <h2 className="text-xl font-semibold mb-4">Organizations</h2>
         {orgsData?.organizations?.length ? (
           (() => {
-            const columns: ColumnsType<GetDbDumpQuery['organizations'][number]> = [
+            const columns: ColumnsType<OrgRow> = [
               { title: 'ID', dataIndex: 'id', key: 'id' },
               { title: 'Org Name', dataIndex: 'orgName', key: 'orgName' },
               { title: 'Username', dataIndex: 'username', key: 'username' },

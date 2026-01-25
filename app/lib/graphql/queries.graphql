@@ -6,6 +6,7 @@ query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromD
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime
@@ -30,6 +31,7 @@ query GetEventById($id: ID!) {
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime
@@ -65,6 +67,7 @@ query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $sta
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime
@@ -83,6 +86,7 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime

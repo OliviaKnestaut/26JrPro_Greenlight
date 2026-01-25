@@ -18,6 +18,13 @@ export default function RootLayout() {
                     Table: {
                         headerBg: "var(--primary-bright)",
                     },
+                    Checkbox: {
+                        borderRadiusSM: 0,
+                    },
+                    Popover: {
+                        borderRadiusLG: 0,
+                        borderRadiusXS: 0,
+                    }
                 }
             }}
         >
