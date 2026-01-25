@@ -20,8 +20,6 @@ export function EventSubmissionsContent() {
 
     const [events, setEvents] = useState<any[]>([]);
 
-    
-
     useEffect(() => {
         const fetchOrgEvents = async () => {
             try {
@@ -69,7 +67,7 @@ export function EventSubmissionsContent() {
             case 'in-review': return 'In-Review';
             case 'approved': return 'Approved';
             case 'cancelled': return 'Cancelled';
-            case 'past': return 'Past';
+            case 'past': return 'Past Event';
             case 'rejected': return 'Rejected';
             default: return s;
         }
@@ -118,7 +116,7 @@ export function EventSubmissionsContent() {
                     Manage and track the status of all your events, from draft to approval and more.
                 </Paragraph>
                 <div className="flex gap-2 my-4" style={{ width: '100%' }}>
-                    <Space.Compact style={{ flex: 1 }}>
+                    <Space.Compact style={{ flex: 1, height: 40 }}>
                         <Input
                             placeholder="Search for your event..."
                             value={query}
@@ -132,7 +130,7 @@ export function EventSubmissionsContent() {
                         type="primary"
                         icon={<SearchOutlined />}
                         onClick={() => setQuery(query)}
-                        style={{borderRadius: 0, border: 0, width: '46px', boxShadow: 'none'}} />
+                        style={{borderRadius: 0, border: 0, width: '46px', boxShadow: 'none', height: 40}} />
                     </Space.Compact>
                         <Popover
                             style={{ borderRadius: 0 }}
@@ -163,6 +161,7 @@ export function EventSubmissionsContent() {
                             <Button
                                 type={filtersOpen ? 'primary' : 'default'}
                                 icon={<FilterOutlined />}
+                                style={{ height: 40 }}
                             >
                                 Filter
                             </Button>
