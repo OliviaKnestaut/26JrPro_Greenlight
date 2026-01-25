@@ -137,7 +137,12 @@ export function DashboardContent() {
                         border: "1px solid var(--accent-gray-light)",
                         width: "33%"
                     }} >
-                    <Title level={4}>Budget <RightOutlined style={{fontSize:"12px"}} onClick={() => navigate('/budget')}/> </Title>
+                    <div
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                        onClick={() => navigate('/budget')}
+                    >
+                        <Title level={4}>Budget <RightOutlined style={{fontSize:"12px"}} /> </Title>
+                    </div>
                     <div className="flex gap-4 justify-center items-center flex-wrap mt-8">
                         <ProgressCircle 
                             total={10000}
