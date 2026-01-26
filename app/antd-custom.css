@@ -6,7 +6,130 @@ body {
 /* Theme Variables */
 :root {
 
-	/* ! COLOR TOKENS  */
+	/* COLOR PALETTE */
+
+	/* Primary */
+
+	--sea-green-1: #E4F2F1;
+	--sea-green-2: #B3E6E2;
+	--sea-green-3: #86D9D6;
+	--sea-green-4: #5ECCCC;
+	--sea-green-5: #39BBBF;
+	--sea-green-6: #19A9B3;
+	--sea-green-7: #0D7F8C;
+	--sea-green-8: #045966;
+	--sea-green-9: #003540;
+	--sea-green-10: #00141A;
+
+	--gray-1: #FFFFFF;
+	--gray-2: #FAFAFA;
+	--gray-3: #F5F5F5;
+	--gray-4: #F0F0F0;
+	--gray-5: #D9D9D9;
+	--gray-6: #BFBFBF;
+	--gray-7: #8C8C8C;
+	--gray-8: #595959;
+	--gray-9: #434343;
+	--gray-10: #262626;
+	--gray-11: #1F1F1F;
+	--gray-12: #141414;
+	--gray-13: #000000;
+
+	/* Secondary */
+
+	--sage-1: #E4F1E0;
+	--sage-2: #F3FFE0;
+	--sage-3: #E6F2E4;
+	--sage-4: #D4E6D8;
+	--sage-5: #CDD9CC;
+	--sage-6: #A7CBA4;
+	--sage-7: #80A67E;
+	--sage-8: #5B8058;
+	--sage-9: #3B5938;
+	--sage-10: #213322;
+
+	/* Tertiary */
+
+	--gold-1: #FFFBE6;
+	--gold-2: #FFF1B8;
+	--gold-3: #FFE58F;
+	--gold-4: #FFD666;
+	--gold-5: #FFC53D;
+	--gold-6: #FAAD14;
+	--gold-7: #D48806;
+	--gold-8: #AD6800;
+	--gold-9: #874D00;
+	--gold-10: #613400;
+
+	--lavender-1: #FCF0FF;
+	--lavender-2: #F9E6FF;
+	--lavender-3: #EDDBFF;
+	--lavender-4: #D9C4FF;
+	--lavender-5: #C26BFF;
+	--lavender-6: #B340F5;
+	--lavender-7: #8D2BCF;
+	--lavender-8: #6B1BAB;
+	--lavender-9: #4C0E82;
+	--lavender-10: #32095C;
+
+	--green-1: #F6FFED;
+	--green-2: #D9F7BE;
+	--green-3: #B7EB8F;
+	--green-4: #95DE64;
+	--green-5: #73D13D;
+	--green-6: #52C41A;
+	--green-7: #389E0D;
+	--green-8: #237804;
+	--green-9: #135200;
+	--green-10: #092B00;
+
+	--red-1: #FFF1F0;
+	--red-2: #FFCCC7;
+	--red-3: #FFA39E;
+	--red-4: #FF7875;
+	--red-5: #FF4D4F;
+	--red-6: #F5222D;
+	--red-7: #CF1322;
+	--red-8: #A8071A;
+	--red-9: #820014;
+	--red-10: #5C0011;
+
+
+	/* ! COLOR TOKENS (SEMANTIC)  */
+
+	/* NEW  */
+
+	/* ========== SEMANTIC TOKENS ========== */
+
+	/* Backgrounds */
+	--color-bg-layout: var(--gray-2);
+	--color-bg-surface: var(--gray-1);
+	--color-bg-elevated: var(--gray-1);
+
+	/* Brand */
+	--color-brand-primary: var(--sea-green-8);
+	--color-brand-primary-hover: var(--sea-green-5);
+	--color-brand-primary-active: var(--sea-green-9);
+	--color-brand-primary-disabled: var(--sea-green-7);
+
+	/* Borders */
+	--color-border-subtle: var(--gray-4);
+	--color-border-default: var(--gray-6);
+	--color-border-strong: var(--gray-8);
+
+	/* Text */
+	--color-text-primary: var(--gray-12);
+	--color-text-secondary: var(--gray-8);
+	--color-text-tertiary: var(--gray-7);
+	--color-text-inverse: var(--gray-1);
+
+	/* Status */
+	--color-status-error: var(--red-6);
+	--color-status-success: var(--sage-6);
+	--color-status-info: var(--sea-green-5);
+
+
+	/* OLD */
 	--background: #F9FAFB;
 	--background-2: #FFFFFF;
 	--primary: #045966;
@@ -18,7 +141,6 @@ body {
 	--accent-gray-light: #f0f0f0;
 	--accent-gray-medium: #A0A0A0;
 	--accent-gray-dark: #919191;
-	--Work-Sans: "Work Sans", sans-serif;
 
 	--color-primary-disabled: #929895;
 	--color-secondary: #3f8176;
@@ -229,7 +351,7 @@ p {
 	font-size: 14px;
 	line-height: 22px;
 	color: var(--accent-gray-dark) !important;
-	background-color: var(--background);
+	background-color: var(--color-bg-layout);
 	border: 1px solid var(--accent-gray-light);
 	padding: 4px 8px;
 	margin-right: 4px;

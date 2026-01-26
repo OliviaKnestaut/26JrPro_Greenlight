@@ -40,6 +40,7 @@ import {
     CardMember,
 } from '../components/molecules/card';
 import StyledCalendar from '../components/molecules/calendar';
+import SuccessModal from '../components/molecules/event-flow/success-modal';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
