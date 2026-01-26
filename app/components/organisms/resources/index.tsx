@@ -1,9 +1,24 @@
+import { Typography } from "antd";
+const { Title, Paragraph, Link } = Typography;
+import { useNavigate } from "react-router";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 export function ResourcesContent() {
+    ''
+    const navigate = useNavigate();
+
     return (
+
         <div className="container mx-auto p-8">
-            <h1 className="text-2xl font-bold">Resources</h1>
-            <p>Resources page content placeholder.</p>
+            <div className="container">
+                <Title level={5}>
+                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
+                </Title>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem" }}>
+                <Title level={2} style={{ margin: 0 }}>Resources</Title>
+                <Paragraph>Resources page content placeholder.</Paragraph>
+            </div>
         </div>
     );
 }

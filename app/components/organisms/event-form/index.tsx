@@ -1,5 +1,8 @@
-import { Form, Button, Collapse, Steps } from "antd"
+import { Form, Button, Collapse, Steps, Typography} from "antd"
+import { ArrowLeftOutlined } from "@ant-design/icons"
+const { Title,Link } = Typography;
 import { useForm, useWatch } from "react-hook-form"
+import { useNavigate } from "react-router"
 import EventDetailsSection from "../event-form/sections/EventDetailsSection"
 import DateLocationSection from "../event-form/sections/DateLocationSection"
 import EventElementsSection from "../event-form/sections/EventElementsSection"
@@ -61,6 +64,7 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
 export function EventForm() {
     const { control, handleSubmit } = useForm()
     const isSelected = useWatch({ control });
+    const navigate = useNavigate();
 
     const onSubmit = (data: any) => {
         console.log("FORM DATA:", data)
@@ -68,8 +72,15 @@ export function EventForm() {
 
     return (
         <div className="container mx-auto p-8">
-            <h1 className={styles.title}>Event Form</h1>
-            <p>Provide your event information for review and approval.</p>
+            <div className="container">
+                <Title level={5}>
+                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
+                </Title>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem" }}>
+                <h2 style={{ margin: 0 }}>Event Form</h2>
+                <p>Provide your event information for review and approval.</p>
+            </div>
 
             <div className={styles.collapseWrapper}>
                 <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -111,7 +122,7 @@ export function EventForm() {
                     </Collapse>
 
                     <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
-                        <div style={{ display: "flex", gap: 12}}>
+                        <div style={{ display: "flex", gap: 12 }}>
                             <Button type="primary" htmlType="submit" block>
                                 Submit Form
                             </Button>
