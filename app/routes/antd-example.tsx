@@ -35,7 +35,7 @@ import {
     CardAnnouncements,
     CardEvent,
     CardCalendarUpcoming,
-    CardResource,
+    TrainingResource,
     CardOrg,
     CardMember,
 } from '../components/molecules/card';
@@ -282,9 +282,9 @@ export default function AntdExample() {
                             title="Upcoming"
                             events={[{ id: 'e1', title: 'Release', date: 'Jan 25' }]}
                         />
-                        <CardResource title="Resources" tags={["Guide", "API"]}>
+                        <TrainingResource title="Resources" tags={["Guide", "API"]}>
                             <p>Resource content</p>
-                        </CardResource>
+                        </TrainingResource>
                         <CardOrg title="Organization" avatarSrc="https://via.placeholder.com/40" subtitle="Nonprofit">
                             <p>Org details</p>
                         </CardOrg>

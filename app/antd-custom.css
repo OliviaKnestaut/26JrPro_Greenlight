@@ -357,7 +357,7 @@ p {
 	background-color: var(--accent-gray-light);
 }
 
-.statusTag{
+.statusTag {
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
@@ -412,11 +412,11 @@ p {
 
 .ant-collapse {
 	background: var(--background-2);
-    border: 1px solid var(--accent-gray-light-2);
-    width: 100%;
+	border: 1px solid var(--accent-gray-light-2);
+	width: 100%;
 }
 
-.ant-collapse-content{
+.ant-collapse-content {
 	border-top: none !important;
 }
 
@@ -424,13 +424,19 @@ p {
 	padding-top: 0 !important;
 }
 
-.ant-collapse-expand-icon{
+.ant-collapse-expand-icon {
 	height: 28px !important;
 }
 
 /* CALENDAR */
-.ant-picker-cell-inner {
-    height: 1.5rem;
-	width: 100%;
 
+.ant-picker-cell .ant-picker-cell-inner:hover {
+	border-radius: 0.125rem;
+	border: 1px solid var(--sea-green-8, #045966);
+}
+
+.ant-picker-cell-inner {
+	height: 1.5rem;
+	width: 2.5rem;
+	border-radius: 0;
 }

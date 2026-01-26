@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import type { CalendarProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayLocaleData from 'dayjs/plugin/localeData';
+import { CardCalendarUpcoming } from '../card';
 
 dayjs.extend(dayLocaleData);
 
@@ -27,8 +28,8 @@ const StyledCalendar: React.FC = () => {
                 value={currentMonth}
                 headerRender={() => (
                     <div style={{ padding: 8, justifyContent: 'center', display: 'flex' }}>
-                        <Link to="/calendar" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Typography.Title level={4}>
+                        <Link to="/calendar/" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '5px' }}>
+                            <Typography.Title level={4} style={{ margin: 0 }}>
                                 {currentMonth.format('MMMM YYYY')}
                             </Typography.Title>
                             <RightOutlined/>
@@ -37,6 +38,12 @@ const StyledCalendar: React.FC = () => {
                 )}
                 onPanelChange={onPanelChange}
             />
+            <div>
+                <Typography.Title level={5} style={{ marginTop: '0.5rem' }}>
+                    Upcoming Events
+                </Typography.Title>
+                <CardCalendarUpcoming/>
+            </div>
         </div>
     );
 };
