@@ -35,11 +35,12 @@ import {
     CardAnnouncements,
     CardEvent,
     CardCalendarUpcoming,
-    CardResource,
+    TrainingResource,
     CardOrg,
     CardMember,
 } from '../components/molecules/card';
 import StyledCalendar from '../components/molecules/calendar';
+import SuccessModal from '../components/molecules/event-flow/success-modal';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
 
@@ -281,9 +282,9 @@ export default function AntdExample() {
                             title="Upcoming"
                             events={[{ id: 'e1', title: 'Release', date: 'Jan 25' }]}
                         />
-                        <CardResource title="Resources" tags={["Guide", "API"]}>
+                        <TrainingResource title="Resources" tags={["Guide", "API"]}>
                             <p>Resource content</p>
-                        </CardResource>
+                        </TrainingResource>
                         <CardOrg title="Organization" avatarSrc="https://via.placeholder.com/40" subtitle="Nonprofit">
                             <p>Org details</p>
                         </CardOrg>

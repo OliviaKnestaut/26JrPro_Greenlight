@@ -104,17 +104,19 @@ export function EventSubmissionsContent() {
 
     return (
         <>
-        <div className="container m-6 w-auto">
+        <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
-                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
+                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined  /> Back </Link>
                 </Title>
             </div>
             <div className="container">
-                <Title level={2}>Event Submissions</Title>
-                <Paragraph>
-                    Manage and track the status of all your events, from draft to approval and more.
-                </Paragraph>
+                <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem" }}>
+                    <Title level={2} style={{ margin: 0 }}>Event Submissions</Title>
+                    <Paragraph>
+                        Manage and track the status of all your events, from draft to approval and more.
+                    </Paragraph>
+                </div>
                 <div className="flex gap-2 my-4" style={{ width: '100%' }}>
                     <Space.Compact style={{ flex: 1, height: 40 }}>
                         <Input
@@ -201,7 +203,7 @@ export function EventSubmissionsContent() {
             <div className="container w-auto flex gap-4">
                 {!query.trim() && selectedStatuses.length === 0 ? (
                     <Collapse className="my-4"
-                    defaultActiveKey={["1"]} items={[{
+                    defaultActiveKey={["1"]} expandIconPosition="end" items={[{
                     key: '1',
                     label: (
                         <div className="flex items-center gap-2">

@@ -4,76 +4,46 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/en';
 
 import { Calendar, Flex, Radio, Select, theme, Typography } from 'antd';
+import { RightOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import type { CalendarProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayLocaleData from 'dayjs/plugin/localeData';
+import { CardCalendarUpcoming } from '../card';
 
 dayjs.extend(dayLocaleData);
 
 const StyledCalendar: React.FC = () => {
     const { token } = theme.useToken();
+    const currentMonth = dayjs();
 
     const onPanelChange = (value: Dayjs, mode: CalendarProps<Dayjs>['mode']) => {
         console.log(value.format('YYYY-MM-DD'), mode);
     };
 
-    const wrapperStyle: React.CSSProperties = {
-        width: 300,
-        border: `1px solid ${token.colorBorderSecondary}`,
-        borderRadius: token.borderRadiusLG,
-    };
-
     return (
-        <div style={wrapperStyle}>
-        <Calendar
-            fullscreen={false}
-            headerRender={({ value, type, onChange, onTypeChange }) => {
-            const year = value.year();
-            const month = value.month();
-
-            const yearOptions = Array.from({ length: 20 }, (_, i) => {
-                const label = year - 10 + i;
-                return { label, value: label };
-            });
-
-            const monthOptions = value
-                .localeData()
-                .monthsShort()
-                .map((label, index) => ({
-                label,
-                value: index,
-                }));
-
-            return (
-                <div style={{ padding: 8 }}>
-                <Typography.Title level={4}>Custom header</Typography.Title>
-                <Flex gap={8}>
-                    <Select
-                    size="small"
-                    popupMatchSelectWidth={false}
-                    value={year}
-                    options={yearOptions}
-                    onChange={(newYear) => {
-                        const now = value.clone().year(newYear);
-                        onChange(now);
-                    }}
-                    />
-                    <Select
-                    size="small"
-                    popupMatchSelectWidth={false}
-                    value={month}
-                    options={monthOptions}
-                    onChange={(newMonth) => {
-                        const now = value.clone().month(newMonth);
-                        onChange(now);
-                    }}
-                    />
-                </Flex>
-                </div>
-            );
-            }}
-            onPanelChange={onPanelChange}
-        />
+        <div >
+            <Calendar
+                fullscreen={false}
+                value={currentMonth}
+                headerRender={() => (
+                    <div style={{ padding: 8, justifyContent: 'center', display: 'flex' }}>
+                        <Link to="/calendar/" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '5px' }}>
+                            <Typography.Title level={4} style={{ margin: 0 }}>
+                                {currentMonth.format('MMMM YYYY')}
+                            </Typography.Title>
+                            <RightOutlined/>
+                        </Link>
+                    </div>
+                )}
+                onPanelChange={onPanelChange}
+            />
+            <div>
+                <Typography.Title level={5} style={{ marginTop: '0.5rem' }}>
+                    Upcoming Events
+                </Typography.Title>
+                <CardCalendarUpcoming/>
+            </div>
         </div>
     );
 };
