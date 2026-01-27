@@ -10,6 +10,7 @@ type Organization {
     orgName: String!            # maps to greenlight-orgs.orgName
     username: String!           # maps to greenlight-orgs.username
     bio: String                 # maps to greenlight-orgs.bio
+    orgImg: String              # maps to greenlight-orgs.org_img
     createdAt: DateTime
     updatedAt: DateTime
     events(limit: Int, offset: Int, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!

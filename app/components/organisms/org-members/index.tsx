@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { CardMember, CardOrg } from "../../molecules/card";
 import { useGetUsersQuery } from "~/lib/graphql/generated";
+import { useAuth } from '~/auth/AuthProvider';
 
 
 export function OrgMembersContent() {
@@ -17,6 +18,16 @@ export function OrgMembersContent() {
     if (loading) return <p>Loading members...</p>;
     if (error) return <p>Failed to load roster</p>;
 
+
+    const { user } = useAuth();
+    const org = (user as any)?.organization ?? null;
+    const orgName = org?.orgName ?? 'Organization';
+    const description = org?.bio ?? 'Organization description';
+    const orgImg = org?.orgImg;
+    
+    const base = (import.meta as any).env?.BASE_URL ?? '/';
+    const imagePath = orgImg ? `${base}uploads/org_img/${orgImg}`.replace(/\\/g, '/') : undefined;
+
     return (
         <div className="container mx-auto p-8">
             <div className="container">
@@ -29,9 +40,7 @@ export function OrgMembersContent() {
                 <Paragraph>See a list of all current members and their roles.</Paragraph>
 
                 <div >
-                    <CardOrg subtitle="DU Women in Business">
-                        Drexel Women in Business is a joint student organization. Drexel Women in Business (DWIB) is a network of dynamic, like-minded women achieving their business goals through support, inclusion, inspiration, and mentoring. DWIB maintains a strong network of women in the business community by coordinating networking events, speaker series, workshops, and similar activities. These events are open to the entire Drexel University community in order to foster growth, relationships, and future opportunities. This organization emphasizes LeBow's ties to the alumni network and to the greater Philadelphia business community, and upholds LeBow's commitment to excellence.
-                    </CardOrg>
+                    <CardOrg orgName={orgName} description={description} imageSrc={imagePath} />
                 </div>
 
                 <div>
