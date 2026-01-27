@@ -12,7 +12,7 @@ const documentResource: React.FC<documentResourceProps> = ({ children, title = [
     <Card className={styles.card}{...rest}>
         <FileOutlined style={{
             fontSize: "2.5rem",
-            alignSelf: "flex-start"
+            alignSelf: "center"
         }} ></FileOutlined>
         <div className={styles.words}>
             <a href=''>

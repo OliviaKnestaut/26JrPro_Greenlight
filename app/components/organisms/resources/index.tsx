@@ -59,8 +59,8 @@ export const orgDocuments: ResourceItem[] = [
         description: "Introduces materials that support building inclusive, welcoming, and culturally aware organizational practices."
     },
     {
-        title: "Event Coordinator Transitions",
-        description: "Summarizes the updated FY26 event policies that student organizations must follow before hosting activities."
+        title: "President Transition",
+        description: "Explains the contracting process for events, including when to use vendors and how to follow FY24 procedures."
     },
     {
         title: "Infractions",
@@ -71,9 +71,9 @@ export const orgDocuments: ResourceItem[] = [
         description: "Explains the contracting process for events, including when to use vendors and how to follow FY24 procedures."
     },
     {
-        title: "President Transition",
-        description: "Explains the contracting process for events, including when to use vendors and how to follow FY24 procedures."
-    }
+        title: "Event Coordinator Transitions",
+        description: "Summarizes the updated FY26 event policies that student organizations must follow before hosting activities."
+    },
 ];
 
 export function ResourcesContent() {
@@ -94,15 +94,16 @@ export function ResourcesContent() {
                 <Paragraph>Find training videos, organization documents, and key university policies here.</Paragraph>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "row", marginTop: "1rem", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "70%" }}>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+                <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "1rem" }}>
                     <Card>
                         <Title level={4}>Training Videos</Title>
                         <div style={{
                             display: "grid",
-                            gridTemplateColumns: "repeat(3, 1fr)",
-                            gridAutoRows: "auto",
+                            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
                             gap: "1rem",
+                            width: "100%",
+                            justifyContent: "center"
                         }}>
                             {trainingVideos.map((item => (
                                 <TrainingResource key={item.title} title={item.title}>
@@ -115,11 +116,12 @@ export function ResourcesContent() {
                         <Title level={4}>Organization Documents</Title>
                         <div style={{
                             display: "grid",
-                            gridTemplateColumns: "repeat(3, 1fr)",
-                            gridAutoRows: "auto",
+                            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
                             gap: "1rem",
+                            width: "100%",
+                            justifyItems: "center"
                         }}>
-                            {trainingVideos.map((item => (
+                            {orgDocuments.map((item => (
                                 <DocumentResource key={item.title} title={item.title}>
                                     {item.description}
                                 </DocumentResource>
@@ -129,25 +131,40 @@ export function ResourcesContent() {
                     </Card>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "30%" }}>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "1rem" }}>
                     <Card>
                         <Title level={4}>Event Guidelines and Templates</Title>
-                        <ol>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">Guest Speaker Policy</a></li>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">Event Planning Policies </a></li>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">Diversity and Inclusion Policies </a></li>
-
+                        <ol style={{
+                            listStyleType: "circle",
+                            paddingLeft: "1.25rem",
+                            margin: 0
+                        }}>
+                            <li>Event Planning Checklist</li>
+                            <li>Budgeting Template for Events</li>
+                            <li>Event Promotion Guide</li>
+                            <li>Event Timeline Template</li>
+                            <li>Venue Selection Guidelines</li>
+                            <li>Event Day Checklist</li>
+                            <li>Post-Event Survey Template</li>
                         </ol>
                     </Card>
 
 
                     <Card>
                         <Title level={4}>University Policies</Title>
-                        <ol>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">Guest Speaker Policy</a></li>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">Event Planning Policies </a></li>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">Diversity and Inclusion Policies </a></li>
-
+                        <ol style={{
+                            listStyleType: "circle",
+                            paddingLeft: "1.25rem",
+                            margin: 0
+                        }}>
+                            <li>Guest Speaker Policy </li>
+                            <li>Event Planning Policies </li>
+                            <li>Diversity and Inclusion Policies </li>
+                            <li>Safety Policies </li>
+                            <li>Food & Catering Policies </li>
+                            <li>Alcohol and Substance Rules </li>
+                            <li>Use of University Funds/Grants </li>
+                            <li>Room Reservation Rules</li>
                         </ol>
                     </Card>
                 </div>

@@ -270,6 +270,16 @@ p {
 	line-height: 22px;
 }
 
+.ant-card li {
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 22px;
+	text-decoration: underline;
+	text-decoration-style: solid;
+	margin-bottom: 0.5rem;
+}
+
 .regular {
 	font-weight: 400 !important;
 }
@@ -440,3 +450,4 @@ p {
 	width: 2.5rem;
 	border-radius: 0;
 }
+
