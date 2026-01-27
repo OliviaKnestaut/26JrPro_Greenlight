@@ -11,8 +11,7 @@ const CardResource: React.FC<CardResourceProps> = ({ children, title, tags = [],
     <Card className={styles.card}{...rest}>
                 <img src={img} alt='video-icon' className={styles.image}></img>
                 <div className={styles.words}>
-                    <a href=''>
-                        Officer Training
+                    <a href=''>Officer Training
                     </a>
                     <span className={styles.resourceDescription}>{"Provides a quick overview".slice(0, 20) + "…"}</span>
                 </div>
