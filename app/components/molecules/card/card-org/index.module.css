@@ -8,6 +8,7 @@
     margin-right: 15px;
     display: flex;
     align-items: center;
+    width: 22%;
 }
 
 .subtitle { 
@@ -18,7 +19,9 @@
 
 .content {
     display: flex; 
-    flex-direction: column;}
+    flex-direction: column;
+    justify-content: center;
+}
 
 .all{
     display: flex;

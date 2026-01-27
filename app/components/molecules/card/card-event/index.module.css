@@ -1,5 +1,8 @@
 .card {
   border-radius: 8px;
+  max-width: 400px;
+  position: relative;
+  border: none !important;
 }
 
 .meta {
@@ -9,8 +12,12 @@
   font-size: 12px;
 }
 
-.date { }
+.title{
+  margin: 0.5rem 0 !important;
+}
 
-.location { }
-
-.content { margin-top: 8px; }
+.submitted {
+  color: var(--accent-gray-dark);
+  font-size: 14px;
+  margin-bottom: 0 !important;
+}

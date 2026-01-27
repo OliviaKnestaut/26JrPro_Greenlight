@@ -10,9 +10,23 @@ type Organization {
     orgName: String!            # maps to greenlight-orgs.orgName
     username: String!           # maps to greenlight-orgs.username
     bio: String                 # maps to greenlight-orgs.bio
+    orgImg: String              # maps to greenlight-orgs.org_img
     createdAt: DateTime
     updatedAt: DateTime
     events(limit: Int, offset: Int, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
+}
+
+type User {
+    id: ID!
+    firstName: String
+    lastName: String
+    username: String!
+    password: String!
+    profileImg: String
+    organizationId: ID!
+    organization: Organization
+    createdAt: DateTime
+    updatedAt: DateTime
 }
 
 type Event {
@@ -26,15 +40,18 @@ type Event {
     startTime: Time            # maps to greenlight-events.start_time
     endTime: Time              # maps to greenlight-events.end_time
     location: String
-    eventStatus: String!       # maps to greenlight-events.event_status
+    eventImg: String
+    eventStatus: EventStatus!       # maps to greenlight-events.event_status
+    submittedAt: DateTime
     createdAt: DateTime
     updatedAt: DateTime
 }
 
 enum EventStatus {
     DRAFT
-    SUBMITTED
+    REVIEW
     APPROVED
+    PAST
     REJECTED
     CANCELLED
 }
@@ -51,6 +68,10 @@ type Query {
 
     # Events for a specific organization
     eventsByOrganization(orgId: ID!, limit: Int = 25, offset: Int = 0, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
+    
+    # Users (backed by greenlight-users table)
+    user(id: ID!): User
+    users(limit: Int = 25, offset: Int = 0, username: String): [User!]!
 }
 
 # Input types for mutations
@@ -91,6 +112,24 @@ input UpdateEventInput {
     eventStatus: EventStatus
 }
 
+input CreateUserInput {
+    firstName: String
+    lastName: String
+    username: String!
+    password: String!
+    profileImg: String
+    organizationId: ID!
+}
+
+input UpdateUserInput {
+    firstName: String
+    lastName: String
+    profileImg: String
+    username: String
+    password: String
+    organizationId: ID
+}
+
 # Mutations
 type Mutation {
     # Organizations
@@ -103,4 +142,8 @@ type Mutation {
     updateEvent(id: ID!, input: UpdateEventInput!): Event!
     deleteEvent(id: ID!): Boolean!
     changeEventStatus(id: ID!, status: EventStatus!): Event!
+    # Users
+    createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
+    deleteUser(id: ID!): Boolean!
 }

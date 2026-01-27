@@ -1,15 +1,13 @@
-// THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
-// Suppress type checking for generated code (resolved by codegen/runtime versions).
-// @ts-nocheck
+/* -------------------------------------------------------------------------- */
+/* THIS FILE IS AUTO-GENERATED. DO NOT EDIT BY HAND.                            */
+/* To update, run: `npx graphql-codegen --config codegen.yml`                   */
+/* The header below disables TypeScript and ESLint checks for this generated file. */
+/* -------------------------------------------------------------------------- */
 /* eslint-disable */
+// @ts-nocheck
 import { gql } from '@apollo/client';
-import * as ApolloCore from '@apollo/client';
-import { useQuery as __useQuery, useLazyQuery as __useLazyQuery, useMutation as __useMutation, useSuspenseQuery as __useSuspenseQuery, skipToken as __skipToken } from '@apollo/client/react';
-
-// Create a local `Apollo` object that includes core exports plus
-// the React hooks. This avoids mutating the imported module object
-// which can be non-extensible in certain bundlers/environments.
-const Apollo: any = { ...(ApolloCore as any), useQuery: __useQuery, useLazyQuery: __useLazyQuery, useMutation: __useMutation, useSuspenseQuery: __useSuspenseQuery, skipToken: __skipToken };
+import * as ApolloReactCommon from '@apollo/client';
+import * as ApolloReactHooks from '@apollo/client/react';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -50,19 +48,30 @@ export type CreateOrganizationInput = {
   username: Scalars['String']['input'];
 };
 
+export type CreateUserInput = {
+  firstName?: InputMaybe<Scalars['String']['input']>;
+  lastName?: InputMaybe<Scalars['String']['input']>;
+  organizationId: Scalars['ID']['input'];
+  password: Scalars['String']['input'];
+  profileImg?: InputMaybe<Scalars['String']['input']>;
+  username: Scalars['String']['input'];
+};
+
 export type Event = {
   __typename?: 'Event';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   endTime?: Maybe<Scalars['Time']['output']>;
   eventDate?: Maybe<Scalars['Date']['output']>;
-  eventStatus: Scalars['String']['output'];
+  eventImg?: Maybe<Scalars['String']['output']>;
+  eventStatus: EventStatus;
   id: Scalars['ID']['output'];
   location?: Maybe<Scalars['String']['output']>;
   organization?: Maybe<Organization>;
   organizationId: Scalars['ID']['output'];
   setupTime?: Maybe<Scalars['Time']['output']>;
   startTime?: Maybe<Scalars['Time']['output']>;
+  submittedAt?: Maybe<Scalars['DateTime']['output']>;
   title: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -71,8 +80,9 @@ export enum EventStatus {
   Approved = 'APPROVED',
   Cancelled = 'CANCELLED',
   Draft = 'DRAFT',
+  Past = 'PAST',
   Rejected = 'REJECTED',
-  Submitted = 'SUBMITTED'
+  Review = 'REVIEW'
 }
 
 export type Mutation = {
@@ -80,10 +90,13 @@ export type Mutation = {
   changeEventStatus: Event;
   createEvent: Event;
   createOrganization: Organization;
+  createUser: User;
   deleteEvent: Scalars['Boolean']['output'];
   deleteOrganization: Scalars['Boolean']['output'];
+  deleteUser: Scalars['Boolean']['output'];
   updateEvent: Event;
   updateOrganization: Organization;
+  updateUser: User;
 };
 
 
@@ -103,12 +116,22 @@ export type MutationCreateOrganizationArgs = {
 };
 
 
+export type MutationCreateUserArgs = {
+  input: CreateUserInput;
+};
+
+
 export type MutationDeleteEventArgs = {
   id: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteOrganizationArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteUserArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -124,12 +147,19 @@ export type MutationUpdateOrganizationArgs = {
   input: UpdateOrganizationInput;
 };
 
+
+export type MutationUpdateUserArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdateUserInput;
+};
+
 export type Organization = {
   __typename?: 'Organization';
   bio?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   events: Array<Event>;
   id: Scalars['ID']['output'];
+  orgImg?: Maybe<Scalars['String']['output']>;
   orgName: Scalars['String']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   username: Scalars['String']['output'];
@@ -151,6 +181,8 @@ export type Query = {
   eventsByOrganization: Array<Event>;
   organization?: Maybe<Organization>;
   organizations: Array<Organization>;
+  user?: Maybe<User>;
+  users: Array<User>;
 };
 
 
@@ -189,6 +221,18 @@ export type QueryOrganizationsArgs = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+
+export type QueryUserArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryUsersArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  username?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateEventInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
@@ -207,12 +251,35 @@ export type UpdateOrganizationInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateUserInput = {
+  firstName?: InputMaybe<Scalars['String']['input']>;
+  lastName?: InputMaybe<Scalars['String']['input']>;
+  organizationId?: InputMaybe<Scalars['ID']['input']>;
+  password?: InputMaybe<Scalars['String']['input']>;
+  profileImg?: InputMaybe<Scalars['String']['input']>;
+  username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type User = {
+  __typename?: 'User';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  lastName?: Maybe<Scalars['String']['output']>;
+  organization?: Maybe<Organization>;
+  organizationId: Scalars['ID']['output'];
+  password: Scalars['String']['output'];
+  profileImg?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  username: Scalars['String']['output'];
+};
+
 export type CreateEventMutationVariables = Exact<{
   input: CreateEventInput;
 }>;
 
 
-export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: string, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
+export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: EventStatus, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
 
 export type UpdateEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -220,7 +287,7 @@ export type UpdateEventMutationVariables = Exact<{
 }>;
 
 
-export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: string } };
+export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: EventStatus } };
 
 export type DeleteEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -235,7 +302,7 @@ export type ChangeEventStatusMutationVariables = Exact<{
 }>;
 
 
-export type ChangeEventStatusMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, eventStatus: string } };
+export type ChangeEventStatusMutation = { __typename?: 'Mutation', changeEventStatus: { __typename?: 'Event', id: string, eventStatus: EventStatus } };
 
 export type CreateOrganizationMutationVariables = Exact<{
   input: CreateOrganizationInput;
@@ -259,6 +326,28 @@ export type DeleteOrganizationMutationVariables = Exact<{
 
 export type DeleteOrganizationMutation = { __typename?: 'Mutation', deleteOrganization: boolean };
 
+export type CreateUserMutationVariables = Exact<{
+  input: CreateUserInput;
+}>;
+
+
+export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, profileImg?: string | null, username: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
+
+export type UpdateUserMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  input: UpdateUserInput;
+}>;
+
+
+export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, profileImg?: string | null, username: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
+
+export type DeleteUserMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteUserMutation = { __typename?: 'Mutation', deleteUser: boolean };
+
 export type GetEventsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -268,14 +357,14 @@ export type GetEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
 
 export type GetEventByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } | null };
+export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
 
 export type GetOrganizationsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -284,7 +373,7 @@ export type GetOrganizationsQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganizationsQuery = { __typename?: 'Query', organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, createdAt?: any | null, updatedAt?: any | null }> };
+export type GetOrganizationsQuery = { __typename?: 'Query', organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type EventsByOrganizationQueryVariables = Exact<{
   orgId: Scalars['ID']['input'];
@@ -296,7 +385,7 @@ export type EventsByOrganizationQueryVariables = Exact<{
 }>;
 
 
-export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, title: string, eventDate?: any | null, startTime?: any | null, endTime?: any | null, eventStatus: string }> };
+export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type GetDbDumpQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -304,7 +393,22 @@ export type GetDbDumpQueryVariables = Exact<{
 }>;
 
 
-export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, createdAt?: any | null, updatedAt?: any | null }> };
+export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
+
+export type GetUsersQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
+
+export type GetUserQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null } | null };
 
 
 export const CreateEventDocument = gql`
@@ -322,7 +426,7 @@ export const CreateEventDocument = gql`
   }
 }
     `;
-export type CreateEventMutationFn = Apollo.MutationFunction<CreateEventMutation, CreateEventMutationVariables>;
+export type CreateEventMutationFn = ApolloReactCommon.MutationFunction<CreateEventMutation, CreateEventMutationVariables>;
 
 /**
  * __useCreateEventMutation__
@@ -341,13 +445,13 @@ export type CreateEventMutationFn = Apollo.MutationFunction<CreateEventMutation,
  *   },
  * });
  */
-export function useCreateEventMutation(baseOptions?: Apollo.MutationHookOptions<CreateEventMutation, CreateEventMutationVariables>) {
+export function useCreateEventMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateEventMutation, CreateEventMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateEventMutation, CreateEventMutationVariables>(CreateEventDocument, options);
+        return ApolloReactHooks.useMutation<CreateEventMutation, CreateEventMutationVariables>(CreateEventDocument, options);
       }
 export type CreateEventMutationHookResult = ReturnType<typeof useCreateEventMutation>;
-export type CreateEventMutationResult = Apollo.MutationResult<CreateEventMutation>;
-export type CreateEventMutationOptions = Apollo.BaseMutationOptions<CreateEventMutation, CreateEventMutationVariables>;
+export type CreateEventMutationResult = ApolloReactCommon.MutationResult<CreateEventMutation>;
+export type CreateEventMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateEventMutation, CreateEventMutationVariables>;
 export const UpdateEventDocument = gql`
     mutation UpdateEvent($id: ID!, $input: UpdateEventInput!) {
   updateEvent(id: $id, input: $input) {
@@ -358,7 +462,7 @@ export const UpdateEventDocument = gql`
   }
 }
     `;
-export type UpdateEventMutationFn = Apollo.MutationFunction<UpdateEventMutation, UpdateEventMutationVariables>;
+export type UpdateEventMutationFn = ApolloReactCommon.MutationFunction<UpdateEventMutation, UpdateEventMutationVariables>;
 
 /**
  * __useUpdateEventMutation__
@@ -378,19 +482,19 @@ export type UpdateEventMutationFn = Apollo.MutationFunction<UpdateEventMutation,
  *   },
  * });
  */
-export function useUpdateEventMutation(baseOptions?: Apollo.MutationHookOptions<UpdateEventMutation, UpdateEventMutationVariables>) {
+export function useUpdateEventMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateEventMutation, UpdateEventMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateEventMutation, UpdateEventMutationVariables>(UpdateEventDocument, options);
+        return ApolloReactHooks.useMutation<UpdateEventMutation, UpdateEventMutationVariables>(UpdateEventDocument, options);
       }
 export type UpdateEventMutationHookResult = ReturnType<typeof useUpdateEventMutation>;
-export type UpdateEventMutationResult = Apollo.MutationResult<UpdateEventMutation>;
-export type UpdateEventMutationOptions = Apollo.BaseMutationOptions<UpdateEventMutation, UpdateEventMutationVariables>;
+export type UpdateEventMutationResult = ApolloReactCommon.MutationResult<UpdateEventMutation>;
+export type UpdateEventMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateEventMutation, UpdateEventMutationVariables>;
 export const DeleteEventDocument = gql`
     mutation DeleteEvent($id: ID!) {
   deleteEvent(id: $id)
 }
     `;
-export type DeleteEventMutationFn = Apollo.MutationFunction<DeleteEventMutation, DeleteEventMutationVariables>;
+export type DeleteEventMutationFn = ApolloReactCommon.MutationFunction<DeleteEventMutation, DeleteEventMutationVariables>;
 
 /**
  * __useDeleteEventMutation__
@@ -409,22 +513,22 @@ export type DeleteEventMutationFn = Apollo.MutationFunction<DeleteEventMutation,
  *   },
  * });
  */
-export function useDeleteEventMutation(baseOptions?: Apollo.MutationHookOptions<DeleteEventMutation, DeleteEventMutationVariables>) {
+export function useDeleteEventMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteEventMutation, DeleteEventMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteEventMutation, DeleteEventMutationVariables>(DeleteEventDocument, options);
+        return ApolloReactHooks.useMutation<DeleteEventMutation, DeleteEventMutationVariables>(DeleteEventDocument, options);
       }
 export type DeleteEventMutationHookResult = ReturnType<typeof useDeleteEventMutation>;
-export type DeleteEventMutationResult = Apollo.MutationResult<DeleteEventMutation>;
-export type DeleteEventMutationOptions = Apollo.BaseMutationOptions<DeleteEventMutation, DeleteEventMutationVariables>;
+export type DeleteEventMutationResult = ApolloReactCommon.MutationResult<DeleteEventMutation>;
+export type DeleteEventMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteEventMutation, DeleteEventMutationVariables>;
 export const ChangeEventStatusDocument = gql`
     mutation ChangeEventStatus($id: ID!, $status: EventStatus!) {
-  updateEvent(id: $id, input: {eventStatus: $status}) {
+  changeEventStatus(id: $id, status: $status) {
     id
     eventStatus
   }
 }
     `;
-export type ChangeEventStatusMutationFn = Apollo.MutationFunction<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>;
+export type ChangeEventStatusMutationFn = ApolloReactCommon.MutationFunction<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>;
 
 /**
  * __useChangeEventStatusMutation__
@@ -444,13 +548,13 @@ export type ChangeEventStatusMutationFn = Apollo.MutationFunction<ChangeEventSta
  *   },
  * });
  */
-export function useChangeEventStatusMutation(baseOptions?: Apollo.MutationHookOptions<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>) {
+export function useChangeEventStatusMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>(ChangeEventStatusDocument, options);
+        return ApolloReactHooks.useMutation<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>(ChangeEventStatusDocument, options);
       }
 export type ChangeEventStatusMutationHookResult = ReturnType<typeof useChangeEventStatusMutation>;
-export type ChangeEventStatusMutationResult = Apollo.MutationResult<ChangeEventStatusMutation>;
-export type ChangeEventStatusMutationOptions = Apollo.BaseMutationOptions<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>;
+export type ChangeEventStatusMutationResult = ApolloReactCommon.MutationResult<ChangeEventStatusMutation>;
+export type ChangeEventStatusMutationOptions = ApolloReactCommon.BaseMutationOptions<ChangeEventStatusMutation, ChangeEventStatusMutationVariables>;
 export const CreateOrganizationDocument = gql`
     mutation CreateOrganization($input: CreateOrganizationInput!) {
   createOrganization(input: $input) {
@@ -460,7 +564,7 @@ export const CreateOrganizationDocument = gql`
   }
 }
     `;
-export type CreateOrganizationMutationFn = Apollo.MutationFunction<CreateOrganizationMutation, CreateOrganizationMutationVariables>;
+export type CreateOrganizationMutationFn = ApolloReactCommon.MutationFunction<CreateOrganizationMutation, CreateOrganizationMutationVariables>;
 
 /**
  * __useCreateOrganizationMutation__
@@ -479,13 +583,13 @@ export type CreateOrganizationMutationFn = Apollo.MutationFunction<CreateOrganiz
  *   },
  * });
  */
-export function useCreateOrganizationMutation(baseOptions?: Apollo.MutationHookOptions<CreateOrganizationMutation, CreateOrganizationMutationVariables>) {
+export function useCreateOrganizationMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateOrganizationMutation, CreateOrganizationMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateOrganizationMutation, CreateOrganizationMutationVariables>(CreateOrganizationDocument, options);
+        return ApolloReactHooks.useMutation<CreateOrganizationMutation, CreateOrganizationMutationVariables>(CreateOrganizationDocument, options);
       }
 export type CreateOrganizationMutationHookResult = ReturnType<typeof useCreateOrganizationMutation>;
-export type CreateOrganizationMutationResult = Apollo.MutationResult<CreateOrganizationMutation>;
-export type CreateOrganizationMutationOptions = Apollo.BaseMutationOptions<CreateOrganizationMutation, CreateOrganizationMutationVariables>;
+export type CreateOrganizationMutationResult = ApolloReactCommon.MutationResult<CreateOrganizationMutation>;
+export type CreateOrganizationMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateOrganizationMutation, CreateOrganizationMutationVariables>;
 export const UpdateOrganizationDocument = gql`
     mutation UpdateOrganization($id: ID!, $input: UpdateOrganizationInput!) {
   updateOrganization(id: $id, input: $input) {
@@ -495,7 +599,7 @@ export const UpdateOrganizationDocument = gql`
   }
 }
     `;
-export type UpdateOrganizationMutationFn = Apollo.MutationFunction<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>;
+export type UpdateOrganizationMutationFn = ApolloReactCommon.MutationFunction<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>;
 
 /**
  * __useUpdateOrganizationMutation__
@@ -515,19 +619,19 @@ export type UpdateOrganizationMutationFn = Apollo.MutationFunction<UpdateOrganiz
  *   },
  * });
  */
-export function useUpdateOrganizationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>) {
+export function useUpdateOrganizationMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>(UpdateOrganizationDocument, options);
+        return ApolloReactHooks.useMutation<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>(UpdateOrganizationDocument, options);
       }
 export type UpdateOrganizationMutationHookResult = ReturnType<typeof useUpdateOrganizationMutation>;
-export type UpdateOrganizationMutationResult = Apollo.MutationResult<UpdateOrganizationMutation>;
-export type UpdateOrganizationMutationOptions = Apollo.BaseMutationOptions<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>;
+export type UpdateOrganizationMutationResult = ApolloReactCommon.MutationResult<UpdateOrganizationMutation>;
+export type UpdateOrganizationMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateOrganizationMutation, UpdateOrganizationMutationVariables>;
 export const DeleteOrganizationDocument = gql`
     mutation DeleteOrganization($id: ID!) {
   deleteOrganization(id: $id)
 }
     `;
-export type DeleteOrganizationMutationFn = Apollo.MutationFunction<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>;
+export type DeleteOrganizationMutationFn = ApolloReactCommon.MutationFunction<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>;
 
 /**
  * __useDeleteOrganizationMutation__
@@ -546,13 +650,133 @@ export type DeleteOrganizationMutationFn = Apollo.MutationFunction<DeleteOrganiz
  *   },
  * });
  */
-export function useDeleteOrganizationMutation(baseOptions?: Apollo.MutationHookOptions<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>) {
+export function useDeleteOrganizationMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>(DeleteOrganizationDocument, options);
+        return ApolloReactHooks.useMutation<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>(DeleteOrganizationDocument, options);
       }
 export type DeleteOrganizationMutationHookResult = ReturnType<typeof useDeleteOrganizationMutation>;
-export type DeleteOrganizationMutationResult = Apollo.MutationResult<DeleteOrganizationMutation>;
-export type DeleteOrganizationMutationOptions = Apollo.BaseMutationOptions<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>;
+export type DeleteOrganizationMutationResult = ApolloReactCommon.MutationResult<DeleteOrganizationMutation>;
+export type DeleteOrganizationMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteOrganizationMutation, DeleteOrganizationMutationVariables>;
+export const CreateUserDocument = gql`
+    mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) {
+    id
+    firstName
+    lastName
+    profileImg
+    username
+    organization {
+      id
+      orgName
+      username
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+export type CreateUserMutationFn = ApolloReactCommon.MutationFunction<CreateUserMutation, CreateUserMutationVariables>;
+
+/**
+ * __useCreateUserMutation__
+ *
+ * To run a mutation, you first call `useCreateUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createUserMutation, { data, loading, error }] = useCreateUserMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateUserMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateUserMutation, CreateUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument, options);
+      }
+export type CreateUserMutationHookResult = ReturnType<typeof useCreateUserMutation>;
+export type CreateUserMutationResult = ApolloReactCommon.MutationResult<CreateUserMutation>;
+export type CreateUserMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateUserMutation, CreateUserMutationVariables>;
+export const UpdateUserDocument = gql`
+    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+  updateUser(id: $id, input: $input) {
+    id
+    firstName
+    lastName
+    profileImg
+    username
+    organization {
+      id
+      orgName
+      username
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+export type UpdateUserMutationFn = ApolloReactCommon.MutationFunction<UpdateUserMutation, UpdateUserMutationVariables>;
+
+/**
+ * __useUpdateUserMutation__
+ *
+ * To run a mutation, you first call `useUpdateUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateUserMutation, { data, loading, error }] = useUpdateUserMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateUserMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateUserMutation, UpdateUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateUserMutation, UpdateUserMutationVariables>(UpdateUserDocument, options);
+      }
+export type UpdateUserMutationHookResult = ReturnType<typeof useUpdateUserMutation>;
+export type UpdateUserMutationResult = ApolloReactCommon.MutationResult<UpdateUserMutation>;
+export type UpdateUserMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateUserMutation, UpdateUserMutationVariables>;
+export const DeleteUserDocument = gql`
+    mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id)
+}
+    `;
+export type DeleteUserMutationFn = ApolloReactCommon.MutationFunction<DeleteUserMutation, DeleteUserMutationVariables>;
+
+/**
+ * __useDeleteUserMutation__
+ *
+ * To run a mutation, you first call `useDeleteUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteUserMutation, { data, loading, error }] = useDeleteUserMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteUserMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteUserMutation, DeleteUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeleteUserMutation, DeleteUserMutationVariables>(DeleteUserDocument, options);
+      }
+export type DeleteUserMutationHookResult = ReturnType<typeof useDeleteUserMutation>;
+export type DeleteUserMutationResult = ApolloReactCommon.MutationResult<DeleteUserMutation>;
+export type DeleteUserMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteUserMutation, DeleteUserMutationVariables>;
 export const GetEventsDocument = gql`
     query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
   events(
@@ -566,12 +790,14 @@ export const GetEventsDocument = gql`
     organizationId
     title
     description
+    eventImg
     eventDate
     setupTime
     startTime
     endTime
     location
     eventStatus
+    submittedAt
     createdAt
     updatedAt
     organization {
@@ -604,22 +830,22 @@ export const GetEventsDocument = gql`
  *   },
  * });
  */
-export function useGetEventsQuery(baseOptions?: Apollo.QueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
+export function useGetEventsQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
+        return ApolloReactHooks.useQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
       }
-export function useGetEventsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
+export function useGetEventsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
         }
-export function useGetEventsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
+export function useGetEventsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
         }
 export type GetEventsQueryHookResult = ReturnType<typeof useGetEventsQuery>;
 export type GetEventsLazyQueryHookResult = ReturnType<typeof useGetEventsLazyQuery>;
 export type GetEventsSuspenseQueryHookResult = ReturnType<typeof useGetEventsSuspenseQuery>;
-export type GetEventsQueryResult = Apollo.QueryResult<GetEventsQuery, GetEventsQueryVariables>;
+export type GetEventsQueryResult = ApolloReactCommon.QueryResult<GetEventsQuery, GetEventsQueryVariables>;
 export const GetEventByIdDocument = gql`
     query GetEventById($id: ID!) {
   event(id: $id) {
@@ -627,18 +853,21 @@ export const GetEventByIdDocument = gql`
     organizationId
     title
     description
+    eventImg
     eventDate
     setupTime
     startTime
     endTime
     location
     eventStatus
+    submittedAt
     createdAt
     updatedAt
     organization {
       id
       orgName
       username
+      bio
     }
   }
 }
@@ -660,22 +889,22 @@ export const GetEventByIdDocument = gql`
  *   },
  * });
  */
-export function useGetEventByIdQuery(baseOptions: Apollo.QueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables> & ({ variables: GetEventByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useGetEventByIdQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables> & ({ variables: GetEventByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
+        return ApolloReactHooks.useQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
       }
-export function useGetEventByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>) {
+export function useGetEventByIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
         }
-export function useGetEventByIdSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
+export function useGetEventByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
         }
 export type GetEventByIdQueryHookResult = ReturnType<typeof useGetEventByIdQuery>;
 export type GetEventByIdLazyQueryHookResult = ReturnType<typeof useGetEventByIdLazyQuery>;
 export type GetEventByIdSuspenseQueryHookResult = ReturnType<typeof useGetEventByIdSuspenseQuery>;
-export type GetEventByIdQueryResult = Apollo.QueryResult<GetEventByIdQuery, GetEventByIdQueryVariables>;
+export type GetEventByIdQueryResult = ApolloReactCommon.QueryResult<GetEventByIdQuery, GetEventByIdQueryVariables>;
 export const GetOrganizationsDocument = gql`
     query GetOrganizations($limit: Int = 25, $offset: Int = 0, $username: String) {
   organizations(limit: $limit, offset: $offset, username: $username) {
@@ -683,6 +912,7 @@ export const GetOrganizationsDocument = gql`
     orgName
     username
     bio
+    orgImg
     createdAt
     updatedAt
   }
@@ -707,22 +937,22 @@ export const GetOrganizationsDocument = gql`
  *   },
  * });
  */
-export function useGetOrganizationsQuery(baseOptions?: Apollo.QueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
+export function useGetOrganizationsQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
+        return ApolloReactHooks.useQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
       }
-export function useGetOrganizationsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
+export function useGetOrganizationsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
         }
-export function useGetOrganizationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
+export function useGetOrganizationsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
         }
 export type GetOrganizationsQueryHookResult = ReturnType<typeof useGetOrganizationsQuery>;
 export type GetOrganizationsLazyQueryHookResult = ReturnType<typeof useGetOrganizationsLazyQuery>;
 export type GetOrganizationsSuspenseQueryHookResult = ReturnType<typeof useGetOrganizationsSuspenseQuery>;
-export type GetOrganizationsQueryResult = Apollo.QueryResult<GetOrganizationsQuery, GetOrganizationsQueryVariables>;
+export type GetOrganizationsQueryResult = ApolloReactCommon.QueryResult<GetOrganizationsQuery, GetOrganizationsQueryVariables>;
 export const EventsByOrganizationDocument = gql`
     query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
   eventsByOrganization(
@@ -734,11 +964,19 @@ export const EventsByOrganizationDocument = gql`
     toDate: $toDate
   ) {
     id
+    organizationId
     title
+    description
+    eventImg
     eventDate
+    setupTime
     startTime
     endTime
+    location
     eventStatus
+    submittedAt
+    createdAt
+    updatedAt
   }
 }
     `;
@@ -764,22 +1002,22 @@ export const EventsByOrganizationDocument = gql`
  *   },
  * });
  */
-export function useEventsByOrganizationQuery(baseOptions: Apollo.QueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables> & ({ variables: EventsByOrganizationQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useEventsByOrganizationQuery(baseOptions: ApolloReactHooks.QueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables> & ({ variables: EventsByOrganizationQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
+        return ApolloReactHooks.useQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
       }
-export function useEventsByOrganizationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>) {
+export function useEventsByOrganizationLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
+          return ApolloReactHooks.useLazyQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
         }
-export function useEventsByOrganizationSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
+export function useEventsByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
         }
 export type EventsByOrganizationQueryHookResult = ReturnType<typeof useEventsByOrganizationQuery>;
 export type EventsByOrganizationLazyQueryHookResult = ReturnType<typeof useEventsByOrganizationLazyQuery>;
 export type EventsByOrganizationSuspenseQueryHookResult = ReturnType<typeof useEventsByOrganizationSuspenseQuery>;
-export type EventsByOrganizationQueryResult = Apollo.QueryResult<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>;
+export type EventsByOrganizationQueryResult = ApolloReactCommon.QueryResult<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>;
 export const GetDbDumpDocument = gql`
     query GetDbDump($limit: Int = 25, $offset: Int = 0) {
   events(limit: $limit, offset: $offset) {
@@ -787,12 +1025,14 @@ export const GetDbDumpDocument = gql`
     organizationId
     title
     description
+    eventImg
     eventDate
     setupTime
     startTime
     endTime
     location
     eventStatus
+    submittedAt
     createdAt
     updatedAt
     organization {
@@ -807,6 +1047,24 @@ export const GetDbDumpDocument = gql`
     orgName
     username
     bio
+    orgImg
+    createdAt
+    updatedAt
+  }
+  users(limit: $limit, offset: $offset) {
+    id
+    firstName
+    lastName
+    username
+    profileImg
+    password
+    organization {
+      id
+      orgName
+      username
+      bio
+      orgImg
+    }
     createdAt
     updatedAt
   }
@@ -830,19 +1088,128 @@ export const GetDbDumpDocument = gql`
  *   },
  * });
  */
-export function useGetDbDumpQuery(baseOptions?: Apollo.QueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
+export function useGetDbDumpQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
+        return ApolloReactHooks.useQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
       }
-export function useGetDbDumpLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
+export function useGetDbDumpLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
+          return ApolloReactHooks.useLazyQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
         }
-export function useGetDbDumpSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
+export function useGetDbDumpSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
         }
 export type GetDbDumpQueryHookResult = ReturnType<typeof useGetDbDumpQuery>;
 export type GetDbDumpLazyQueryHookResult = ReturnType<typeof useGetDbDumpLazyQuery>;
 export type GetDbDumpSuspenseQueryHookResult = ReturnType<typeof useGetDbDumpSuspenseQuery>;
-export type GetDbDumpQueryResult = Apollo.QueryResult<GetDbDumpQuery, GetDbDumpQueryVariables>;
+export type GetDbDumpQueryResult = ApolloReactCommon.QueryResult<GetDbDumpQuery, GetDbDumpQueryVariables>;
+export const GetUsersDocument = gql`
+    query GetUsers($limit: Int = 25, $offset: Int = 0) {
+  users(limit: $limit, offset: $offset) {
+    id
+    firstName
+    lastName
+    username
+    profileImg
+    password
+    organization {
+      id
+      orgName
+      username
+      bio
+      orgImg
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetUsersQuery__
+ *
+ * To run a query within a React component, call `useGetUsersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUsersQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *   },
+ * });
+ */
+export function useGetUsersQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+      }
+export function useGetUsersLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+        }
+export function useGetUsersSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+        }
+export type GetUsersQueryHookResult = ReturnType<typeof useGetUsersQuery>;
+export type GetUsersLazyQueryHookResult = ReturnType<typeof useGetUsersLazyQuery>;
+export type GetUsersSuspenseQueryHookResult = ReturnType<typeof useGetUsersSuspenseQuery>;
+export type GetUsersQueryResult = ApolloReactCommon.QueryResult<GetUsersQuery, GetUsersQueryVariables>;
+export const GetUserDocument = gql`
+    query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    firstName
+    lastName
+    username
+    profileImg
+    password
+    organization {
+      id
+      orgName
+      username
+      bio
+      orgImg
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetUserQuery__
+ *
+ * To run a query within a React component, call `useGetUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetUserQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetUserQuery, GetUserQueryVariables> & ({ variables: GetUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+      }
+export function useGetUserLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+        }
+export function useGetUserSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+        }
+export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
+export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
+export type GetUserSuspenseQueryHookResult = ReturnType<typeof useGetUserSuspenseQuery>;
+export type GetUserQueryResult = ApolloReactCommon.QueryResult<GetUserQuery, GetUserQueryVariables>;

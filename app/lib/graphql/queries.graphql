@@ -6,12 +6,14 @@ query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromD
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime
         endTime
         location
         eventStatus
+        submittedAt
         createdAt
         updatedAt
         organization {
@@ -29,15 +31,22 @@ query GetEventById($id: ID!) {
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime
         endTime
         location
         eventStatus
+        submittedAt
         createdAt
         updatedAt
-        organization { id orgName username }
+        organization { 
+            id
+            orgName
+            username
+            bio
+        }
     }
 }
 
@@ -47,6 +56,7 @@ query GetOrganizations($limit: Int = 25, $offset: Int = 0, $username: String) {
         orgName
         username
         bio
+        orgImg
         createdAt
         updatedAt
     }
@@ -55,11 +65,19 @@ query GetOrganizations($limit: Int = 25, $offset: Int = 0, $username: String) {
 query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
     eventsByOrganization(orgId: $orgId, limit: $limit, offset: $offset, status: $status, fromDate: $fromDate, toDate: $toDate) {
         id
+        organizationId
         title
+        description
+        eventImg
         eventDate
+        setupTime
         startTime
         endTime
+        location
         eventStatus
+        submittedAt
+        createdAt
+        updatedAt
     }
 }
 
@@ -69,21 +87,74 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
         organizationId
         title
         description
+        eventImg
         eventDate
         setupTime
         startTime
         endTime
         location
         eventStatus
+        submittedAt
         createdAt
         updatedAt
-        organization { id orgName username bio }
+        organization { 
+            id
+            orgName
+            username
+            bio
+        }
     }
     organizations(limit: $limit, offset: $offset) {
         id
         orgName
         username
         bio
+        orgImg
+        createdAt
+        updatedAt
+    }
+    users(limit: $limit, offset: $offset) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        password
+        organization {
+            id
+            orgName
+            username
+            bio
+            orgImg
+        }
+        createdAt
+        updatedAt
+    }
+}
+
+query GetUsers($limit: Int = 25, $offset: Int = 0) {
+    users(limit: $limit, offset: $offset) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        password
+        organization { id orgName username bio orgImg }
+        createdAt
+        updatedAt
+    }
+}
+
+query GetUser($id: ID!) {
+    user(id: $id) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        password
+        organization { id orgName username bio orgImg }
         createdAt
         updatedAt
     }

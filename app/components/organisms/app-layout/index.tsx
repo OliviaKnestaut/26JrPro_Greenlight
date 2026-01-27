@@ -2,11 +2,12 @@ import type React from 'react';
 import { Layout } from 'antd';
 import { Header } from '../../molecules/header/index';
 import { Navigation } from '../../molecules/navigation/index';
-import { Footer } from '../../molecules/footer/index';
+import { Footer } from '../../molecules/footer';
 import styles from './index.module.css';
 
 export interface AppLayoutProps {
 	isAuthenticated: boolean;
+	user?: any;
 	onLogin?: () => void;
 	onLogout?: () => void;
 	onSignUp?: () => void;
@@ -18,6 +19,7 @@ export interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
 	isAuthenticated,
+	user,
 	onLogin,
 	onLogout,
 	onSignUp,
@@ -29,27 +31,31 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 		<Layout className={styles.appLayout}>
 			<Header
 				isAuthenticated={isAuthenticated}
+				user={user}
 			/>
-			<div className={styles.bodyWrapper}>
-				<Navigation
-					isAuthenticated={isAuthenticated}
-					onLogout={
-						onLogout ??
-						(() => {
-							/* intentionally empty for layout */
-						})
-					}
-					onNavigate={
-						onNavigate ??
-						(() => {
-							/* intentionally empty for layout */
-						})
-					}
-					selectedKey={selectedKey ?? ''}
-				/>
-				<main className={styles.content}>{children}</main>
-			</div>
-			<Footer />
+			<Navigation
+				isAuthenticated={isAuthenticated}
+				user={user}
+				onLogout={
+					onLogout ??
+					(() => {
+						/* intentionally empty for layout */
+					})
+				}
+				onNavigate={
+					onNavigate ??
+					(() => {
+						/* intentionally empty for layout */
+					})
+				}
+				selectedKey={selectedKey ?? ''}
+			/>
+			<main className={styles.content}>
+				<div style={{ minHeight: 'calc(100% - 78px)' }}>
+					{children}
+				</div>
+				<Footer />
+			</main>
 		</Layout>
 	);
 };

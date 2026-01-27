@@ -68,7 +68,7 @@ Start the dev server and visit [http://localhost:5173/~ojk25/jrProjGreenlight/an
 			"Menu": {
 			"colorBgContainer": "var(--primary)",
 			"colorText": "var(--background-2)",
-			"itemHoverBg": "var(--primary-active)",
+			"itemHoverBg": "var(--primary)",
 			"itemBorderRadius": 0,
 			"itemMarginInline": 0,
 			"itemMarginBlock": 0,

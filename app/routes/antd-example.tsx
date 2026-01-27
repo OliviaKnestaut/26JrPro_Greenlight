@@ -27,14 +27,6 @@ import {
     Tooltip,
     Typography,
 } from 'antd';
-import {
-    HomeOutlined,
-    BellOutlined,
-    CalendarOutlined,
-    FileTextOutlined,
-    TeamOutlined,
-    UserOutlined,
-} from '@ant-design/icons';
 
 import NavMini from '../components/molecules/nav-mini';
 import ProgressCircle from '../components/molecules/progress-circle';
@@ -43,10 +35,14 @@ import {
     CardAnnouncements,
     CardEvent,
     CardCalendarUpcoming,
-    CardResource,
+    TrainingResource,
     CardOrg,
     CardMember,
 } from '../components/molecules/card';
+import StyledCalendar from '../components/molecules/calendar';
+import SuccessModal from '../components/molecules/event-flow/success-modal';
+import { serverToUi } from '~/lib/eventStatusMap';
+import { formatDateMDY } from '~/lib/formatters';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -55,6 +51,8 @@ export default function AntdExample() {
     const [switchOn, setSwitchOn] = useState(true);
     const [sliderValue, setSliderValue] = useState(30);
     const [currentPage, setCurrentPage] = useState(1);
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
     const tableColumns = [
         { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -237,37 +235,70 @@ export default function AntdExample() {
                     renderItem={(item) => <List.Item>{item}</List.Item>}
                 />
                 <Divider orientation="left">Molecules</Divider>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                <div  className='flex flex-wrap gap-4 flex-col'>
                     <CardWelcome title="Welcome back, Serati" subtitle="Ready to plan your next event?" />
-                        <CardAnnouncements
-                            title="Announcements"
-                            items={[
-                                { 
-                                    id: 'a1', 
-                                    title: '“Coffee Chat With Women in Tech” has 1 new comment; update submission' 
-                                },
-                                { 
-                                    id: 'a2', 
-                                    title: 'John Doe has submitted “Public Speaking Workshop” for review', 
-                                }
-                            ]}
-                        />
+                    <CardAnnouncements
+                        title="Announcements"
+                        items={[
+                            { 
+                                id: 'a1', 
+                                title: '“Coffee Chat With Women in Tech” has 1 new comment; update submission' 
+                            },
+                            { 
+                                id: 'a2', 
+                                title: 'John Doe has submitted “Public Speaking Workshop” for review', 
+                            }
+                        ]}
+                    />
+                    <CardEvent
+                        key={"1"}
+                        style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
+                        title={"Women in Leadership Panel"}
+                        date={formatDateMDY("2025-2-14")}
+                        isPast={new Date("2025-2-14").getTime() < today.getTime()}
+                        location={"URBN Annex Screening Room"}
+                        submissionDate={formatDateMDY("2025-11-30")}
+                        startTime={"19:00"}
+                        description={"A panel discussion featuring women leaders sharing their experiences and insights on leadership."}
+                        status={"in-review"}
+                        className='h-auto'
+                    />
+                    <CardEvent className="visual-card"
+                        key={"1"}
+                        style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
+                        title={"Public Speaking Workshop"}
+                        date={formatDateMDY("2025-12-30")}
+                        isPast={new Date("2025-12-30").getTime() < today.getTime()}
+                        location={"Lebow 111"}
+                        startTime={"16:00"}
+                        description={"A workshop teaching students how to speak convincingly during presentations, pitches, and interviews."}
+                        status={"in-review"}
+                    />
 
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        <CardEvent title="Meetup" date="Jan 20" location="Online">
-                            <p>Event details</p>
-                        </CardEvent>
+
+                        
                         <CardCalendarUpcoming
                             title="Upcoming"
                             events={[{ id: 'e1', title: 'Release', date: 'Jan 25' }]}
                         />
-                        <CardResource title="Resources" tags={["Guide", "API"]}>
+                        <TrainingResource title="Resources" tags={["Guide", "API"]}>
                             <p>Resource content</p>
-                        </CardResource>
-                        <CardOrg title="Organization" avatarSrc="https://via.placeholder.com/40" subtitle="Nonprofit">
-                            <p>Org details</p>
-                        </CardOrg>
-                        <CardMember title="Member" avatarSrc="https://via.placeholder.com/40" role="Admin">
+                        </TrainingResource>
+
+                        <CardOrg
+                        orgName="DU Women in Business"
+                        description="Organization descriptionDrexel Women in Business is a joint student organization. Drexel Women in Business (DWIB) is a network of dynamic, like-minded women achieving their business goals through support, inclusion, inspiration, and mentoring. DWIB maintains a strong network of women in the business community by coordinating networking events, speaker series, workshops, and similar activities. These events are open to the entire Drexel University community in order to foster growth, relationships, and future opportunities. This organization emphasizes LeBow's ties to the alumni network and to the greater Philadelphia business community, and upholds LeBow's commitment to excellence."
+                        imageSrc="./uploads/org_img/drexel-wib-logo.png" />
+                        
+                        <CardMember
+                            title="Member"
+                            avatarSrc="https://via.placeholder.com/40"
+                            role="Admin"
+                            first="Member"
+                            last="Example"
+                            username="member.example"
+                        >
                             <p>Member bio</p>
                         </CardMember>
                     </div>
@@ -276,6 +307,9 @@ export default function AntdExample() {
 
                     <div>
                         <ProgressCircle total={10000} spent={2500} />
+                    </div>
+                    <div>
+                        <StyledCalendar/>
                     </div>
                 </div>
             </Space>
