@@ -5,7 +5,7 @@ import 'dayjs/locale/en';
 
 import { Calendar, Flex, Radio, Select, theme, Typography } from 'antd';
 import { RightOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import type { CalendarProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayLocaleData from 'dayjs/plugin/localeData';

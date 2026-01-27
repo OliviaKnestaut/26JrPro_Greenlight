@@ -290,8 +290,15 @@ export default function AntdExample() {
                         orgName="DU Women in Business"
                         description="Organization descriptionDrexel Women in Business is a joint student organization. Drexel Women in Business (DWIB) is a network of dynamic, like-minded women achieving their business goals through support, inclusion, inspiration, and mentoring. DWIB maintains a strong network of women in the business community by coordinating networking events, speaker series, workshops, and similar activities. These events are open to the entire Drexel University community in order to foster growth, relationships, and future opportunities. This organization emphasizes LeBow's ties to the alumni network and to the greater Philadelphia business community, and upholds LeBow's commitment to excellence."
                         imageSrc="./uploads/org_img/drexel-wib-logo.png" />
-                        </CardOrg>
-                        <CardMember title="Member" avatarSrc="https://via.placeholder.com/40" role="Admin">
+                        
+                        <CardMember
+                            title="Member"
+                            avatarSrc="https://via.placeholder.com/40"
+                            role="Admin"
+                            first="Member"
+                            last="Example"
+                            username="member.example"
+                        >
                             <p>Member bio</p>
                         </CardMember>
                     </div>
