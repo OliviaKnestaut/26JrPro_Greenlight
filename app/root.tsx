@@ -14,6 +14,7 @@ import "antd/dist/reset.css";
 import "./antd-custom.css";
 import { apolloClient } from "./lib/apollo-client";
 import { ConfigProvider } from "antd";
+import { theme } from "./theme";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -49,7 +50,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <ApolloProvider client={apolloClient}>
-      <Outlet />
+      <ConfigProvider theme={theme}>
+        <Outlet />
+      </ConfigProvider>
     </ApolloProvider>
   );
 }

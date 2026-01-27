@@ -35,11 +35,13 @@ import {
     CardAnnouncements,
     CardEvent,
     CardCalendarUpcoming,
-    CardResource,
+    TrainingResource,
     CardOrg,
     CardMember,
 } from '../components/molecules/card';
 import StyledCalendar from '../components/molecules/calendar';
+import SuccessModal from '../components/molecules/event-flow/success-modal';
+import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
 
 export default function AntdExample() {
@@ -280,15 +282,15 @@ export default function AntdExample() {
                             title="Upcoming"
                             events={[{ id: 'e1', title: 'Release', date: 'Jan 25' }]}
                         />
-                        <CardResource title="Resources" tags={["Guide", "API"]}>
+                        <TrainingResource title="Resources" tags={["Guide", "API"]}>
                             <p>Resource content</p>
-                        </CardResource>
+                        </TrainingResource>
 
                         <CardOrg
                         orgName="DU Women in Business"
                         description="Organization descriptionDrexel Women in Business is a joint student organization. Drexel Women in Business (DWIB) is a network of dynamic, like-minded women achieving their business goals through support, inclusion, inspiration, and mentoring. DWIB maintains a strong network of women in the business community by coordinating networking events, speaker series, workshops, and similar activities. These events are open to the entire Drexel University community in order to foster growth, relationships, and future opportunities. This organization emphasizes LeBow's ties to the alumni network and to the greater Philadelphia business community, and upholds LeBow's commitment to excellence."
                         imageSrc="./uploads/org_img/drexel-wib-logo.png" />
-
+                        </CardOrg>
                         <CardMember title="Member" avatarSrc="https://via.placeholder.com/40" role="Admin">
                             <p>Member bio</p>
                         </CardMember>

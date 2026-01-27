@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Work Sans", ui-sans-serif, system-ui;
-}
-
 html,
 body {
-  background: var(--background);
+  background: var(--color-bg-layout);
 
+}
+
+.ant-modal .ant-modal-content {
+  border-radius: 0;
+  padding: 0;
 }

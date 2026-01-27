@@ -27,5 +27,6 @@
     padding: 1.5rem;
 }
 
-
-
+.ant-collapse .ant-collapse-item:last-child {
+    border-bottom: 1px solid var(--Neutral-5, #D9D9D9);
+}
