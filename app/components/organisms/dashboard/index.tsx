@@ -9,19 +9,17 @@ import { formatDateMDY } from '~/lib/formatters';
 import { Typography, Card, Badge, Divider } from "antd";
 import ProgressCircle from '../../molecules/progress-circle';
 import StyledCalendar from '../../molecules/calendar';
-import { Footer } from '../../molecules/footer/index';
 
 const { Link, Title } = Typography;
 import { RightOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router';
 import { CardEvent } from '../../../components/molecules/card';
 
 
 export function DashboardContent() {
     const { user } = useAuth();
-
+    const navigate = useNavigate();
     const [events, setEvents] = useState<any[]>([]);
-
-    
 
     useEffect(() => {
         const fetchOrgEvents = async () => {
@@ -57,7 +55,7 @@ export function DashboardContent() {
     return (
         <>
         <div className="container m-6 w-auto">
-            <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
+                <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
                 <CardWelcome
                     title={`Welcome back, ${user?.firstName ?? "there"}`}
                     subtitle="Ready to plan your next event?"
@@ -91,8 +89,8 @@ export function DashboardContent() {
                         width: "66%",
                     }}
                 >
-                    <div className="flex justify-between items-center">
-                        <Title level={4}>In-Review <RightOutlined style={{fontSize:"12px"}}/> </Title>
+                    <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions')}>
+                        <Title level={4} >In-Review <RightOutlined style={{fontSize:"12px"}}/> </Title>
                         <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
                     <div className="flex gap-4" style={{ alignItems: 'center'}}>
@@ -110,19 +108,23 @@ export function DashboardContent() {
                                 // Only show upcoming in-review events; exclude past events entirely
                                 const top = upcoming.slice(0, 2);
                                 if (top.length === 0) return <div>No upcoming in-review events</div>;
-                                return top.map((e: any) => (
+                                return top.map((e: any) => {
+                                        const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
+                                        return (
                                         <CardEvent
                                         key={e.id}
+                                        isPast={isPast}
+                                        eventImg={e.eventImg}
                                         style={{ width: "calc(50% - 0.5rem)" }}
                                         title={e.title}
                                         date={formatDateMDY(e.eventDate)}
                                         location={e.location ?? ''}
                                         startTime={e.startTime ?? ''}
                                         description={e.description ?? ''}
-                                        submissionDate={formatDateMDY(e.createdAt)}
+                                        submissionDate={formatDateMDY(e.submittedAt)}
                                         status={serverToUi(e.eventStatus)}
-                                    />
-                                ));
+                                    />);
+                                });
                             })()
                         }
                     </div>
@@ -134,7 +136,12 @@ export function DashboardContent() {
                         border: "1px solid var(--accent-gray-light)",
                         width: "33%"
                     }} >
-                    <Title level={4}>Budget <RightOutlined style={{fontSize:"12px"}}/> </Title>
+                    <div
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                        onClick={() => navigate('/budget')}
+                    >
+                        <Title level={4}>Budget <RightOutlined style={{fontSize:"12px"}} /> </Title>
+                    </div>
                     <div className="flex gap-4 justify-center items-center flex-wrap mt-8">
                         <ProgressCircle 
                             total={10000}
@@ -175,7 +182,7 @@ export function DashboardContent() {
                         border: "1px solid var(--accent-gray-light)",
                         width: "66%"
                     }} >
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions?status=draft&past=1')}>
                         <Title level={4}>Drafts <RightOutlined style={{fontSize:"12px"}}/> </Title>
                         <Badge count={drafts.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
@@ -197,9 +204,13 @@ export function DashboardContent() {
                             return (
                                 <>
                                     <div className="flex gap-4">
-                                        {firstRow.map((e: any) => (
+                                        {firstRow.map((e: any) => {
+                                            const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
+                                            return (
                                             <CardEvent
                                                 key={e.id}
+                                                isPast={isPast}
+                                                eventImg={e.eventImg}
                                                 style={{ width: "calc(50% - 0.5rem)" }}
                                                 title={e.title}
                                                 date={formatDateMDY(e.eventDate)}
@@ -207,13 +218,17 @@ export function DashboardContent() {
                                                 startTime={e.startTime ?? ''}
                                                 description={e.description ?? ''}
                                                 status={serverToUi(e.eventStatus)}
-                                            />
-                                        ))}
+                                            />);
+                                        })}
                                     </div>
                                     <div className="flex gap-4">
-                                        {secondRow.map((e: any) => (
+                                        {secondRow.map((e: any) => {
+                                            const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
+                                            return (
                                             <CardEvent
                                                 key={e.id}
+                                                isPast={isPast}
+                                                eventImg={e.eventImg}
                                                 style={{ width: "calc(50% - 0.5rem)" }}
                                                 title={e.title}
                                                 date={formatDateMDY(e.eventDate)}
@@ -221,8 +236,8 @@ export function DashboardContent() {
                                                 startTime={e.startTime ?? ''}
                                                 description={e.description ?? ''}
                                                 status={serverToUi(e.eventStatus)}
-                                            />
-                                        ))}
+                                            />);
+                                        })}
                                     </div>
                                 </>
                             );
@@ -238,7 +253,6 @@ export function DashboardContent() {
                 </Card>
             </div>
         </div >
-        <Footer />
         </>
     );
 }

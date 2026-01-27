@@ -2,6 +2,7 @@ import type React from 'react';
 import { Layout } from 'antd';
 import { Header } from '../../molecules/header/index';
 import { Navigation } from '../../molecules/navigation/index';
+import { Footer } from '../../molecules/footer';
 import styles from './index.module.css';
 
 export interface AppLayoutProps {
@@ -49,7 +50,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 				}
 				selectedKey={selectedKey ?? ''}
 			/>
-			<main className={styles.content}>{children}</main>
+			<main className={styles.content}>
+				<div style={{ minHeight: 'calc(100% - 78px)' }}>
+					{children}
+				</div>
+				<Footer />
+			</main>
 		</Layout>
 	);
 };

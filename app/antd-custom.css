@@ -1,12 +1,163 @@
-body {
-	box-sizing: border-box;
+/* *Font Declarations */
 
+@font-face {
+	font-family: "Pangea";
+	src: url("/fonts/pangea-variable-fontwerk.woff2") format("woff2-variations");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Pretendard";
+	src: url("/fonts/pretendard-variable-Hyung-jin-Kil.woff2") format("woff2-variations");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+body{
+    box-sizing: border-box;
 }
 
 /* Theme Variables */
 :root {
 
-	/* ! COLOR TOKENS  */
+	/* OLD VARIABLES */
+	--background: #FAFAFA;
+	--background-2: #FFFFFF;
+    --primary: #045966;
+    --primary-active: #0D7F8C;
+    --primary-disabled: #447A7E;
+    --accent-gray-light: #D6D6D6;
+    --accent-gray-medium: #A0A0A0;
+    --accent-gray-dark: #919191;
+	--Work-Sans: "Work Sans", sans-serif;
+
+	/* COLOR PALETTE */
+
+	/* Primary */
+
+	--sea-green-1: #E4F2F1;
+	--sea-green-2: #B3E6E2;
+	--sea-green-3: #86D9D6;
+	--sea-green-4: #5ECCCC;
+	--sea-green-5: #39BBBF;
+	--sea-green-6: #19A9B3;
+	--sea-green-7: #0D7F8C;
+	--sea-green-8: #045966;
+	--sea-green-9: #003540;
+	--sea-green-10: #00141A;
+
+	--gray-1: #FFFFFF;
+	--gray-2: #FAFAFA;
+	--gray-3: #F5F5F5;
+	--gray-4: #F0F0F0;
+	--gray-5: #D9D9D9;
+	--gray-6: #BFBFBF;
+	--gray-7: #8C8C8C;
+	--gray-8: #595959;
+	--gray-9: #434343;
+	--gray-10: #262626;
+	--gray-11: #1F1F1F;
+	--gray-12: #141414;
+	--gray-13: #000000;
+
+	/* Secondary */
+
+	--sage-1: #E4F1E0;
+	--sage-2: #F3FFE0;
+	--sage-3: #E6F2E4;
+	--sage-4: #D4E6D8;
+	--sage-5: #CDD9CC;
+	--sage-6: #A7CBA4;
+	--sage-7: #80A67E;
+	--sage-8: #5B8058;
+	--sage-9: #3B5938;
+	--sage-10: #213322;
+
+	/* Tertiary */
+
+	--gold-1: #FFFBE6;
+	--gold-2: #FFF1B8;
+	--gold-3: #FFE58F;
+	--gold-4: #FFD666;
+	--gold-5: #FFC53D;
+	--gold-6: #FAAD14;
+	--gold-7: #D48806;
+	--gold-8: #AD6800;
+	--gold-9: #874D00;
+	--gold-10: #613400;
+
+	--lavender-1: #FCF0FF;
+	--lavender-2: #F9E6FF;
+	--lavender-3: #EDDBFF;
+	--lavender-4: #D9C4FF;
+	--lavender-5: #C26BFF;
+	--lavender-6: #B340F5;
+	--lavender-7: #8D2BCF;
+	--lavender-8: #6B1BAB;
+	--lavender-9: #4C0E82;
+	--lavender-10: #32095C;
+
+	--green-1: #F6FFED;
+	--green-2: #D9F7BE;
+	--green-3: #B7EB8F;
+	--green-4: #95DE64;
+	--green-5: #73D13D;
+	--green-6: #52C41A;
+	--green-7: #389E0D;
+	--green-8: #237804;
+	--green-9: #135200;
+	--green-10: #092B00;
+
+	--red-1: #FFF1F0;
+	--red-2: #FFCCC7;
+	--red-3: #FFA39E;
+	--red-4: #FF7875;
+	--red-5: #FF4D4F;
+	--red-6: #F5222D;
+	--red-7: #CF1322;
+	--red-8: #A8071A;
+	--red-9: #820014;
+	--red-10: #5C0011;
+
+
+	/* ! COLOR TOKENS (SEMANTIC)  */
+
+	/* NEW  */
+
+	/* ========== SEMANTIC TOKENS ========== */
+
+	/* Backgrounds */
+	--color-bg-layout: var(--gray-2);
+	--color-bg-surface: var(--gray-1);
+	--color-bg-elevated: var(--gray-1);
+
+	/* Brand */
+	--color-brand-primary: var(--sea-green-8);
+	--color-brand-primary-hover: var(--sea-green-5);
+	--color-brand-primary-active: var(--sea-green-9);
+	--color-brand-primary-disabled: var(--sea-green-7);
+
+	/* Borders */
+	--color-border-subtle: var(--gray-4);
+	--color-border-default: var(--gray-6);
+	--color-border-strong: var(--gray-8);
+
+	/* Text */
+	--color-text-primary: var(--gray-12);
+	--color-text-secondary: var(--gray-8);
+	--color-text-tertiary: var(--gray-7);
+	--color-text-inverse: var(--gray-1);
+
+	/* Status */
+	--color-status-error: var(--red-6);
+	--color-status-success: var(--sage-6);
+	--color-status-info: var(--sea-green-5);
+
+
+	/* OLD */
 	--background: #F9FAFB;
 	--background-2: #FFFFFF;
 	--primary: #045966;
@@ -16,16 +167,17 @@ body {
 
 	--accent-green-light: #D4F1E8;
 	--accent-gray-light: #f0f0f0;
+	--accent-gray-light-2: #D9D9D9;
 	--accent-gray-medium: #A0A0A0;
 	--accent-gray-dark: #919191;
-	--Work-Sans: "Work Sans", sans-serif;
+	--accent-gray-dark-2: #595959;
 
 	--color-primary-disabled: #929895;
 	--color-secondary: #3f8176;
 	--color-secondary-disabled: #9fc0ba;
-	--color-highlight: #ffffff;
+	--color-highlight: #000000;
 	--color-red-error: #cb5251;
-	--color-message-text: #333333;
+;
 	--color-message-transparent: rgba(51, 51, 51, 0.6);
 	--color-message-transparent-2: rgba(51, 51, 51, 0.4);
 
@@ -38,26 +190,6 @@ body {
 	padding: 12px;
 }
 
-/* ! Typography */
-
-/* *Font Declarations */
-
-@font-face {
-	font-family: "Pangea";
-	src: url("public/fonts/pangea-variable-fontwerk.woff2") format("woff2-variations");
-	font-weight: 100 900;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Pretendard";
-	src: url("public/fonts/pretendard-variable-Hyung-jin-Kil.woff2") format("woff2-variations");
-	font-weight: 100 900;
-	font-style: normal;
-	font-display: swap;
-}
-
 /* Ant System Typography */
 
 h1.ant-typography {
@@ -65,7 +197,6 @@ h1.ant-typography {
 	font-weight: 500;
 	font-size: 38px;
 	line-height: 46px;
-	margin: 0 0 16px 0;
 }
 
 h2.ant-typography {
@@ -73,7 +204,6 @@ h2.ant-typography {
 	font-weight: 500;
 	font-size: 30px;
 	line-height: 38px;
-	margin: 0 0 14px 0;
 }
 
 h3.ant-typography {
@@ -81,7 +211,6 @@ h3.ant-typography {
 	font-weight: 500;
 	font-size: 24px;
 	line-height: 32px;
-	margin: 0 0 12px 0;
 }
 
 h4.ant-typography {
@@ -89,7 +218,6 @@ h4.ant-typography {
 	font-weight: 500;
 	font-size: 20px;
 	line-height: 28px;
-	margin: 0 0 10px 0;
 }
 
 h5.ant-typography {
@@ -97,7 +225,14 @@ h5.ant-typography {
 	font-weight: 500;
 	font-size: 16px;
 	line-height: 24px;
-	margin: 0 0 8px 0;
+}
+
+
+p.ant-typography {
+	font-family: var(--font-body);
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 22px;
 }
 
 /* Semantic Fallback Typography */
@@ -107,7 +242,6 @@ h1 {
 	font-weight: 500;
 	font-size: 38px;
 	line-height: 46px;
-	margin: 0 0 16px 0;
 }
 
 h2 {
@@ -115,7 +249,6 @@ h2 {
 	font-weight: 500;
 	font-size: 30px;
 	line-height: 38px;
-	margin: 0 0 14px 0;
 }
 
 h3 {
@@ -123,7 +256,6 @@ h3 {
 	font-weight: 500;
 	font-size: 24px;
 	line-height: 32px;
-	margin: 0 0 12px 0;
 }
 
 h4 {
@@ -131,7 +263,6 @@ h4 {
 	font-weight: 500;
 	font-size: 20px;
 	line-height: 28px;
-	margin: 0 0 10px 0;
 }
 
 h5 {
@@ -139,7 +270,6 @@ h5 {
 	font-weight: 500;
 	font-size: 16px;
 	line-height: 24px;
-	margin: 0 0 8px 0;
 }
 
 p {
@@ -147,7 +277,16 @@ p {
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
-	margin: 0 0 12px 0;
+}
+
+.ant-card li {
+	font-family: var(--font-body);
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 22px;
+	text-decoration: underline;
+	text-decoration-style: solid;
+	margin-bottom: 0.5rem;
 }
 
 .regular {
@@ -173,6 +312,8 @@ p {
 	padding: 0 !important;
 	background-color: var(--primary);
 }
+
+/* ! FORM COMPONENTS  */
 
 .ant-collapse-header {
 	border-radius: 2px !important;
@@ -219,21 +360,103 @@ p {
 	font-size: 14px;
 	line-height: 22px;
 	color: var(--accent-gray-dark) !important;
-	background-color: var(--background);
-	border: 1px solid var(--accent-gray-light);
+	background-color: var(--color-bg-layout);
+	border: 1px solid var(--accent-gray-light-2);
 	padding: 4px 8px;
 	margin-right: 4px;
 	margin-bottom: 4px;
 	border-radius: 20px;
-	color: var(--color-message-text);
 	max-width: 135px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
+.eventDetailTagCancelled {
+	color: var(--accent-gray-dark) !important;
+	background-color: var(--accent-gray-light);
+}
+
+.statusTag {
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 22px;
+
+	width: fit-content;
+	border: none;
+	padding: 4px 12px;
+	margin-right: 0;
+	margin-bottom: 0;
+	border-radius: 20px;
+	overflow: hidden;
+}
+
+.inReviewTag {
+	color: #874D00;
+	background-color: #FFF1B8;
+}
+
+.inDraftTag {
+	color: #045966;
+	background-color: #B3E6E2;
+}
+
+.approvedTag {
+	color: #135200;
+	background-color: #D9F7BE;
+}
+
+.cancelledTag {
+	color: #D9D9D9;
+	background-color: #595959;
+}
+
+.pastTag {
+	color: #595959;
+	background-color: #D9D9D9;
+}
+
+.deniedTag {
+	color: #820014;
+	background-color: #FFCCC7;
+}
+
 /* DIVIDER */
 
 .divider {
-	border-block-start: 2px solid var(--accent-gray-light) !important;
+	border-block-start: 2px solid var(--accent-gray-light-2) !important;
 	margin: 16px 0 !important;
 }
+
+/* COLLAPSE */
+
+.ant-collapse {
+	background: var(--background-2);
+	border: 1px solid var(--accent-gray-light-2);
+	width: 100%;
+}
+
+.ant-collapse-content {
+	border-top: none !important;
+}
+
+.ant-collapse-content-box {
+	padding-top: 0 !important;
+}
+
+.ant-collapse-expand-icon {
+	height: 28px !important;
+}
+
+/* CALENDAR */
+
+.ant-picker-cell .ant-picker-cell-inner:hover {
+	border-radius: 0.125rem;
+	border: 1px solid var(--sea-green-8, #045966);
+}
+
+.ant-picker-cell-inner {
+	height: 1.5rem;
+	width: 2.5rem;
+	border-radius: 0;
+}
+
