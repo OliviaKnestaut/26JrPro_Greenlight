@@ -9,7 +9,6 @@ import { formatDateMDY } from '~/lib/formatters';
 import { Typography, Card, Badge, Divider } from "antd";
 import ProgressCircle from '../../molecules/progress-circle';
 import StyledCalendar from '../../molecules/calendar';
-import { Footer } from '../../molecules/footer/index';
 
 const { Link, Title } = Typography;
 import { RightOutlined } from '@ant-design/icons';
@@ -254,7 +253,6 @@ export function DashboardContent() {
                 </Card>
             </div>
         </div >
-        <Footer />
         </>
     );
 }

@@ -24,7 +24,8 @@
 	background: var(--color-background);
 	min-height: 0;
 	overflow-x: hidden;
-	margin-top: 64px;
+	margin-top: 0;
+	padding-top: 64px;
 }
 
 :global(.ant-layout-has-sider) .content {

@@ -49,9 +49,10 @@ $COL_MAP = [
         'updatedAt' => 'updated_at',
     ],
     'Organization' => [
-        'orgName' => 'orgName',
+        'orgName' => 'org_name',
         'username' => 'username',
         'bio' => 'bio',
+        'orgImg' => 'org_img',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
     ],
@@ -92,10 +93,12 @@ function mapDbRowToGraphQL(array $row, string $type, array $COL_MAP) : array {
 }
 
 // helper: fetch organization by id
-$fetchOrganization = function($pdo, $id) {
+$fetchOrganization = function($pdo, $id) use ($COL_MAP) {
     $stmt = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    if (!$row) return null;
+    return mapDbRowToGraphQL($row, 'Organization', $COL_MAP);
 };
 
 // CORS helper - allow requests from browser clients (adjust origin in production)
