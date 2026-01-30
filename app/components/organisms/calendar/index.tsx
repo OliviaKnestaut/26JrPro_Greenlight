@@ -1,11 +1,12 @@
 import { Typography } from "antd";
-import { WeeklyCalendar } from 'antd-weekly-calendar';
 const { Title, Paragraph, Link } = Typography;
 import { useNavigate } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Card } from "antd";
 import StyledCalendar from '../../molecules/calendar';
 import CardCalendarUpcoming from "../../molecules/card/card-calendar-upcoming";
+
+
 
 
 
@@ -29,20 +30,6 @@ export function CalendarContent() {
     ];
 
 
-
-    function MyCalendar() {
-        return (
-            <>
-                <WeeklyCalendar
-                    events={events}
-                    weekends={true}
-                    onEventClick={(event) => console.log(event)}
-                    onSelectDate={(date) => console.log(date)}
-                />
-            </>
-        );
-    }
-
     return (
         <div className="container mx-auto p-8">
             <div className="container">
@@ -56,7 +43,7 @@ export function CalendarContent() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "row", gap: "2rem", marginTop: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem"}}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem", flex: "1" }}>
                     <Card style={{
                         background: "var(--background-2)",
                         border: "1px solid var(--accent-gray-light)",
@@ -65,11 +52,13 @@ export function CalendarContent() {
                     </Card>
 
                     <Card>
-                        <Title level={4}>Weekly Calendar</Title>
-                        <CardCalendarUpcoming />
+                        <Title level={4} style={{color: "var(--color-brand-primary-active)"}} >Upcoming Events</Title>
+                        <CardCalendarUpcoming/>
                     </Card>
                 </div>
-                <MyCalendar />
+                <div style={{ flex: "2" }}>
+
+                </div>
             </div>
         </div>
     );

@@ -38,12 +38,6 @@ const StyledCalendar: React.FC = () => {
                 )}
                 onPanelChange={onPanelChange}
             />
-            <div>
-                <Typography.Title level={5} style={{ marginTop: '0.5rem' }}>
-                    Upcoming Events
-                </Typography.Title>
-                <CardCalendarUpcoming/>
-            </div>
         </div>
     );
 };
