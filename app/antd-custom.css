@@ -484,6 +484,7 @@ p {
 
 .toggle-nav a:hover{
 	color: var(--sea-green-9);
+	background-color: var(--gray-4);
 }
 
 .toggle-nav a.active {
@@ -498,8 +499,8 @@ p {
 
 
 .custom-doc-card{
-	max-width: 250px;
-	gap: 0px;
+	max-width: 275px;
+
 }
 
 .custom-doc-card .ant-card-body{

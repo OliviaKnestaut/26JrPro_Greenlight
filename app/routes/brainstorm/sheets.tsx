@@ -13,7 +13,7 @@ export default function BrainstormDocsStatic() {
         { id: '4', title: 'Organization Roster', lastEdited: '09/22/25', img: doc2 },
     ];
 
-     const otherDocs = [
+    const otherDocs = [
         { id: '5', title: 'Alumn Roster', lastEdited: '01/18/26', img: doc2 },
         { id: '6', title: 'Calendar Plan', lastEdited: '01/15/26', img: doc2 },
         { id: '7', title: 'Formula Doc', lastEdited: '01/12/26', img: doc2 },
@@ -41,7 +41,7 @@ export default function BrainstormDocsStatic() {
                 </div>
                 ),
                 children: (
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-5 flex-wrap">
                     {docs.map(doc => (
                     <Card
                         key={doc.id}
