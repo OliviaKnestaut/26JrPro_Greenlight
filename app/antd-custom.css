@@ -139,6 +139,7 @@ body{
 	--color-brand-primary-hover: var(--sea-green-5);
 	--color-brand-primary-active: var(--sea-green-9);
 	--color-brand-primary-disabled: var(--sea-green-7);
+	--color-brand-primary-shadow: rgba(0, 0, 0, 0.043);
 
 	/* Borders */
 	--color-border-subtle: var(--gray-4);
@@ -460,3 +461,71 @@ p {
 	border-radius: 0;
 }
 
+
+/* BRAINSTORM */
+.toggle-nav{
+	width: 198px;
+	height: 36px;
+	border: solid, 1px, var(--accent-gray-dark);
+	border-radius: 100px;
+	padding: 3px;
+	align-content: center;
+}
+
+.toggle-nav a{
+	font-size: 0.875rem;
+	width: 95px;
+	padding: 5px 30px;
+	border-radius: 100px;
+	align-items: center;
+	margin: 0px;
+	color: var(--gray-13);
+}
+
+.toggle-nav a:hover{
+	color: var(--sea-green-9);
+}
+
+.toggle-nav a.active {
+  background: var(--sea-green-9);
+  color: white;
+}
+
+.brainstorm-nav{
+	display: flex;
+	justify-content: space-between;
+}
+
+
+.custom-doc-card{
+	max-width: 250px;
+	gap: 0px;
+}
+
+.custom-doc-card .ant-card-body{
+	padding-top: 0px;
+}
+
+.custom-doc-card .ant-card-cover img{
+	padding: 13px;
+	border-radius: 0px;
+}
+
+.card-title-row{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.card-title-text{
+    display: inline-block;   
+    max-width: 75%;        
+    white-space: nowrap; 
+    overflow: hidden;         
+    text-overflow: ellipsis;    
+    vertical-align: middle;    
+}
+
+.docs-more{
+	margin-top: 24px;
+}
