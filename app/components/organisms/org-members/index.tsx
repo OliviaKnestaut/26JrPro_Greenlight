@@ -29,7 +29,7 @@ export function OrgMembersContent() {
     const imagePath = orgImg ? `${base}uploads/org_img/${orgImg}`.replace(/\\/g, '/') : undefined;
 
     return (
-        <div className="container mx-auto p-8">
+        <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
