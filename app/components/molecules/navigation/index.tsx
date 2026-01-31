@@ -73,6 +73,25 @@ export const Navigation: React.FC<NavigationProps> = ({
 	const navigate = useNavigate();
 	const location = useLocation();
 
+	// compute selected key based on current path, handling nested routes
+	const getSelectedKeyFromPath = (path: string) => {
+		if (!path || path === '/') return 'dashboard';
+		const parts = path.replace(/^\//, '').split('/');
+		if (parts[0] === 'brainstorm') {
+			if (parts[1] === 'docs') return 'docs-overview';
+			if (parts[1] === 'sheets') return 'sheets-overview';
+			return 'brainstorm';
+		}
+		return parts[0];
+	};
+
+	useEffect(() => {
+		const derived = getSelectedKeyFromPath(location.pathname);
+		if (derived === 'docs-overview' || derived === 'sheets-overview' || derived === 'brainstorm') {
+			setOpenKeys(['brainstorm']);
+		}
+	}, [location.pathname]);
+
 	const handleMenuClick: React.ComponentProps<typeof Menu>['onClick'] = (e) => {
 		const { key } = e;
 		setOpenKeys(e.keyPath);
@@ -102,6 +121,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 					"itemActiveBg": "var(--primary-disabled)",
 					"itemColor": "var(--background-2)",
 					"itemSelectedColor": "var(--background-2)",
+					"subMenuItemSelectedColor": "var(--background-2)",
 					"colorBgElevated": "var(--primary)",
 					"itemBorderRadius": 0,
 					"itemMarginInline": 0,
@@ -143,7 +163,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 						items={navItems}
 						onClick={handleMenuClick}
 						style={{ border: 'none', flex: 1 }}
-						selectedKeys={[selectedKey || (location.pathname === '/' ? 'dashboard' : location.pathname.replace(/^\//, '').split('/')[0]) ]}
+						selectedKeys={[selectedKey || getSelectedKeyFromPath(location.pathname)]}
 						openKeys={openKeys}
 						onOpenChange={onMenuOpenChange}
 					/>
