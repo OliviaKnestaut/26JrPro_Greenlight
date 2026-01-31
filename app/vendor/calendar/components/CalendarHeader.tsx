@@ -12,7 +12,7 @@ import {
 
 import DatePicker from './DatePicker';
 
-import { CalendarHeaderProps } from './types';
+import type { CalendarHeaderProps } from './types';
 
 interface MonthNameProps {
   startWeek: Date;

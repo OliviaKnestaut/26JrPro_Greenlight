@@ -4,7 +4,7 @@ import { startOfWeek, endOfWeek } from 'date-fns';
 
 import Calendar from './components/CalendarBody';
 import { CalendarHeader } from './components/CalendarHeader';
-import { GenericEvent, CalendarContainerProps } from './components/types';
+import type { GenericEvent, CalendarContainerProps } from './components/types';
 import { daysToWeekObject } from './components/utils';
 
 export function WeeklyCalendar<T extends GenericEvent>({
@@ -36,7 +36,7 @@ export function WeeklyCalendar<T extends GenericEvent>({
   const weekObject = daysToWeekObject(events, startWeek);
 
   return (
-    <Card>
+    <div>
       <CalendarHeader startWeek={startWeek} setStartWeek={setStartWeek} />
       <Calendar
         weekDatesRange={weekPeriod}
@@ -44,6 +44,7 @@ export function WeeklyCalendar<T extends GenericEvent>({
         onEventClick={onEventClick as (e: GenericEvent) => any}
         weekends={weekends}
       />
-    </Card>
+    </div>
+
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { getDay, setDay, differenceInMinutes } from 'date-fns';
 
-import {
+import type {
     GenericEvent,
     EventBlockProps,
 } from './types';
@@ -42,7 +42,6 @@ export const EventBlock = <T extends GenericEvent>({
                 borderColor: 'white',
                 borderStyle: 'solid',
                 borderWidth: '0.01rem',
-                borderRadius: '5px',
                 backgroundColor: event.backgroundColor
                     ? event.backgroundColor
                     : TURQUOISE,

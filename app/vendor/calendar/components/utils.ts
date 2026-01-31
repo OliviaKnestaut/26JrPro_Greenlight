@@ -12,7 +12,7 @@ import {
   differenceInMinutes,
 } from 'date-fns';
 
-import {
+import type {
   WeekObject,
   EventsObject,
   WeekDateRange,
@@ -112,76 +112,61 @@ export const daysToWeekObject = <T extends GenericEvent>(
  *
  * @see createDayColumns
  */
-
 export const getDayHoursEvents = <T extends GenericEvent>(
   weekRange: WeekDateRange,
   weekObject: WeekObject<T> | undefined
 ) => {
-  const ALL_DAY_EVENT = 0;
-  const ROW_AMOUNT = 26
+  const START_HOUR = 8;   // 8 AM
+  const END_HOUR = 24;  // 12 AM (midnight)
+  const ROW_AMOUNT = END_HOUR - START_HOUR + 1;
 
   const events: EventsObject<T>[] = [];
+
+  // Start from the beginning of the week, but at 8 AM
+  const baseDate = startOfDay(startOfWeek(weekRange.startDate));
+
   for (let i = 0; i < ROW_AMOUNT; i++) {
-    const startDate = startOfDay(startOfWeek(weekRange.startDate))
-    const hour = addHours(startDate, i);
+    const hour = addHours(baseDate, START_HOUR + i);
 
     events.push({
       id: i,
       hourObject: hour,
-      hour: i != ALL_DAY_EVENT ? format(hour, 'hh a') : 'all-day',
+      hour: format(hour, 'HH:mm'),
+
       Sunday:
-        weekObject?.sunday &&
-        weekObject?.sunday.filter(e => {
-
-          return e.allDay
-            ? i === ALL_DAY_EVENT
-            : isSameHour(e.startTime, add(hour, { days: 0 }));
-        }),
+        weekObject?.sunday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 0 }))
+        ),
       Monday:
-        weekObject?.monday &&
-        weekObject?.monday.filter(e => {
-          return e.allDay ? i === ALL_DAY_EVENT : isSameHour(e.startTime, add(hour, { days: 1 }));
-        }),
+        weekObject?.monday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 1 }))
+        ),
       Tuesday:
-        weekObject?.tuesday &&
-        weekObject?.tuesday.filter(e => {
-          return e.allDay
-            ? i === ALL_DAY_EVENT
-            : isSameHour(e.startTime, add(hour, { days: 2 }));
-        }),
+        weekObject?.tuesday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 2 }))
+        ),
       Wednesday:
-        weekObject?.wednesday &&
-        weekObject?.wednesday.filter(e => {
-          return e.allDay
-            ? i === ALL_DAY_EVENT
-            : isSameHour(e.startTime, add(hour, { days: 3 }));
-        }),
+        weekObject?.wednesday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 3 }))
+        ),
       Thursday:
-        weekObject?.thursday &&
-        weekObject?.thursday.filter(e => {
-          return e.allDay
-            ? i === ALL_DAY_EVENT
-            : isSameHour(e.startTime, add(hour, { days: 4 }));
-        }),
+        weekObject?.thursday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 4 }))
+        ),
       Friday:
-        weekObject?.friday &&
-        weekObject?.friday.filter(e => {
-          return e.allDay
-            ? i === ALL_DAY_EVENT
-            : isSameHour(e.startTime, add(hour, { days: 5 }));
-        }),
+        weekObject?.friday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 5 }))
+        ),
       Saturday:
-        weekObject?.saturday &&
-        weekObject?.saturday.filter(e => {
-          return e.allDay
-            ? i === ALL_DAY_EVENT
-            : isSameHour(e.startTime, add(hour, { days: 6 }));
-        })
-
+        weekObject?.saturday?.filter(e =>
+          isSameHour(e.startTime, add(hour, { days: 6 }))
+        ),
     });
   }
+
   return events;
 };
+
 
 const HOUR_TO_DECIMAL = 1.666666667;
 export const MIN_BOX_SIZE = 40;

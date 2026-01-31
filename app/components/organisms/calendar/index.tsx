@@ -5,6 +5,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Card } from "antd";
 import StyledCalendar from '../../molecules/calendar';
 import CardCalendarUpcoming from "../../molecules/card/card-calendar-upcoming";
+import { WeeklyCalendar } from "~/vendor/calendar/WeeklyCalendar";
 
 
 
@@ -57,7 +58,12 @@ export function CalendarContent() {
                     </Card>
                 </div>
                 <div style={{ flex: "2" }}>
-
+                    <WeeklyCalendar
+                        events={events}
+                        weekends={true}
+                        onEventClick={(event) => console.log(event)}
+                        onSelectDate={(date) => console.log(date)}
+                    />
                 </div>
             </div>
         </div>

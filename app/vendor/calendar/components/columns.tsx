@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { add, format } from 'date-fns';
-import { ColumnProps } from 'antd/es/table';
+import { add, format, isWeekend, isSameDay } from 'date-fns';
+import type { ColumnProps } from 'antd/es/table';
 
-import {
+import type {
     GenericEvent,
     EventsObject,
 } from './types';
@@ -36,22 +36,49 @@ export function createDayColumns<T extends GenericEvent>(
     includeWeekends: boolean,
     onEventClick?: (e: T) => any | undefined,
 ): ColumnProps<EventsObject<T>>[] {
-
     const dayIndices = includeWeekends ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     return dayIndices.map(dayIndex => {
         const columnDate = add(weekDates.startDate, { days: dayIndex });
-        const formattedDay = `${format(columnDate, 'iii')} ${format(columnDate, 'dd')}`;
+        const isToday = isSameDay(columnDate, new Date());
+        const formattedDay = `${format(columnDate, 'EEE')} (${format(columnDate, 'M/d')})`;
 
         return {
-            title: formattedDay,
+            title: (
+                <div style={{ whiteSpace: 'nowrap' }}>
+                    {formattedDay}
+                </div>
+            ),
             dataIndex: dayNames[dayIndex],
             key: dayNames[dayIndex],
             width: 2,
-            render: (events: T[], row: EventsObject<T>): React.ReactNode | undefined => {
+
+            // Header cell styles
+            onHeaderCell: () => ({
+                style: {
+                    backgroundColor: isToday ? 'rgba(25, 169, 179, 0.32)' : 'var(--sea-green-1)', // today highlight
+                    fontWeight: 600,
+                    height: '1.5rem',
+                    padding: '0',
+                },
+            }),
+
+            // Cell styles
+            onCell: () => {
+                const weekend = isWeekend(columnDate);
+                return {
+                    style: {
+                        backgroundColor: weekend ? 'var(--gray-2)' : 'white',
+                        padding: '0',
+                        height: '6rem',
+                    },
+                };
+            },
+
+            render: (events: T[], row: EventsObject<T>) => {
                 if (events && events.length > 0) {
-                    return events.map((event: T, index: number) => (
+                    return events.map((event, index) => (
                         <EventBlock
                             key={event.eventId}
                             event={event}
