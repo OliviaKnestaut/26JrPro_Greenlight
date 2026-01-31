@@ -13,5 +13,9 @@ export default [
         route("calendar", "routes/calendar.tsx"),
         route("org-members", "routes/org-members.tsx"),
         route("event-form", "routes/event-form.tsx"),
+        route("brainstorm", "routes/brainstorm.tsx", [
+            route("docs", "routes/brainstorm/docs.tsx"),
+            route("sheets", "routes/brainstorm/sheets.tsx"),
+        ]),
     ]),
 ] satisfies RouteConfig;
