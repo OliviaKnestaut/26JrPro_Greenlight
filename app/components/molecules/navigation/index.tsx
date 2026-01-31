@@ -38,8 +38,8 @@ const defaultNavItems: MenuProps['items'] = [
 		icon: <BulbOutlined />,
 		label: 'Brainstorm',
 		children: [
-			{ key: 'docs-overview', label: 'Docs' },
-			{ key: 'sheets-overview', label: 'Sheets' },
+			{ key: 'docs-overview', label: <Link to="/brainstorm/docs">Docs</Link> },
+			{ key: 'sheets-overview', label: <Link to="/brainstorm/sheets">Sheets</Link> },
 		],
 	},
 	{ key: 'resources', icon: <FolderOutlined />, label: <Link to="/resources">Resources</Link> },

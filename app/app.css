@@ -10,3 +10,18 @@ body {
   border-radius: 0;
   padding: 0;
 }
+
+.ant-btn-primary{
+  box-shadow: 0 2px 0 0 var(--color-brand-primary-shadow);
+}
+.ant-btn-default{
+  border: solid 1.5px var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+
+button {
+  height: 32px;
+  padding: 4px 15px;
+  font-size: 14px;
+  border-radius: 8px;
+}
