@@ -34,15 +34,15 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     // default/full variants
 
     const inReviewCard = (
-            <Card {...rest}
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
+            style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <Paragraph className={styles.submitted}>SUBMITTED ON: {submissionDate}</Paragraph>
                 <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{background: isPast ? '#FFF1F0' : 'var(--background)'}} icon={<CalendarOutlined />}>{date}</Tag> : null}
+                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
                     {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
                     {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
                 </div>
@@ -52,17 +52,17 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const draftCard = (
-            <Card {...rest} 
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)' }}>
+            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }}/>
+                    <MoreOutlined style={{ fontSize: "24px" }} />
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{background: isPast ? '#FFF1F0' : 'var(--background)'}} icon={<CalendarOutlined />}>{date}</Tag> : null}
+                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
                     {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
                     {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
                 </div>
@@ -72,9 +72,9 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const approvedCardVisual = (
-            <Card {...rest}
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
+            style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <img
@@ -87,11 +87,11 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }}/>
+                    <MoreOutlined style={{ fontSize: "24px" }} />
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{background: isPast ? '#FFF1F0' : 'var(--background)'}} icon={<CalendarOutlined />}>{date}</Tag> : null}
+                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
                     {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
                     {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
                 </div>
@@ -101,9 +101,9 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const reviewCardVisual = (
-            <Card {...rest}
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
+            style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <img
@@ -116,11 +116,11 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }}/>
+                    <MoreOutlined style={{ fontSize: "24px" }} />
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{background: isPast ? '#FFF1F0' : 'var(--background)'}} icon={<CalendarOutlined />}>{date}</Tag> : null}
+                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
                     {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
                     {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
                 </div>
@@ -130,9 +130,9 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const draftCardVisual = (
-            <Card {...rest}
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
+            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <img
@@ -145,11 +145,11 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }}/>
+                    <MoreOutlined style={{ fontSize: "24px" }} />
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{background: isPast ? '#FFF1F0' : 'var(--background)'}} icon={<CalendarOutlined />}>{date}</Tag> : null}
+                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
                     {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
                     {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
                 </div>
@@ -159,9 +159,9 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const cancelledCardVisual = (
-            <Card {...rest}
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)'}}>
+            style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <img
@@ -174,7 +174,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title} style={{ color: 'var(--accent-gray-dark-2)' }}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px", color: 'var(--accent-gray-dark-2)' }}/>
+                    <MoreOutlined style={{ fontSize: "24px", color: 'var(--accent-gray-dark-2)' }} />
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }} style={{ color: 'var(--accent-gray-dark-2)' }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -188,9 +188,9 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const pastCardVisual = (
-            <Card {...rest}
+        <Card {...rest}
             styles={{ body: { padding: 16 } }}
-        style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light)' }}>
+            style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <img
@@ -203,7 +203,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }}/>
+                    <MoreOutlined style={{ fontSize: "24px" }} />
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
