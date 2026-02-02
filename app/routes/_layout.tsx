@@ -17,7 +17,12 @@ export default function RootLayout() {
                 },
                 components: {
                     Table: {
-                        headerBg: "var(--primary-bright)",
+                        headerBg: "var(--sage-3)",
+                        headerSplitColor: "rgba(0, 0, 0, 0.06)",
+                        borderColor: "rgba(0, 0, 0, 0.06)",
+                        rowHoverBg: "rgba(0, 0, 0, 0.06)",
+                        headerBorderRadius: 0,
+                        borderRadius: 0,
                     },
                     Checkbox: {
                         borderRadiusSM: 0,
