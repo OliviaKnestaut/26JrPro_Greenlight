@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ColumnsType } from "antd/es/table";
 const { Title, Paragraph, Link } = Typography;
 import { useNavigate } from "react-router";
-import { ArrowLeftOutlined, PlusOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 
 type BudgetRow = {
     key: string;
