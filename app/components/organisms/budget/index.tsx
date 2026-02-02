@@ -78,7 +78,7 @@ export function BudgetContent() {
             </div>
             <div className="container w-full">
                 <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem" }}>
-                    <Title level={2} style={{ margin: 0 }}>Event Submissions</Title>
+                    <Title level={2} style={{ margin: 0 }}>Budget</Title>
                     <Paragraph>
                         Manage and track the status of all your events, from draft to approval and more.
                     </Paragraph>
