@@ -25,24 +25,24 @@ export function BudgetContent() {
 
     const columns: ColumnsType<BudgetRow> = [
         {
-            title: 'Date',
+            title: 'Category',
             dataIndex: 'category',
             key: 'category',
         },
         {
-            title: 'Title',
+            title: 'Allocated',
             dataIndex: 'allocated',
             key: 'allocated',
             render: (val: number) => `$${val.toLocaleString()}`,
         },
         {
-            title: 'Categories',
+            title: 'Spent',
             dataIndex: 'spent',
             key: 'spent',
             render: (val: number) => `$${val.toLocaleString()}`,
         },
         {
-            title: 'Event',
+            title: 'Remaining',
             key: 'remaining',
             render: (_: any, record: BudgetRow) => `$${(record.allocated - record.spent).toLocaleString()}`,
         },
