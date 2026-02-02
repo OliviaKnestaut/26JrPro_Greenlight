@@ -12,13 +12,6 @@ type BudgetRow = {
     spent: number;
 };
 
-const sampleData: BudgetRow[] = [
-    { key: '1', category: 'Marketing', allocated: 20000, spent: 12500 },
-    { key: '2', category: 'Events', allocated: 15000, spent: 9800 },
-    { key: '3', category: 'Operations', allocated: 12000, spent: 5400 },
-    { key: '4', category: 'R&D', allocated: 18000, spent: 4500 },
-];
-
 export function BudgetContent() {
     const navigate = useNavigate();
     const [showFullAccount17, setShowFullAccount17] = useState(false);
