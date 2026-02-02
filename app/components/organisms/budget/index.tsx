@@ -80,7 +80,7 @@ export function BudgetContent() {
         <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
-                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined  /> Back </Link>
+                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
                 </Title>
             </div>
             <div className="container w-full">
