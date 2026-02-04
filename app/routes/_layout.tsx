@@ -38,37 +38,25 @@ export default function RootLayout() {
 
 function AuthGate() {
     const location = useLocation();
-    const isLoginRoute = location.pathname === '/login';
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    if (isLoginRoute) return <Outlet />;
-
-    if (!user) return <Navigate to="/login" replace />;
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
-    
     // Set document title and favicon
-    
-    const mapTitles: Record<string, string> = {
-        "/": "Home | GreenLight",
-        "/login": "Login | GreenLight",
-        "/database-dump": "Database Dump | GreenLight",
-        "/antd-example": "Ant Design Example | GreenLight",
-        "/event-submissions": "Event Submissions | GreenLight",
-        "/purchase-requests": "Purchase Requests | GreenLight",
-        "/budget": "Budget | GreenLight",
-        "/resources": "Resources | GreenLight",
-        "/calendar": "Calendar | GreenLight",
-        "/org-members": "Organization Members | GreenLight",
-        "/event-form": "Event Form | GreenLight",
-    };
-
     useEffect(() => {
+        const mapTitles: Record<string, string> = {
+            "/": "Home | GreenLight",
+            "/login": "Login | GreenLight",
+            "/database-dump": "Database Dump | GreenLight",
+            "/antd-example": "Ant Design Example | GreenLight",
+            "/event-submissions": "Event Submissions | GreenLight",
+            "/purchase-requests": "Purchase Requests | GreenLight",
+            "/budget": "Budget | GreenLight",
+            "/resources": "Resources | GreenLight",
+            "/calendar": "Calendar | GreenLight",
+            "/org-members": "Organization Members | GreenLight",
+            "/event-form": "Event Form | GreenLight",
+        };
+
         document.title = mapTitles[location.pathname] ?? "GreenLight";
 
         let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
@@ -81,6 +69,14 @@ function AuthGate() {
         link.href = "app/components/assets/GreenlightLogo.svg";
     }, [location.pathname]);
 
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const isLoginRoute = location.pathname === '/login';
+    if (isLoginRoute) return <Outlet />;
+    if (!user) return <Navigate to="/login" replace />;
 
     return (
         <AppLayout isAuthenticated={true} user={user} onLogout={handleLogout}>
