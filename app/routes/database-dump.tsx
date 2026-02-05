@@ -1,6 +1,6 @@
 import { useGetEventsQuery, useGetOrganizationsQuery, useGetUsersQuery } from '~/lib/graphql/generated';
 import type { GetDbDumpQuery } from '~/lib/graphql/generated';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Table, Avatar, Image, Pagination } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';

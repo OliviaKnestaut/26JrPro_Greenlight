@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Form, Button, Collapse, Steps, Typography } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 const { Title, Link } = Typography;
@@ -8,30 +8,33 @@ import EventDetailsSection from "../event-form/sections/EventDetailsSection";
 import DateLocationSection from "../event-form/sections/DateLocationSection";
 import EventElementsSection from "../event-form/sections/EventElementsSection";
 import BudgetPurchaseSection from "../event-form/sections/BudgetPurchasesSection";
+import SuccessModal from "../../molecules/event-flow/success-modal";
 import styles from "./eventform.module.css";
+import NestFoodSection from "./sections/nest/nestFood";
+import NestVendorSection from "./sections/nest/nestVendor";
 const { Panel } = Collapse;
 
 // Define the branching logic for nested sections
 const formBranching = [
     {
-        when: "vendor",
-        is: "yes",
-        key: "vendor",
-        parent: "eventElements",
-        header: "Vendor Details",
-        component: EventDetailsSection,
-        indent: 32
-    },
-
-    {
         when: "eventElements",
         is: "Food",
         key: "vendorDetails",
         parent: "eventElements",
-        header: "Vendor Details",
-        component: EventDetailsSection,
+        header: "Food",
+        component: NestFoodSection,
         indent: 32
-    }
+    },
+
+    {
+        when: "vendor",
+        is: "yes",
+        key: "vendor",
+        parent: "budgetPurchase",
+        header: "Vendor Details",
+        component: NestVendorSection,
+        indent: 32
+    },
 ]
 
 // Recursive function to render nested sections based on branching logic
@@ -59,7 +62,8 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
 }
 
 export function EventForm() {
-    const { control, handleSubmit, getValues } = useForm()
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const { control, handleSubmit, getValues, reset } = useForm()
     const isSelected = useWatch({ control });
     const navigate = useNavigate();
 
@@ -95,6 +99,30 @@ export function EventForm() {
 
     const onSubmit = (data: any) => {
         console.log("FORM DATA:", data)
+        localStorage.setItem("eventFormData", JSON.stringify(data))
+        setIsModalOpen(true)
+    }
+
+    const handleModalClose = () => {
+        setIsModalOpen(false)
+    }
+
+    const handleDashboardClick = () => {
+        setIsModalOpen(false)
+        navigate("/")
+    }
+
+    const handleEventOverviewClick = () => {
+        setIsModalOpen(false)
+        navigate("/event-overview")
+    }
+
+    const handleDiscard = () => {
+        if (window.confirm("Are you sure? This will discard all changes.")) {
+            reset()
+            localStorage.removeItem("eventFormData")
+            navigate("/")
+        }
     }
 
     return (
@@ -170,12 +198,19 @@ export function EventForm() {
                                 Save as Draft
                             </Button>
                         </div>
-                        <Button type="default" htmlType="button" block danger>
+                        <Button type="default" htmlType="button" danger onClick={handleDiscard}>
                             Discard
                         </Button>
                     </div>
                 </Form>
             </div>
+
+            {/* Success Modal */}
+            <SuccessModal
+                open={isModalOpen}
+                onDashboardClick={handleDashboardClick}
+                onEventOverviewClick={handleEventOverviewClick}
+            />
         </div>
     )
 }

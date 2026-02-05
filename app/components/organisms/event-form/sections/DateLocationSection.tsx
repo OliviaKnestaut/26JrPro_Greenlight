@@ -1,9 +1,8 @@
 import { Controller } from "react-hook-form"
-import { Input, Upload, Typography } from "antd"
-import { UploadOutlined } from "@ant-design/icons"
+import { DatePicker, Typography, Radio, Select } from "antd"
 
-const { TextArea } = Input
 const { Text } = Typography
+const { RangePicker } = DatePicker
 
 type Props = {
     control: any
@@ -12,46 +11,34 @@ type Props = {
 export default function DateLocationSection({ control }: Props) {
     return (
         <>
-            {/* Image Upload */}
+
             <Controller
-                name="event.image"
+                name="location"
                 control={control}
                 render={({ field }) => (
                     <div style={{ marginBottom: 24 }}>
-                        <Text strong>Image:</Text>
-                        <br />
-
-                        <Upload
-                            beforeUpload={() => false} // prevent auto-upload
-                            maxCount={1}
-                            onChange={(info) => {
-                                const file = info.fileList[0]?.originFileObj
-                                field.onChange(file)
-                            }}
-                        >
-                            <div style={{ marginTop: 8 }}>
-                                <UploadOutlined /> Click to Upload
-                            </div>
-                        </Upload>
-
-                        <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
-                            Recommended resolution is 640×640 with file size under 2MB
-                        </Text>
+                        <Text strong>Location Type</Text>
+                        <Radio.Group {...field}>
+                            <Radio value="on-campus">On-Campus</Radio>
+                            <Radio value="off-campus">Off-Campus</Radio>
+                            <Radio value="virtual">Virtual</Radio>
+                        </Radio.Group>
                     </div>
                 )}
             />
 
-            {/* Event Name */}
+            {/* Date & Time */}
             <Controller
-                name="event.name"
+                name="event.dateRange"
                 control={control}
-                rules={{ required: "Event name is required" }}
+                rules={{ required: "Start and end time are required" }}
                 render={({ field, fieldState }) => (
-                    <div style={{ marginBottom: 24 }}>
-                        <Text strong>Event Name</Text>
-                        <Input
-                            {...field}
-                            placeholder="Enter the name of your event here."
+                    <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+                        <Text strong>Event Date & Time</Text>
+                        <RangePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            showTime
                             status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
@@ -61,41 +48,31 @@ export default function DateLocationSection({ control }: Props) {
                 )}
             />
 
-            {/* Description */}
+            {/* Location */}
             <Controller
-                name="event.description"
+                name="location.name"
                 control={control}
-                rules={{ maxLength: 100 }}
-                render={({ field }) => (
-                    <div style={{ marginBottom: 24 }}>
-                        <Text strong>Description</Text>
-                        <TextArea
+                rules={{ required: "Location name is required" }}
+                render={({ field, fieldState }) => (
+                    <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+                        <Text strong>Location</Text>
+                        <Select
                             {...field}
-                            rows={4}
-                            maxLength={100}
-                            placeholder="Enter a description of your event here."
-                            showCount
+                            placeholder="Select a location"
+                            status={fieldState.error ? "error" : ""}
+                            options={[
+                                { label: "Lebow 311", value: "Lebow 311" },
+                                { label: "Nesbitt 253", value: "Nesbitt 253" },
+                                { label: "URBN 247", value: "URBN 247" },
+                            ]}
                         />
+                        {fieldState.error && (
+                            <Text type="danger">{fieldState.error.message}</Text>
+                        )}
                     </div>
                 )}
             />
 
-            {/* Attendees */}
-            <Controller
-                name="event.attendees"
-                control={control}
-                render={({ field }) => (
-                    <div style={{ marginBottom: 8 }}>
-                        <Text strong>Attendees</Text>
-                        <Input
-                            {...field}
-                            type="number"
-                            placeholder="Ex: 500"
-                            min={1}
-                        />
-                    </div>
-                )}
-            />
         </>
     )
 }

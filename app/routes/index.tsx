@@ -1,4 +1,3 @@
-import React from "react";
 import { DashboardContent } from "~/components/organisms/dashboard";
 import { Navigate } from "react-router";
 

@@ -99,7 +99,6 @@ export function EventSubmissionsContent() {
     };
 
     return (
-        <>
         <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
@@ -322,6 +321,5 @@ export function EventSubmissionsContent() {
                 })()}
             </div>
         </div >
-        </>
     );
 }

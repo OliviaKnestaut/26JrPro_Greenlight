@@ -31,8 +31,7 @@ const { Sider } = Layout;
 const defaultNavItems: MenuProps['items'] = [
 	{ key: 'dashboard', icon: <HomeOutlined />, label: <Link to="/">Dashboard</Link> },
 	{ key: 'event-submissions', icon: <CalendarOutlined />, label: <Link to="/event-submissions">Event Submissions</Link> },
-	{ key: 'purchase-requests', icon: <DollarOutlined />, label: <Link to="/purchase-requests">Purchase Requests</Link> },
-	{ key: 'budget', icon: <LineChartOutlined />, label: <Link to="/budget">Budget</Link> },
+	{ key: 'budget', icon: <DollarOutlined />, label: <Link to="/budget">Budget</Link> },
 	{
 		key: 'brainstorm',
 		icon: <BulbOutlined />,
