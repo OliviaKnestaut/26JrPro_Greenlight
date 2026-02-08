@@ -12,7 +12,6 @@ const routes = [
     'database-dump',
     'antd-example',
     'event-submissions',
-    'purchase-requests',
     'budget',
     'resources',
     'calendar',

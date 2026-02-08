@@ -53,9 +53,8 @@ export function DashboardContent() {
     const inReview = events.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
 
     return (
-        <>
         <div className="container m-6 w-auto">
-                <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
+            <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
                 <CardWelcome
                     title={`Welcome back, ${user?.firstName ?? "there"}`}
                     subtitle="Ready to plan your next event?"
@@ -130,7 +129,6 @@ export function DashboardContent() {
                     </div>
                 </Card>
 
-
                 <Card  style={{
                         background: "var(--background-2)",
                         border: "1px solid var(--accent-gray-light)",
@@ -173,9 +171,8 @@ export function DashboardContent() {
                         </div>
                     </div>
                 </Card>
-
-
             </div>
+
             <div className="container my-4 w-auto flex gap-4">
                 <Card  style={{
                         background: "var(--background-2)",
@@ -255,6 +252,5 @@ export function DashboardContent() {
                 </Card>
             </div>
         </div >
-        </>
     );
 }
