@@ -43,6 +43,7 @@ import StyledCalendar from '../components/molecules/calendar';
 import SuccessModal from '../components/molecules/event-flow/success-modal';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
+import DiscardModal from '~/components/molecules/event-flow/discard-modal';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -51,6 +52,8 @@ export default function AntdExample() {
     const [switchOn, setSwitchOn] = useState(true);
     const [sliderValue, setSliderValue] = useState(30);
     const [currentPage, setCurrentPage] = useState(1);
+    const [discardModalOpen, setDiscardModalOpen] = useState(false);
+    const [successModalOpen, setSuccessModalOpen] = useState(false);
     const today = new Date();
     today.setHours(0,0,0,0);
 
@@ -311,6 +314,26 @@ export default function AntdExample() {
                     <div>
                         <StyledCalendar/>
                     </div>
+
+                    <Space wrap>
+                        <Button onClick={() => setDiscardModalOpen(true)}>
+                            Open Discard Modal
+                        </Button>
+                        <Button type="primary" onClick={() => setSuccessModalOpen(true)}>
+                            Open Success Modal
+                        </Button>
+                    </Space>
+
+                    <DiscardModal
+                        open={discardModalOpen}
+                        onDiscardClick={() => setDiscardModalOpen(false)}
+                        onCancelClick={() => setDiscardModalOpen(false)}
+                    />
+                    <SuccessModal
+                        open={successModalOpen}
+                        onDashboardClick={() => setSuccessModalOpen(false)}
+                        onEventOverviewClick={() => setSuccessModalOpen(false)}
+                    />
                 </div>
             </Space>
         </div>

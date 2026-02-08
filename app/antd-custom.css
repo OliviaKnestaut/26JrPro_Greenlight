@@ -580,3 +580,7 @@ p {
 .docs-more{
 	margin-top: 24px;
 }
+
+.ant-alert {
+	border-radius: 0;
+}

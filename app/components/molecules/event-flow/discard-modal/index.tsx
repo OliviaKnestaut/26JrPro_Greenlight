@@ -1,31 +1,31 @@
 import React from "react";
 import { Modal } from "antd";
-import { CheckCircleOutlined } from "@ant-design/icons"
+import { ExclamationCircleOutlined } from "@ant-design/icons"
 import { Button, Space } from "antd"
 import styles from "./index.module.css";
 
-type SuccessModalProps = {
+type DiscardModalProps = {
     open: boolean
     title?: string
     message?: string
-    dashboardButtonText?: string
-    eventOverviewButtonText?: string
-    onDashboardClick: () => void
-    onEventOverviewClick: () => void
+    discardButtonText?: string
+    cancelButtonText?: string
+    onDiscardClick: () => void
+    onCancelClick: () => void
 }
 
-export default function SuccessModal({
+export default function DiscardModal({
     open,
-    title = "Event Form Submitted for Review!",
-    message = "Your event form has been successfully submitted and is now under review. You can view the event details or return to your dashboard.",
-    dashboardButtonText = "Go to Dashboard",
-    eventOverviewButtonText = "View Event Overview",
-    onDashboardClick,
-    onEventOverviewClick
-}: SuccessModalProps) {
+    title = "Discard Event Form?",
+    message = "Any unsaved changes will be lost. Are you sure you want to discard this event form?",
+    cancelButtonText = "Cancel",
+    discardButtonText = "Discard",
+    onDiscardClick,
+    onCancelClick
+}: DiscardModalProps) {
     const content = (
         <div className={styles.container}>
-            <CheckCircleOutlined style={{ color: '#22c55e', fontSize: '1.375rem' }} className={styles.icon} />
+            <ExclamationCircleOutlined style={{ color: 'var(--gold-6)', fontSize: '1.375rem' }} className={styles.icon} />
             <div className={styles.content}>
                 <div className={styles.header}>
                     <h5>
@@ -38,22 +38,22 @@ export default function SuccessModal({
                 <Space
                     className={styles.buttonGroup}
                     size="middle"
-                    style={{ width: "100%", justifyContent: "flex-start" }}
+                    style={{ width: "100%", justifyContent: "flex-end" }}
                 >
                     <Button
                         type="default"
                         size="large"
-                        onClick={onDashboardClick}
+                        onClick={onCancelClick}
                     >
-                        {dashboardButtonText}
+                        {cancelButtonText}
                     </Button>
 
                     <Button
                         type="primary"
                         size="large"
-                        onClick={onEventOverviewClick}
+                        onClick={onDiscardClick}
                     >
-                        {eventOverviewButtonText}
+                        {discardButtonText}
                     </Button>
                 </Space>
             </div>

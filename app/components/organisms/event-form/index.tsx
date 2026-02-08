@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Button, Collapse, Steps, Typography } from "antd";
+import { Form, Button, Collapse, Steps, Typography, Alert } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 const { Title, Link } = Typography;
 import { useForm, useWatch } from "react-hook-form";
@@ -9,6 +9,7 @@ import DateLocationSection from "../event-form/sections/DateLocationSection";
 import EventElementsSection from "../event-form/sections/EventElementsSection";
 import BudgetPurchaseSection from "../event-form/sections/BudgetPurchasesSection";
 import SuccessModal from "../../molecules/event-flow/success-modal";
+import DiscardModal from "../../molecules/event-flow/discard-modal";
 import styles from "./eventform.module.css";
 import NestFoodSection from "./sections/nest/nestFood";
 import NestVendorSection from "./sections/nest/nestVendor";
@@ -63,6 +64,8 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
 
 export function EventForm() {
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false)
+    const [isDraftModalOpen, setIsDraftModalOpen] = useState(false)
     const { control, handleSubmit, getValues, reset } = useForm()
     const isSelected = useWatch({ control });
     const navigate = useNavigate();
@@ -118,11 +121,19 @@ export function EventForm() {
     }
 
     const handleDiscard = () => {
-        if (window.confirm("Are you sure? This will discard all changes.")) {
-            reset()
-            localStorage.removeItem("eventFormData")
-            navigate("/")
-        }
+        reset()
+        localStorage.removeItem("eventFormData")
+        setIsDiscardModalOpen(false)
+        navigate("/")
+    }
+
+    const handleSaveDraft = () => {
+        const data = getValues()
+        console.log("DRAFT DATA:", data)
+        localStorage.setItem("eventFormDraft", JSON.stringify(data))
+        setIsDraftModalOpen(true)
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => setIsDraftModalOpen(false), 3000)
     }
 
     return (
@@ -194,11 +205,11 @@ export function EventForm() {
                                 Submit Form
                             </Button>
 
-                            <Button type="default" htmlType="button" block>
+                            <Button type="default" htmlType="button" block onClick={handleSaveDraft}>
                                 Save as Draft
                             </Button>
                         </div>
-                        <Button type="default" htmlType="button" danger onClick={handleDiscard}>
+                        <Button type="default" htmlType="button" danger onClick={() => setIsDiscardModalOpen(true)}>
                             Discard
                         </Button>
                     </div>
@@ -210,6 +221,25 @@ export function EventForm() {
                 open={isModalOpen}
                 onDashboardClick={handleDashboardClick}
                 onEventOverviewClick={handleEventOverviewClick}
+            />
+
+            {/* Draft Success Alert */}
+            {isDraftModalOpen && (
+                <Alert 
+                    message="Your draft has been saved successfully!" 
+                    type="success" 
+                    showIcon 
+                    closable
+                    onClose={() => setIsDraftModalOpen(false)}
+                    style={{ position: 'fixed', top: 125, right: 24, zIndex: 1000,}}
+                />
+            )}
+
+            {/* Discard Modal */}
+            <DiscardModal
+                open={isDiscardModalOpen}
+                onDiscardClick={handleDiscard}
+                onCancelClick={() => setIsDiscardModalOpen(false)}
             />
         </div>
     )
