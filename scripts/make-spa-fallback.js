@@ -17,7 +17,8 @@ const routes = [
     'calendar',
     'org-members',
     'login',
-    'event-form'
+    'event-form',
+    'event-overview'
 ];
 
 async function ensureDirAndCopy(route) {
