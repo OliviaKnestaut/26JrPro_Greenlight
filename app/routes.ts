@@ -12,7 +12,7 @@ export default [
         route("calendar", "routes/calendar.tsx"),
         route("org-members", "routes/org-members.tsx"),
         route("event-form", "routes/event-form.tsx"),
-        route("event-overview", "routes/event-overview.tsx"),
+        route("event-overview/:id", "routes/event-overview.tsx"),
         route("brainstorm", "routes/brainstorm.tsx", [
             route("docs", "routes/brainstorm/docs.tsx"),
             route("sheets", "routes/brainstorm/sheets.tsx"),

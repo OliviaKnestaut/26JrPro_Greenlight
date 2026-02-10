@@ -20,7 +20,6 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
 
     return (
         <Card
-        bodyStyle={{ padding: 0 }}
         className={styles.card}
         {...rest}
         >
@@ -45,7 +44,7 @@ const CardWelcome: React.FC<CardWelcomeProps> = ({
             <Button type="primary" className={styles.btn} onClick={() => navigate('/event-form')}>
                 New Event
             </Button>
-            <Button className={styles.btn}>
+            <Button className={styles.btn} onClick={() => navigate('/brainstorm/docs')}>
                 New Brainstorm
             </Button>
             </div>
