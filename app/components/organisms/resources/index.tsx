@@ -43,8 +43,8 @@ export const trainingVideos: ResourceItem[] = [
 
 export const orgDocuments: ResourceItem[] = [
     {
-        title: "Org Constitution",
-        description: "Covers the details and guidelines that define your organization’s structure and operations."
+        title: "Org Constitution",
+        description: "Covers the details and guidelines that define your organization's structure and operations."
     },
     {
         title: "Member Roster",
@@ -83,7 +83,7 @@ export function ResourcesContent() {
 
     return (
 
-        <div className="container mx-auto p-8">
+        <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>

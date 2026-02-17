@@ -20,13 +20,16 @@ export function DashboardContent() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [events, setEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchOrgEvents = async () => {
+            setLoading(true);
             try {
                 const orgId = user?.organization?.id ?? user?.organizationId;
                 if (!orgId) {
                     console.debug('No organization id available on user', user);
+                    setLoading(false);
                     return;
                 }
                 const { data } = await apolloClient.query<any>({
@@ -44,6 +47,8 @@ export function DashboardContent() {
                 console.log('Draft events:', drafts);
             } catch (err) {
                 console.error('Failed to fetch events by organization', err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchOrgEvents();
@@ -53,9 +58,8 @@ export function DashboardContent() {
     const inReview = events.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
 
     return (
-        <>
         <div className="container m-6 w-auto">
-                <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
+            <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
                 <CardWelcome
                     title={`Welcome back, ${user?.firstName ?? "there"}`}
                     subtitle="Ready to plan your next event?"
@@ -107,6 +111,11 @@ export function DashboardContent() {
                                     .sort((a: any, b: any) => (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime());
                                 // Only show upcoming in-review events; exclude past events entirely
                                 const top = upcoming.slice(0, 2);
+                                if (loading) {
+                                    return Array.from({ length: 2 }).map((_, i) => (
+                                        <CardEvent key={`skeleton-inreview-${i}`} loading skeletonVariant="compact" style={{ width: "calc(50% - 0.5rem)" }} />
+                                    ));
+                                }
                                 if (top.length === 0) return <div>No upcoming in-review events</div>;
                                 return top.map((e: any) => {
                                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
@@ -115,7 +124,8 @@ export function DashboardContent() {
                                         key={e.id}
                                         isPast={isPast}
                                         eventImg={e.eventImg}
-                                        style={{ width: "calc(50% - 0.5rem)" }}
+                                        onClick={() => navigate(`/event-overview/${e.id}`)}
+                                        style={{ width: "calc(50% - 0.5rem)", cursor: 'pointer' }}
                                         title={e.title}
                                         date={formatDateMDY(e.eventDate)}
                                         location={e.location ?? ''}
@@ -129,7 +139,6 @@ export function DashboardContent() {
                         }
                     </div>
                 </Card>
-
 
                 <Card  style={{
                         background: "var(--background-2)",
@@ -173,9 +182,8 @@ export function DashboardContent() {
                         </div>
                     </div>
                 </Card>
-
-
             </div>
+
             <div className="container my-4 w-auto flex gap-4">
                 <Card  style={{
                         background: "var(--background-2)",
@@ -198,6 +206,22 @@ export function DashboardContent() {
                                 .filter((x: any) => x.parsedDate && x.parsedDate >= today)
                                 .sort((a: any, b: any) => (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime());
                             const top = upcoming.slice(0, 4);
+                            if (loading) {
+                                return (
+                                    <>
+                                        <div className="flex gap-4">
+                                            {Array.from({ length: 2 }).map((_, i) => (
+                                                <CardEvent key={`skeleton-draft-a-${i}`} loading skeletonVariant="compact" style={{ width: "calc(50% - 0.5rem)" }} />
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-4">
+                                            {Array.from({ length: 2 }).map((_, i) => (
+                                                <CardEvent key={`skeleton-draft-b-${i}`} loading skeletonVariant="compact" style={{ width: "calc(50% - 0.5rem)" }} />
+                                            ))}
+                                        </div>
+                                    </>
+                                );
+                            }
                             if (top.length === 0) return <div>No upcoming drafts</div>;
                             const firstRow = top.slice(0, 2);
                             const secondRow = top.slice(2, 4);
@@ -255,6 +279,5 @@ export function DashboardContent() {
                 </Card>
             </div>
         </div >
-        </>
     );
 }

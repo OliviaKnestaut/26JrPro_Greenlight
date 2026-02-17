@@ -285,9 +285,12 @@ p {
 	font-weight: 500;
 	font-size: 14px;
 	line-height: 22px;
-	text-decoration: underline;
 	text-decoration-style: solid;
 	margin-bottom: 0.5rem;
+}
+
+.ant-card li a{
+	text-decoration: underline;
 }
 
 .regular {
@@ -471,8 +474,8 @@ p {
 	gap: 0.25rem;
 	width: 100%;
 	border-radius: 0.5rem;
-	border: 1px solid var(--color-border-default);
-	background: var(--color-bg-surface);
+	border: 1px solid var(--gray-4) !important;
+	background-color: var(--background-2) !important;
 }
 
 .ant-statistic-content-value {
@@ -484,37 +487,17 @@ p {
 
 /* TABLE STYLING */
 
-/* Remove the outer frame */
-.ant-table-container {
-  border: none !important;
+.ant-table-tbody > tr:nth-child(odd) > td {
+	background: var(--background);
 }
 
-/* Header bottom border only */
-.ant-table-thead > tr > th {
-  border-top: none !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: 2px solid var(--gray-5) !important;
+.ant-table-tbody > tr > td:first-child {
+	background: var(--sage-3);
 }
-
-/* Cell grid lines */
-.ant-table-tbody > tr > td {
-  border-top: none !important;
-  border-left: none !important;
-  border-right: 1px solid var(--gray-5) !important;
-  border-bottom: 1px solid var(--gray-5) !important;
-}
-
-/* Remove right edge border on last column */
-.ant-table-thead > tr > th:last-child,
-.ant-table-tbody > tr > td:last-child {
-  border-right: none !important;
-}
-
 
 /* BRAINSTORM */
 .toggle-nav{
-	width: 198px;
+	width: 206px;
 	height: 36px;
 	border: solid, 1px, var(--accent-gray-dark);
 	border-radius: 100px;
@@ -538,8 +521,8 @@ p {
 }
 
 .toggle-nav a.active {
-  background: var(--sea-green-9);
-  color: white;
+	background: var(--sea-green-9);
+	color: white;
 }
 
 .brainstorm-nav{
@@ -579,4 +562,8 @@ p {
 
 .docs-more{
 	margin-top: 24px;
+}
+
+.ant-table-tbody > tr:hover > td:first-child {
+    background: #D8E3D6 !important;
 }

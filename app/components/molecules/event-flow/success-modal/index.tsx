@@ -10,7 +10,8 @@ type SuccessModalProps = {
     message?: string
     dashboardButtonText?: string
     eventOverviewButtonText?: string
-    onClose: () => void
+    onDashboardClick: () => void
+    onEventOverviewClick: () => void
 }
 
 export default function SuccessModal({
@@ -19,7 +20,8 @@ export default function SuccessModal({
     message = "Your event form has been successfully submitted and is now under review. You can view the event details or return to your dashboard.",
     dashboardButtonText = "Go to Dashboard",
     eventOverviewButtonText = "View Event Overview",
-    onClose
+    onDashboardClick,
+    onEventOverviewClick
 }: SuccessModalProps) {
     return (
         <Modal
@@ -51,7 +53,7 @@ export default function SuccessModal({
                         <Button
                             type="default"
                             size="large"
-                            onClick={onClose}
+                            onClick={onDashboardClick}
                         >
                             {dashboardButtonText}
                         </Button>
@@ -59,7 +61,7 @@ export default function SuccessModal({
                         <Button
                             type="primary"
                             size="large"
-                            onClick={onClose}
+                            onClick={onEventOverviewClick}
                         >
                             {eventOverviewButtonText}
                         </Button>

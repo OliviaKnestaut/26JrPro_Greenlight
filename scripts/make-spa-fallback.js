@@ -12,13 +12,13 @@ const routes = [
     'database-dump',
     'antd-example',
     'event-submissions',
-    'purchase-requests',
     'budget',
     'resources',
     'calendar',
     'org-members',
     'login',
-    'event-form'
+    'event-form',
+    'event-overview'
 ];
 
 async function ensureDirAndCopy(route) {
