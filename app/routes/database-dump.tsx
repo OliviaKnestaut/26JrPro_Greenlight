@@ -1,4 +1,4 @@
-import { useGetEventsQuery, useGetOrganizationsQuery, useGetUsersQuery } from '~/lib/graphql/generated';
+import { useGetEventsQuery, useGetOrganizationsQuery, useGetUsersQuery, useGetPurchasesQuery } from '~/lib/graphql/generated';
 import type { GetDbDumpQuery } from '~/lib/graphql/generated';
 import { useState } from 'react';
 import { Table, Avatar, Image, Pagination } from 'antd';
@@ -17,11 +17,13 @@ interface OrganizationItem {
 type EventRow = GetDbDumpQuery['events'][number] & { key: string };
 type UserRow = GetDbDumpQuery['users'][number] & { key: string };
 type OrgRow = GetDbDumpQuery['organizations'][number] & { key: string };
+type PurchaseRow = any & { key: string };
 
 export default function DatabaseDump() {
   const { data: eventsData, loading: eventsLoading, error: eventsError } = useGetEventsQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
   const { data: orgsData, loading: orgsLoading, error: orgsError } = useGetOrganizationsQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
   const { data: usersData, loading: usersLoading, error: usersError } = useGetUsersQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
+  const { data: purchasesData, loading: purchasesLoading, error: purchasesError } = useGetPurchasesQuery({ variables: { limit: 200, offset: 0 }, errorPolicy: 'all' });
   const [eventsPage, setEventsPage] = useState<number>(1);
 
   return (
@@ -36,6 +38,7 @@ export default function DatabaseDump() {
             {eventsError && <div>Events: {eventsError.message}</div>}
             {orgsError && <div>Organizations: {orgsError.message}</div>}
             {usersError && <div>Users: {usersError.message}</div>}
+            {purchasesError && <div>Purchases: {purchasesError.message}</div>}
           </div>
         </div>
       )}
@@ -90,6 +93,36 @@ export default function DatabaseDump() {
           })()
         ) : (
           <p>No events found.</p>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Purchases</h2>
+        {purchasesData?.purchases?.length ? (
+          (() => {
+            const eventMap = new Map<string, string>((eventsData?.events ?? []).map((e: any) => [e.id, e.title]));
+            const columns: ColumnsType<PurchaseRow> = [
+              { title: 'ID', dataIndex: 'id', key: 'id' },
+              { title: 'Date', dataIndex: 'dateSubmitted', key: 'dateSubmitted' },
+              { title: 'Title', dataIndex: 'itemTitle', key: 'itemTitle' },
+              { title: 'Categories', dataIndex: 'itemCategory', key: 'itemCategory' },
+              { title: 'Event', dataIndex: 'eventId', key: 'eventId', render: (id: any) => id ? (eventMap.get(id) ?? `#${id}`) : '-' },
+              { title: 'Status', dataIndex: 'orderStatus', key: 'orderStatus' },
+              { title: 'Cost', dataIndex: 'itemCost', key: 'itemCost', render: (c: any) => (c == null ? '-' : `$${Number(c).toFixed(2)}`) },
+              {
+                title: 'Organization',
+                dataIndex: 'organization',
+                key: 'organization',
+                render: (org: any) => (org ? org.orgName : '-'),
+              },
+            ];
+
+            const dataSource = purchasesData!.purchases.map((p: any) => ({ ...p, key: p.id }));
+
+            return <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 12 }} loading={purchasesLoading} />;
+          })()
+        ) : (
+          <p>No purchases found.</p>
         )}
       </section>
 

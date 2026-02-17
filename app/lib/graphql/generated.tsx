@@ -30,12 +30,17 @@ export type Scalars = {
 };
 
 export type CreateEventInput = {
+  createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
   eventDate?: InputMaybe<Scalars['Date']['input']>;
-  eventStatus?: InputMaybe<EventStatus>;
+  eventImg?: InputMaybe<Scalars['String']['input']>;
+  eventLevel?: InputMaybe<Scalars['Int']['input']>;
+  eventStatus?: InputMaybe<Scalars['String']['input']>;
+  formData?: InputMaybe<Scalars['JSON']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
-  organizationId: Scalars['ID']['input'];
+  locationType?: InputMaybe<LocationType>;
+  organizationUsername: Scalars['String']['input'];
   setupTime?: InputMaybe<Scalars['Time']['input']>;
   startTime?: InputMaybe<Scalars['Time']['input']>;
   title: Scalars['String']['input'];
@@ -43,32 +48,47 @@ export type CreateEventInput = {
 
 export type CreateOrganizationInput = {
   bio?: InputMaybe<Scalars['String']['input']>;
+  orgImg?: InputMaybe<Scalars['String']['input']>;
   orgName: Scalars['String']['input'];
-  password: Scalars['String']['input'];
   username: Scalars['String']['input'];
+};
+
+export type CreatePurchaseInput = {
+  dateSubmitted: Scalars['DateTime']['input'];
+  eventId: Scalars['ID']['input'];
+  itemCategory: Scalars['String']['input'];
+  itemCost: Scalars['Float']['input'];
+  itemTitle: Scalars['String']['input'];
+  orderStatus: Scalars['String']['input'];
+  organizationUsername: Scalars['String']['input'];
 };
 
 export type CreateUserInput = {
   firstName?: InputMaybe<Scalars['String']['input']>;
   lastName?: InputMaybe<Scalars['String']['input']>;
-  organizationId: Scalars['ID']['input'];
+  organizationUsername: Scalars['String']['input'];
   password: Scalars['String']['input'];
   profileImg?: InputMaybe<Scalars['String']['input']>;
+  role?: InputMaybe<Scalars['String']['input']>;
   username: Scalars['String']['input'];
 };
 
 export type Event = {
   __typename?: 'Event';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  createdBy?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   endTime?: Maybe<Scalars['Time']['output']>;
   eventDate?: Maybe<Scalars['Date']['output']>;
   eventImg?: Maybe<Scalars['String']['output']>;
-  eventStatus: EventStatus;
+  eventLevel?: Maybe<Scalars['Int']['output']>;
+  eventStatus?: Maybe<EventStatus>;
+  formData?: Maybe<Scalars['JSON']['output']>;
   id: Scalars['ID']['output'];
   location?: Maybe<Scalars['String']['output']>;
+  locationType?: Maybe<LocationType>;
   organization?: Maybe<Organization>;
-  organizationId: Scalars['ID']['output'];
+  organizationUsername: Scalars['String']['output'];
   setupTime?: Maybe<Scalars['Time']['output']>;
   startTime?: Maybe<Scalars['Time']['output']>;
   submittedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -80,9 +100,14 @@ export enum EventStatus {
   Approved = 'APPROVED',
   Cancelled = 'CANCELLED',
   Draft = 'DRAFT',
-  Past = 'PAST',
   Rejected = 'REJECTED',
   Review = 'REVIEW'
+}
+
+export enum LocationType {
+  OffCampus = 'OFF_CAMPUS',
+  OnCampus = 'ON_CAMPUS',
+  Virtual = 'VIRTUAL'
 }
 
 export type Mutation = {
@@ -90,12 +115,15 @@ export type Mutation = {
   changeEventStatus: Event;
   createEvent: Event;
   createOrganization: Organization;
+  createPurchase: Purchase;
   createUser: User;
   deleteEvent: Scalars['Boolean']['output'];
   deleteOrganization: Scalars['Boolean']['output'];
+  deletePurchase: Scalars['Boolean']['output'];
   deleteUser: Scalars['Boolean']['output'];
   updateEvent: Event;
   updateOrganization: Organization;
+  updatePurchase: Purchase;
   updateUser: User;
 };
 
@@ -116,6 +144,11 @@ export type MutationCreateOrganizationArgs = {
 };
 
 
+export type MutationCreatePurchaseArgs = {
+  input: CreatePurchaseInput;
+};
+
+
 export type MutationCreateUserArgs = {
   input: CreateUserInput;
 };
@@ -127,6 +160,11 @@ export type MutationDeleteEventArgs = {
 
 
 export type MutationDeleteOrganizationArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePurchaseArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -145,6 +183,12 @@ export type MutationUpdateEventArgs = {
 export type MutationUpdateOrganizationArgs = {
   id: Scalars['ID']['input'];
   input: UpdateOrganizationInput;
+};
+
+
+export type MutationUpdatePurchaseArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdatePurchaseInput;
 };
 
 
@@ -174,6 +218,19 @@ export type OrganizationEventsArgs = {
   toDate?: InputMaybe<Scalars['Date']['input']>;
 };
 
+export type Purchase = {
+  __typename?: 'Purchase';
+  dateSubmitted: Scalars['DateTime']['output'];
+  eventId: Scalars['ID']['output'];
+  id: Scalars['ID']['output'];
+  itemCategory: Scalars['String']['output'];
+  itemCost: Scalars['Float']['output'];
+  itemTitle: Scalars['String']['output'];
+  orderStatus: Scalars['String']['output'];
+  organization?: Maybe<Organization>;
+  organizationUsername: Scalars['String']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   event?: Maybe<Event>;
@@ -181,6 +238,9 @@ export type Query = {
   eventsByOrganization: Array<Event>;
   organization?: Maybe<Organization>;
   organizations: Array<Organization>;
+  purchase?: Maybe<Purchase>;
+  purchases: Array<Purchase>;
+  purchasesByOrganization: Array<Purchase>;
   user?: Maybe<User>;
   users: Array<User>;
 };
@@ -204,8 +264,8 @@ export type QueryEventsByOrganizationArgs = {
   fromDate?: InputMaybe<Scalars['Date']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  orgId: Scalars['ID']['input'];
-  status?: InputMaybe<EventStatus>;
+  orgUsername: Scalars['String']['input'];
+  status?: InputMaybe<Scalars['String']['input']>;
   toDate?: InputMaybe<Scalars['Date']['input']>;
 };
 
@@ -219,6 +279,24 @@ export type QueryOrganizationsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryPurchaseArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPurchasesArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryPurchasesByOrganizationArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orgUsername: Scalars['String']['input'];
 };
 
 
@@ -237,8 +315,12 @@ export type UpdateEventInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   endTime?: InputMaybe<Scalars['Time']['input']>;
   eventDate?: InputMaybe<Scalars['Date']['input']>;
-  eventStatus?: InputMaybe<EventStatus>;
+  eventImg?: InputMaybe<Scalars['String']['input']>;
+  eventLevel?: InputMaybe<Scalars['Int']['input']>;
+  eventStatus?: InputMaybe<Scalars['String']['input']>;
+  formData?: InputMaybe<Scalars['JSON']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
+  locationType?: InputMaybe<LocationType>;
   setupTime?: InputMaybe<Scalars['Time']['input']>;
   startTime?: InputMaybe<Scalars['Time']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
@@ -246,17 +328,26 @@ export type UpdateEventInput = {
 
 export type UpdateOrganizationInput = {
   bio?: InputMaybe<Scalars['String']['input']>;
+  orgImg?: InputMaybe<Scalars['String']['input']>;
   orgName?: InputMaybe<Scalars['String']['input']>;
-  password?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdatePurchaseInput = {
+  eventId?: InputMaybe<Scalars['ID']['input']>;
+  itemCategory?: InputMaybe<Scalars['String']['input']>;
+  itemCost?: InputMaybe<Scalars['Float']['input']>;
+  itemTitle?: InputMaybe<Scalars['String']['input']>;
+  orderStatus?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateUserInput = {
   firstName?: InputMaybe<Scalars['String']['input']>;
   lastName?: InputMaybe<Scalars['String']['input']>;
-  organizationId?: InputMaybe<Scalars['ID']['input']>;
+  organizationUsername?: InputMaybe<Scalars['String']['input']>;
   password?: InputMaybe<Scalars['String']['input']>;
   profileImg?: InputMaybe<Scalars['String']['input']>;
+  role?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -267,9 +358,10 @@ export type User = {
   id: Scalars['ID']['output'];
   lastName?: Maybe<Scalars['String']['output']>;
   organization?: Maybe<Organization>;
-  organizationId: Scalars['ID']['output'];
+  organizationUsername?: Maybe<Scalars['String']['output']>;
   password: Scalars['String']['output'];
   profileImg?: Maybe<Scalars['String']['output']>;
+  role?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   username: Scalars['String']['output'];
 };
@@ -279,7 +371,7 @@ export type CreateEventMutationVariables = Exact<{
 }>;
 
 
-export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: EventStatus, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
+export type CreateEventMutation = { __typename?: 'Mutation', createEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus?: EventStatus | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
 
 export type UpdateEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -287,7 +379,7 @@ export type UpdateEventMutationVariables = Exact<{
 }>;
 
 
-export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus: EventStatus } };
+export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus?: EventStatus | null } };
 
 export type DeleteEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -302,7 +394,7 @@ export type ChangeEventStatusMutationVariables = Exact<{
 }>;
 
 
-export type ChangeEventStatusMutation = { __typename?: 'Mutation', changeEventStatus: { __typename?: 'Event', id: string, eventStatus: EventStatus } };
+export type ChangeEventStatusMutation = { __typename?: 'Mutation', changeEventStatus: { __typename?: 'Event', id: string, eventStatus?: EventStatus | null } };
 
 export type CreateOrganizationMutationVariables = Exact<{
   input: CreateOrganizationInput;
@@ -348,6 +440,28 @@ export type DeleteUserMutationVariables = Exact<{
 
 export type DeleteUserMutation = { __typename?: 'Mutation', deleteUser: boolean };
 
+export type CreatePurchaseMutationVariables = Exact<{
+  input: CreatePurchaseInput;
+}>;
+
+
+export type CreatePurchaseMutation = { __typename?: 'Mutation', createPurchase: { __typename?: 'Purchase', id: string, organizationUsername: string, dateSubmitted: any, itemTitle: string, itemCategory: string, eventId: string, orderStatus: string, itemCost: number, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } };
+
+export type UpdatePurchaseMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  input: UpdatePurchaseInput;
+}>;
+
+
+export type UpdatePurchaseMutation = { __typename?: 'Mutation', updatePurchase: { __typename?: 'Purchase', id: string, organizationUsername: string, dateSubmitted: any, itemTitle: string, itemCategory: string, eventId: string, orderStatus: string, itemCost: number } };
+
+export type DeletePurchaseMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeletePurchaseMutation = { __typename?: 'Mutation', deletePurchase: boolean };
+
 export type GetEventsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -357,14 +471,14 @@ export type GetEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
 
 export type GetEventByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
+export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
 
 export type GetOrganizationsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -376,16 +490,16 @@ export type GetOrganizationsQueryVariables = Exact<{
 export type GetOrganizationsQuery = { __typename?: 'Query', organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type EventsByOrganizationQueryVariables = Exact<{
-  orgId: Scalars['ID']['input'];
+  orgUsername: Scalars['String']['input'];
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  status?: InputMaybe<EventStatus>;
+  status?: InputMaybe<Scalars['String']['input']>;
   fromDate?: InputMaybe<Scalars['Date']['input']>;
   toDate?: InputMaybe<Scalars['Date']['input']>;
 }>;
 
 
-export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
+export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type GetDbDumpQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -393,7 +507,7 @@ export type GetDbDumpQueryVariables = Exact<{
 }>;
 
 
-export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationId: string, title: string, description?: string | null, eventImg?: string | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus: EventStatus, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
+export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
 
 export type GetUsersQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -401,14 +515,38 @@ export type GetUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
+export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, role?: string | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
 
 export type GetUserQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null } | null };
+export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, role?: string | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null } | null };
+
+export type GetPurchasesQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetPurchasesQuery = { __typename?: 'Query', purchases: Array<{ __typename?: 'Purchase', id: string, organizationUsername: string, dateSubmitted: any, itemTitle: string, itemCategory: string, eventId: string, orderStatus: string, itemCost: number, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null }> };
+
+export type GetPurchaseQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetPurchaseQuery = { __typename?: 'Query', purchase?: { __typename?: 'Purchase', id: string, organizationUsername: string, dateSubmitted: any, itemTitle: string, itemCategory: string, eventId: string, orderStatus: string, itemCost: number, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string } | null } | null };
+
+export type PurchasesByOrganizationQueryVariables = Exact<{
+  orgUsername: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type PurchasesByOrganizationQuery = { __typename?: 'Query', purchasesByOrganization: Array<{ __typename?: 'Purchase', id: string, organizationUsername: string, dateSubmitted: any, itemTitle: string, itemCategory: string, eventId: string, orderStatus: string, itemCost: number }> };
 
 
 export const CreateEventDocument = gql`
@@ -777,6 +915,123 @@ export function useDeleteUserMutation(baseOptions?: ApolloReactHooks.MutationHoo
 export type DeleteUserMutationHookResult = ReturnType<typeof useDeleteUserMutation>;
 export type DeleteUserMutationResult = ApolloReactCommon.MutationResult<DeleteUserMutation>;
 export type DeleteUserMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteUserMutation, DeleteUserMutationVariables>;
+export const CreatePurchaseDocument = gql`
+    mutation CreatePurchase($input: CreatePurchaseInput!) {
+  createPurchase(input: $input) {
+    id
+    organizationUsername
+    dateSubmitted
+    itemTitle
+    itemCategory
+    eventId
+    orderStatus
+    itemCost
+    organization {
+      id
+      orgName
+      username
+    }
+  }
+}
+    `;
+export type CreatePurchaseMutationFn = ApolloReactCommon.MutationFunction<CreatePurchaseMutation, CreatePurchaseMutationVariables>;
+
+/**
+ * __useCreatePurchaseMutation__
+ *
+ * To run a mutation, you first call `useCreatePurchaseMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePurchaseMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPurchaseMutation, { data, loading, error }] = useCreatePurchaseMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreatePurchaseMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreatePurchaseMutation, CreatePurchaseMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreatePurchaseMutation, CreatePurchaseMutationVariables>(CreatePurchaseDocument, options);
+      }
+export type CreatePurchaseMutationHookResult = ReturnType<typeof useCreatePurchaseMutation>;
+export type CreatePurchaseMutationResult = ApolloReactCommon.MutationResult<CreatePurchaseMutation>;
+export type CreatePurchaseMutationOptions = ApolloReactCommon.BaseMutationOptions<CreatePurchaseMutation, CreatePurchaseMutationVariables>;
+export const UpdatePurchaseDocument = gql`
+    mutation UpdatePurchase($id: ID!, $input: UpdatePurchaseInput!) {
+  updatePurchase(id: $id, input: $input) {
+    id
+    organizationUsername
+    dateSubmitted
+    itemTitle
+    itemCategory
+    eventId
+    orderStatus
+    itemCost
+  }
+}
+    `;
+export type UpdatePurchaseMutationFn = ApolloReactCommon.MutationFunction<UpdatePurchaseMutation, UpdatePurchaseMutationVariables>;
+
+/**
+ * __useUpdatePurchaseMutation__
+ *
+ * To run a mutation, you first call `useUpdatePurchaseMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePurchaseMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePurchaseMutation, { data, loading, error }] = useUpdatePurchaseMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdatePurchaseMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdatePurchaseMutation, UpdatePurchaseMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdatePurchaseMutation, UpdatePurchaseMutationVariables>(UpdatePurchaseDocument, options);
+      }
+export type UpdatePurchaseMutationHookResult = ReturnType<typeof useUpdatePurchaseMutation>;
+export type UpdatePurchaseMutationResult = ApolloReactCommon.MutationResult<UpdatePurchaseMutation>;
+export type UpdatePurchaseMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdatePurchaseMutation, UpdatePurchaseMutationVariables>;
+export const DeletePurchaseDocument = gql`
+    mutation DeletePurchase($id: ID!) {
+  deletePurchase(id: $id)
+}
+    `;
+export type DeletePurchaseMutationFn = ApolloReactCommon.MutationFunction<DeletePurchaseMutation, DeletePurchaseMutationVariables>;
+
+/**
+ * __useDeletePurchaseMutation__
+ *
+ * To run a mutation, you first call `useDeletePurchaseMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeletePurchaseMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deletePurchaseMutation, { data, loading, error }] = useDeletePurchaseMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeletePurchaseMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeletePurchaseMutation, DeletePurchaseMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeletePurchaseMutation, DeletePurchaseMutationVariables>(DeletePurchaseDocument, options);
+      }
+export type DeletePurchaseMutationHookResult = ReturnType<typeof useDeletePurchaseMutation>;
+export type DeletePurchaseMutationResult = ApolloReactCommon.MutationResult<DeletePurchaseMutation>;
+export type DeletePurchaseMutationOptions = ApolloReactCommon.BaseMutationOptions<DeletePurchaseMutation, DeletePurchaseMutationVariables>;
 export const GetEventsDocument = gql`
     query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
   events(
@@ -787,10 +1042,11 @@ export const GetEventsDocument = gql`
     toDate: $toDate
   ) {
     id
-    organizationId
+    organizationUsername
     title
     description
     eventImg
+    locationType
     eventDate
     setupTime
     startTime
@@ -838,6 +1094,9 @@ export function useGetEventsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHo
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
         }
+// @ts-ignore
+export function useGetEventsSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetEventsQuery, GetEventsQueryVariables>;
+export function useGetEventsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetEventsQuery | undefined, GetEventsQueryVariables>;
 export function useGetEventsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetEventsQuery, GetEventsQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<GetEventsQuery, GetEventsQueryVariables>(GetEventsDocument, options);
@@ -850,10 +1109,11 @@ export const GetEventByIdDocument = gql`
     query GetEventById($id: ID!) {
   event(id: $id) {
     id
-    organizationId
+    organizationUsername
     title
     description
     eventImg
+    locationType
     eventDate
     setupTime
     startTime
@@ -897,6 +1157,9 @@ export function useGetEventByIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQuer
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
         }
+// @ts-ignore
+export function useGetEventByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetEventByIdQuery, GetEventByIdQueryVariables>;
+export function useGetEventByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetEventByIdQuery | undefined, GetEventByIdQueryVariables>;
 export function useGetEventByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetEventByIdQuery, GetEventByIdQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<GetEventByIdQuery, GetEventByIdQueryVariables>(GetEventByIdDocument, options);
@@ -945,6 +1208,9 @@ export function useGetOrganizationsLazyQuery(baseOptions?: ApolloReactHooks.Lazy
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
         }
+// @ts-ignore
+export function useGetOrganizationsSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetOrganizationsQuery, GetOrganizationsQueryVariables>;
+export function useGetOrganizationsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetOrganizationsQuery | undefined, GetOrganizationsQueryVariables>;
 export function useGetOrganizationsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetOrganizationsQuery, GetOrganizationsQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<GetOrganizationsQuery, GetOrganizationsQueryVariables>(GetOrganizationsDocument, options);
@@ -954,9 +1220,9 @@ export type GetOrganizationsLazyQueryHookResult = ReturnType<typeof useGetOrgani
 export type GetOrganizationsSuspenseQueryHookResult = ReturnType<typeof useGetOrganizationsSuspenseQuery>;
 export type GetOrganizationsQueryResult = ApolloReactCommon.QueryResult<GetOrganizationsQuery, GetOrganizationsQueryVariables>;
 export const EventsByOrganizationDocument = gql`
-    query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
+    query EventsByOrganization($orgUsername: String!, $limit: Int = 25, $offset: Int = 0, $status: String, $fromDate: Date, $toDate: Date) {
   eventsByOrganization(
-    orgId: $orgId
+    orgUsername: $orgUsername
     limit: $limit
     offset: $offset
     status: $status
@@ -964,10 +1230,11 @@ export const EventsByOrganizationDocument = gql`
     toDate: $toDate
   ) {
     id
-    organizationId
+    organizationUsername
     title
     description
     eventImg
+    locationType
     eventDate
     setupTime
     startTime
@@ -993,7 +1260,7 @@ export const EventsByOrganizationDocument = gql`
  * @example
  * const { data, loading, error } = useEventsByOrganizationQuery({
  *   variables: {
- *      orgId: // value for 'orgId'
+ *      orgUsername: // value for 'orgUsername'
  *      limit: // value for 'limit'
  *      offset: // value for 'offset'
  *      status: // value for 'status'
@@ -1010,6 +1277,9 @@ export function useEventsByOrganizationLazyQuery(baseOptions?: ApolloReactHooks.
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
         }
+// @ts-ignore
+export function useEventsByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>;
+export function useEventsByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<EventsByOrganizationQuery | undefined, EventsByOrganizationQueryVariables>;
 export function useEventsByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<EventsByOrganizationQuery, EventsByOrganizationQueryVariables>(EventsByOrganizationDocument, options);
@@ -1022,10 +1292,11 @@ export const GetDbDumpDocument = gql`
     query GetDbDump($limit: Int = 25, $offset: Int = 0) {
   events(limit: $limit, offset: $offset) {
     id
-    organizationId
+    organizationUsername
     title
     description
     eventImg
+    locationType
     eventDate
     setupTime
     startTime
@@ -1096,6 +1367,9 @@ export function useGetDbDumpLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHo
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
         }
+// @ts-ignore
+export function useGetDbDumpSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetDbDumpQuery, GetDbDumpQueryVariables>;
+export function useGetDbDumpSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetDbDumpQuery | undefined, GetDbDumpQueryVariables>;
 export function useGetDbDumpSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetDbDumpQuery, GetDbDumpQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<GetDbDumpQuery, GetDbDumpQueryVariables>(GetDbDumpDocument, options);
@@ -1113,6 +1387,7 @@ export const GetUsersDocument = gql`
     username
     profileImg
     password
+    role
     organization {
       id
       orgName
@@ -1151,6 +1426,9 @@ export function useGetUsersLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHoo
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
         }
+// @ts-ignore
+export function useGetUsersSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUsersQuery, GetUsersQueryVariables>;
+export function useGetUsersSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUsersQuery | undefined, GetUsersQueryVariables>;
 export function useGetUsersSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
@@ -1168,6 +1446,7 @@ export const GetUserDocument = gql`
     username
     profileImg
     password
+    role
     organization {
       id
       orgName
@@ -1205,6 +1484,9 @@ export function useGetUserLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHook
           const options = {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useLazyQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
         }
+// @ts-ignore
+export function useGetUserSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetUserQuery, GetUserQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserQuery, GetUserQueryVariables>;
+export function useGetUserSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserQuery, GetUserQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserQuery | undefined, GetUserQueryVariables>;
 export function useGetUserSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
           const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return ApolloReactHooks.useSuspenseQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
@@ -1213,3 +1495,170 @@ export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
 export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
 export type GetUserSuspenseQueryHookResult = ReturnType<typeof useGetUserSuspenseQuery>;
 export type GetUserQueryResult = ApolloReactCommon.QueryResult<GetUserQuery, GetUserQueryVariables>;
+export const GetPurchasesDocument = gql`
+    query GetPurchases($limit: Int = 25, $offset: Int = 0) {
+  purchases(limit: $limit, offset: $offset) {
+    id
+    organizationUsername
+    dateSubmitted
+    itemTitle
+    itemCategory
+    eventId
+    orderStatus
+    itemCost
+    organization {
+      id
+      orgName
+      username
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetPurchasesQuery__
+ *
+ * To run a query within a React component, call `useGetPurchasesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPurchasesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPurchasesQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *   },
+ * });
+ */
+export function useGetPurchasesQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetPurchasesQuery, GetPurchasesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetPurchasesQuery, GetPurchasesQueryVariables>(GetPurchasesDocument, options);
+      }
+export function useGetPurchasesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetPurchasesQuery, GetPurchasesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetPurchasesQuery, GetPurchasesQueryVariables>(GetPurchasesDocument, options);
+        }
+// @ts-ignore
+export function useGetPurchasesSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetPurchasesQuery, GetPurchasesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetPurchasesQuery, GetPurchasesQueryVariables>;
+export function useGetPurchasesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPurchasesQuery, GetPurchasesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetPurchasesQuery | undefined, GetPurchasesQueryVariables>;
+export function useGetPurchasesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPurchasesQuery, GetPurchasesQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetPurchasesQuery, GetPurchasesQueryVariables>(GetPurchasesDocument, options);
+        }
+export type GetPurchasesQueryHookResult = ReturnType<typeof useGetPurchasesQuery>;
+export type GetPurchasesLazyQueryHookResult = ReturnType<typeof useGetPurchasesLazyQuery>;
+export type GetPurchasesSuspenseQueryHookResult = ReturnType<typeof useGetPurchasesSuspenseQuery>;
+export type GetPurchasesQueryResult = ApolloReactCommon.QueryResult<GetPurchasesQuery, GetPurchasesQueryVariables>;
+export const GetPurchaseDocument = gql`
+    query GetPurchase($id: ID!) {
+  purchase(id: $id) {
+    id
+    organizationUsername
+    dateSubmitted
+    itemTitle
+    itemCategory
+    eventId
+    orderStatus
+    itemCost
+    organization {
+      id
+      orgName
+      username
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetPurchaseQuery__
+ *
+ * To run a query within a React component, call `useGetPurchaseQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPurchaseQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPurchaseQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetPurchaseQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetPurchaseQuery, GetPurchaseQueryVariables> & ({ variables: GetPurchaseQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetPurchaseQuery, GetPurchaseQueryVariables>(GetPurchaseDocument, options);
+      }
+export function useGetPurchaseLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetPurchaseQuery, GetPurchaseQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetPurchaseQuery, GetPurchaseQueryVariables>(GetPurchaseDocument, options);
+        }
+// @ts-ignore
+export function useGetPurchaseSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetPurchaseQuery, GetPurchaseQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetPurchaseQuery, GetPurchaseQueryVariables>;
+export function useGetPurchaseSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPurchaseQuery, GetPurchaseQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetPurchaseQuery | undefined, GetPurchaseQueryVariables>;
+export function useGetPurchaseSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPurchaseQuery, GetPurchaseQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetPurchaseQuery, GetPurchaseQueryVariables>(GetPurchaseDocument, options);
+        }
+export type GetPurchaseQueryHookResult = ReturnType<typeof useGetPurchaseQuery>;
+export type GetPurchaseLazyQueryHookResult = ReturnType<typeof useGetPurchaseLazyQuery>;
+export type GetPurchaseSuspenseQueryHookResult = ReturnType<typeof useGetPurchaseSuspenseQuery>;
+export type GetPurchaseQueryResult = ApolloReactCommon.QueryResult<GetPurchaseQuery, GetPurchaseQueryVariables>;
+export const PurchasesByOrganizationDocument = gql`
+    query PurchasesByOrganization($orgUsername: String!, $limit: Int = 25, $offset: Int = 0) {
+  purchasesByOrganization(
+    orgUsername: $orgUsername
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    organizationUsername
+    dateSubmitted
+    itemTitle
+    itemCategory
+    eventId
+    orderStatus
+    itemCost
+  }
+}
+    `;
+
+/**
+ * __usePurchasesByOrganizationQuery__
+ *
+ * To run a query within a React component, call `usePurchasesByOrganizationQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePurchasesByOrganizationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePurchasesByOrganizationQuery({
+ *   variables: {
+ *      orgUsername: // value for 'orgUsername'
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *   },
+ * });
+ */
+export function usePurchasesByOrganizationQuery(baseOptions: ApolloReactHooks.QueryHookOptions<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables> & ({ variables: PurchasesByOrganizationQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>(PurchasesByOrganizationDocument, options);
+      }
+export function usePurchasesByOrganizationLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>(PurchasesByOrganizationDocument, options);
+        }
+// @ts-ignore
+export function usePurchasesByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>;
+export function usePurchasesByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<PurchasesByOrganizationQuery | undefined, PurchasesByOrganizationQueryVariables>;
+export function usePurchasesByOrganizationSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>(PurchasesByOrganizationDocument, options);
+        }
+export type PurchasesByOrganizationQueryHookResult = ReturnType<typeof usePurchasesByOrganizationQuery>;
+export type PurchasesByOrganizationLazyQueryHookResult = ReturnType<typeof usePurchasesByOrganizationLazyQuery>;
+export type PurchasesByOrganizationSuspenseQueryHookResult = ReturnType<typeof usePurchasesByOrganizationSuspenseQuery>;
+export type PurchasesByOrganizationQueryResult = ApolloReactCommon.QueryResult<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>;

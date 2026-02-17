@@ -17,8 +17,21 @@ try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    echo json_encode(['errors' => [['message' => 'Database connection failed: ' . $e->getMessage()]]]);
-    exit;
+    // Common on some systems: 'localhost' tries a unix socket that may not exist.
+    // Try a TCP fallback to 127.0.0.1:3306 which avoids socket lookup.
+    $errMsg = $e->getMessage();
+    if (stripos($errMsg, 'No such file or directory') !== false || stripos($errMsg, 'Connection refused') !== false) {
+        try {
+            $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e2) {
+            echo json_encode(['errors' => [['message' => 'Database connection failed: ' . $e2->getMessage()]]]);
+            exit;
+        }
+    } else {
+        echo json_encode(['errors' => [['message' => 'Database connection failed: ' . $errMsg]]]);
+        exit;
+    }
 }
 
 $sdl = file_get_contents(__DIR__ . '/schema.graphql');
@@ -34,7 +47,8 @@ $schema = BuildSchema::build($sdl);
 // Column maps (GraphQL field -> DB column) if needed
 $COL_MAP = [
     'Event' => [
-        'organizationId' => 'organization_id',
+        'organizationUsername' => 'organization',
+        'createdBy' => 'created_by',
         'title' => 'title',
         'description' => 'description',
         'eventDate' => 'event_date',
@@ -42,8 +56,11 @@ $COL_MAP = [
         'startTime' => 'start_time',
         'endTime' => 'end_time',
         'location' => 'location',
+        'locationType' => 'location_type',
+        'eventLevel' => 'event_level',
         'eventImg' => 'event_img',
         'eventStatus' => 'event_status',
+        'formData' => 'form_data',
         'submittedAt' => 'submitted_at',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
@@ -62,9 +79,19 @@ $COL_MAP = [
         'username' => 'username',
         'password' => 'password',
         'profileImg' => 'profile_img',
-        'organizationId' => 'organization_id',
+        'role' => 'role',
+        'organizationUsername' => 'organization',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
+    ],
+    'Purchase' => [
+        'organizationUsername' => 'organization',
+        'dateSubmitted' => 'date_submitted',
+        'itemTitle' => 'item_title',
+        'itemCategory' => 'item_category',
+        'eventId' => 'event_id',
+        'orderStatus' => 'order_status',
+        'itemCost' => 'item_cost',
     ],
 ];
 
@@ -89,13 +116,28 @@ function mapDbRowToGraphQL(array $row, string $type, array $COL_MAP) : array {
             $out[$k] = $v;
         }
     }
+    // post-process certain fields for specific types
+    if ($type === 'Event') {
+        if (array_key_exists('locationType', $out) && $out['locationType'] !== null) {
+            $out['locationType'] = locationDbToEnum($out['locationType']);
+        }
+        if (array_key_exists('eventStatus', $out) && $out['eventStatus'] !== null) {
+            // normalize status to uppercase enum-like string
+            $out['eventStatus'] = strtoupper($out['eventStatus']);
+        }
+    }
     return $out;
 }
 
-// helper: fetch organization by id
-$fetchOrganization = function($pdo, $id) use ($COL_MAP) {
-    $stmt = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
-    $stmt->execute([':id' => $id]);
+// helper: fetch organization by id or username
+$fetchOrganization = function($pdo, $idOrUsername) use ($COL_MAP) {
+    if (is_numeric($idOrUsername)) {
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $idOrUsername]);
+    } else {
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE username = :username LIMIT 1");
+        $stmt->execute([':username' => $idOrUsername]);
+    }
     $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     if (!$row) return null;
     return mapDbRowToGraphQL($row, 'Organization', $COL_MAP);
@@ -137,8 +179,8 @@ $rootValue = [
         $out = [];
         foreach ($rows as $r) {
             $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
-            $orgId = $r['organization_id'] ?? $r['organizationId'] ?? null;
-            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $orgUsername = $r['organization'] ?? $r['organizationUsername'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
             $out[] = $mapped;
         }
         return $out;
@@ -150,8 +192,8 @@ $rootValue = [
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
             $mapped = mapDbRowToGraphQL($row, 'Event', $COL_MAP);
-            $orgId = $row['organization_id'] ?? $row['organizationId'] ?? null;
-            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $orgUsername = $row['organization'] ?? $row['organizationUsername'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
             return $mapped;
         }
         return null;
@@ -201,8 +243,8 @@ $rootValue = [
         $out = [];
         foreach ($rows as $r) {
             $mapped = mapDbRowToGraphQL($r, 'User', $COL_MAP);
-            $orgId = $r['organization_id'] ?? $r['organizationId'] ?? null;
-            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $orgUsername = $r['organization'] ?? $r['organizationUsername'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
             $out[] = $mapped;
         }
         return $out;
@@ -214,8 +256,8 @@ $rootValue = [
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
             $mapped = mapDbRowToGraphQL($row, 'User', $COL_MAP);
-            $orgId = $row['organization_id'] ?? $row['organizationId'] ?? null;
-            if ($orgId) $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $orgUsername = $row['organization'] ?? $row['organizationUsername'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
             return $mapped;
         }
         return null;
@@ -232,7 +274,12 @@ $rootValue = [
             $dbCol = $COL_MAP['Event'][$k];
             $cols[] = $dbCol;
             $placeholders[] = ":$k";
-            $params[":$k"] = $v;
+            // translate GraphQL enum input for locationType into DB value
+            if ($k === 'locationType') {
+                $params[":$k"] = locationEnumToDb($v);
+            } else {
+                $params[":$k"] = $v;
+            }
         }
         if (empty($cols)) throw new \Exception('No input provided');
         $sqlCols = implode('`,`', $cols);
@@ -255,7 +302,12 @@ $rootValue = [
             if (!isset($COL_MAP['Event'][$k])) continue;
             $dbCol = $COL_MAP['Event'][$k];
             $set[] = "`$dbCol` = :$k";
-            $params[":$k"] = $v;
+            // translate locationType enum to DB value for storage
+            if ($k === 'locationType') {
+                $params[":$k"] = locationEnumToDb($v);
+            } else {
+                $params[":$k"] = $v;
+            }
         }
         if (empty($set)) throw new \Exception('No fields to update');
         $sql = "UPDATE `greenlight-events` SET " . implode(',', $set) . " WHERE id = :id";
@@ -285,12 +337,72 @@ $rootValue = [
         return $stmt->execute([':id' => $args['id']]);
     },
 
-    'eventsByOrganization' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
-        $orgId = $args['orgId'];
+    // Purchases
+    'purchases' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
         $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
         $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
-        $where = ["organization_id = :orgId"];
-        $params = [':orgId' => $orgId];
+        $sql = "SELECT * FROM `greenlight-purchases` ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Debug log: record fetch attempt and row count
+        @mkdir(__DIR__ . '/tmp', 0755, true);
+        @file_put_contents(__DIR__ . '/tmp/graphql-purchases.log', date('c') . " purchases fetched count=" . count($rows) . " limit={$limit} offset={$offset}\n", FILE_APPEND);
+        $out = [];
+        foreach ($rows as $r) {
+            $mapped = mapDbRowToGraphQL($r, 'Purchase', $COL_MAP);
+            $orgUsername = $r['organization'] ?? $r['organizationUsername'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+            $out[] = $mapped;
+        }
+        return $out;
+    },
+
+    'purchase' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-purchases` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $args['id']]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $mapped = mapDbRowToGraphQL($row, 'Purchase', $COL_MAP);
+            $orgUsername = $row['organization'] ?? $row['organizationUsername'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+            return $mapped;
+        }
+        return null;
+    },
+
+    'purchasesByOrganization' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
+        $orgUsername = $args['orgUsername'];
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $where = "`organization` = :orgUsername";
+        $sql = "SELECT * FROM `greenlight-purchases` WHERE $where ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':orgUsername', $orgUsername);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Debug log: record org fetch attempt and row count
+        @mkdir(__DIR__ . '/tmp', 0755, true);
+        @file_put_contents(__DIR__ . '/tmp/graphql-purchases.log', date('c') . " purchasesByOrg org={$orgUsername} count=" . count($rows) . " limit={$limit} offset={$offset}\n", FILE_APPEND);
+        $out = [];
+        foreach ($rows as $r) {
+            $mapped = mapDbRowToGraphQL($r, 'Purchase', $COL_MAP);
+            $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+            $out[] = $mapped;
+        }
+        return $out;
+    },
+
+    'eventsByOrganization' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
+        $orgUsername = $args['orgUsername'];
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $where = ["`organization` = :orgUsername"];
+        $params = [':orgUsername' => $orgUsername];
         if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
         if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
         if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
@@ -305,27 +417,28 @@ $rootValue = [
         $out = [];
         foreach ($rows as $r) {
             $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
-            $mapped['organization'] = $fetchOrganization($pdo, $orgId);
+            $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
             $out[] = $mapped;
         }
         return $out;
     },
 
-    'createOrganization' => function($root, $args) use ($pdo) {
+    'createOrganization' => function($root, $args) use ($pdo, $COL_MAP) {
         $in = $args['input'];
-        // allowed org inputs per schema
-        $allowedOrg = ['orgName','username','bio'];
         $cols = [];
+        $placeholders = [];
         $params = [];
-        foreach ($allowedOrg as $c) {
-            if (isset($in[$c])) {
-                $cols[] = $c;
-                $params[":$c"] = $in[$c];
-            }
+        foreach ($in as $k => $v) {
+            $dbCol = $COL_MAP['Organization'][$k] ?? null;
+            if (!$dbCol) continue;
+            $cols[] = $dbCol;
+            $placeholders[] = ":$k";
+            $params[":$k"] = $v;
         }
+        if (empty($cols)) throw new \Exception('No input provided');
         $sqlCols = implode('`,`', $cols);
-        $placeholders = implode(',', array_map(fn($c) => ":$c", $cols));
-        $stmt = $pdo->prepare("INSERT INTO `greenlight-orgs` (`$sqlCols`) VALUES ($placeholders)");
+        $placeholdersStr = implode(',', $placeholders);
+        $stmt = $pdo->prepare("INSERT INTO `greenlight-orgs` (`$sqlCols`) VALUES ($placeholdersStr)");
         $stmt->execute($params);
         $id = $pdo->lastInsertId();
         $s = $pdo->prepare("SELECT * FROM `greenlight-orgs` WHERE id = :id LIMIT 1");
@@ -400,6 +513,65 @@ $rootValue = [
 
     'deleteOrganization' => function($root, $args) use ($pdo) {
         $stmt = $pdo->prepare("DELETE FROM `greenlight-orgs` WHERE id = :id");
+        return $stmt->execute([':id' => $args['id']]);
+    },
+
+    // Purchases mutations
+    'createPurchase' => function($root, $args) use ($pdo, $COL_MAP, $fetchOrganization) {
+        $input = $args['input'];
+        $sql = "INSERT INTO `greenlight-purchases` (organization, date_submitted, item_title, item_category, event_id, order_status, item_cost) VALUES (:organization, :date_submitted, :item_title, :item_category, :event_id, :order_status, :item_cost)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':organization' => $input['organizationUsername'] ?? $input['organization'] ?? null,
+            ':date_submitted' => $input['dateSubmitted'] ?? null,
+            ':item_title' => $input['itemTitle'] ?? null,
+            ':item_category' => $input['itemCategory'] ?? null,
+            ':event_id' => $input['eventId'] ?? null,
+            ':order_status' => $input['orderStatus'] ?? null,
+            ':item_cost' => isset($input['itemCost']) ? (float)$input['itemCost'] : null,
+        ]);
+        $id = $pdo->lastInsertId();
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-purchases` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $mapped = mapDbRowToGraphQL($row, 'Purchase', $COL_MAP);
+            $orgUsername = $row['organization'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+            return $mapped;
+        }
+        return null;
+    },
+
+    'updatePurchase' => function($root, $args) use ($pdo, $COL_MAP, $fetchOrganization) {
+        $id = $args['id'];
+        $input = $args['input'];
+        $sql = "UPDATE `greenlight-purchases` SET organization = :organization, date_submitted = :date_submitted, item_title = :item_title, item_category = :item_category, event_id = :event_id, order_status = :order_status, item_cost = :item_cost WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':organization' => $input['organizationUsername'] ?? $input['organization'] ?? null,
+            ':date_submitted' => $input['dateSubmitted'] ?? null,
+            ':item_title' => $input['itemTitle'] ?? null,
+            ':item_category' => $input['itemCategory'] ?? null,
+            ':event_id' => $input['eventId'] ?? null,
+            ':order_status' => $input['orderStatus'] ?? null,
+            ':item_cost' => isset($input['itemCost']) ? (float)$input['itemCost'] : null,
+            ':id' => $id,
+        ]);
+        $stmt = $pdo->prepare("SELECT * FROM `greenlight-purchases` WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $mapped = mapDbRowToGraphQL($row, 'Purchase', $COL_MAP);
+            $orgUsername = $row['organization'] ?? null;
+            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+            return $mapped;
+        }
+        return null;
+    },
+
+    'deletePurchase' => function($root, $args) use ($pdo) {
+        $stmt = $pdo->prepare("DELETE FROM `greenlight-purchases` WHERE id = :id");
         return $stmt->execute([':id' => $args['id']]);
     },
 ];

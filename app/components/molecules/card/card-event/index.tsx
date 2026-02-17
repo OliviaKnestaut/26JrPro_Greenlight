@@ -36,6 +36,19 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     const combinedClassName = [styles.card, (rest as any)?.className].filter(Boolean).join(' ');
     const cardProps = { ...(rest as any), className: combinedClassName };
 
+    // Compute whether the event is in the past. Prefer the explicit `isPast`
+    // prop if provided; otherwise derive from the `date` string.
+    const computeIsPastEvent = (explicit?: boolean | undefined, dateStr?: string | undefined) => {
+        if (typeof explicit === 'boolean') return explicit;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return false;
+        const now = new Date();
+        return d < now;
+    };
+
+    const isPastEvent = computeIsPastEvent(isPast, date);
+
     if (loading) {
         const variant = skeletonVariant || (isVisual ? 'visual' : 'compact');
         if (variant === 'visual') {
@@ -253,11 +266,11 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     if (isVisual) {
+        if (status === "approved" && isPastEvent) return pastCardVisual;
         if (status === "in-review") return reviewCardVisual;
         if (status === "draft") return draftCardVisual;
         if (status === "approved") return approvedCardVisual;
         if (status === "cancelled") return cancelledCardVisual;
-        if (status === "past") return pastCardVisual;
     }
     if (status === "in-review") return inReviewCard;
     if (status === "draft") return draftCard;
