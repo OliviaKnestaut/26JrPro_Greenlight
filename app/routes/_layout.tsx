@@ -71,7 +71,7 @@ function AuthGate() {
             document.head.appendChild(link);
         }
         link.type = "image/svg+xml";
-        link.href = "app/components/assets/GreenlightLogo.svg";
+        link.href = `${(import.meta as any).env?.BASE_URL ?? '/'}GreenlightLogo.svg`;
     }, [location.pathname]);
 
     const handleLogout = () => {
@@ -81,7 +81,7 @@ function AuthGate() {
 
     const isLoginRoute = location.pathname === '/login';
     if (isLoginRoute) return <Outlet />;
-    if (!user) return <Navigate to="/login" replace />;
+    if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
     return (
         <AppLayout isAuthenticated={true} user={user} onLogout={handleLogout}>

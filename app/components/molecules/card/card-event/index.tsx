@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tag, Typography, Image } from 'antd';
+import { Card, Tag, Typography, Image, Skeleton } from 'antd';
 const { Title, Paragraph } = Typography;
 
 import {
@@ -21,20 +21,50 @@ export type CardEventProps = React.ComponentProps<typeof Card> & {
     status?: string;
     isPast?: boolean;
     eventImg?: string;
+    loading?: boolean;
+    skeletonImage?: boolean;
+    skeletonVariant?: 'compact' | 'visual';
 };
 
-const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime, location, description, submissionDate, status, isPast, eventImg, ...rest }) => {
+const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime, location, description, submissionDate, status, isPast, eventImg, loading, skeletonImage, skeletonVariant, ...rest }) => {
     // detect visual-card via `className` prop
     const classNameProp = (rest as any)?.className ?? '';
     const isVisual = classNameProp.split(/\s+/).includes('visual-card');
     const incomingStyle = (rest as any)?.style ?? {};
     const base = (import.meta as any).env?.BASE_URL ?? '/';
     const imagePath = eventImg ? `${base}uploads/event_img/${eventImg}`.replace(/\\/g, '/') : undefined;
+    const combinedClassName = [styles.card, (rest as any)?.className].filter(Boolean).join(' ');
+    const cardProps = { ...(rest as any), className: combinedClassName };
 
-    // default/full variants
+    if (loading) {
+        const variant = skeletonVariant || (isVisual ? 'visual' : 'compact');
+        if (variant === 'visual') {
+            return (
+                <Card {...cardProps} styles={{ body: { padding: 16 } }} style={{ ...incomingStyle }}>
+                    <div className='flex flex-col gap-1'>
+                        <div style={{ width: '100%', height: 160, background: '#f2f2f2' }} />
+                        <div style={{ paddingTop: 12 }}>
+                            <Skeleton active title={{ width: '60%' } as any} paragraph={{ rows: 2 }} />
+                        </div>
+                    </div>
+                </Card>
+            );
+        }
+        // compact
+        return (
+            <Card {...rest} styles={{ body: { padding: 16 } }} style={{ ...incomingStyle }}>
+                <div className='flex flex-col gap-1'>
+                    <div style={{ paddingTop: 4 }}>
+                        <Skeleton active title={{ width: '40%' } as any} paragraph={{ rows: 3 }} />
+                    </div>
+                </div>
+            </Card>
+        );
+    }
 
     const inReviewCard = (
-        <Card {...rest}
+        <Card {...cardProps}
+            hoverable
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -52,7 +82,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const draftCard = (
-        <Card {...rest}
+        <Card {...cardProps}
+            hoverable
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -72,7 +103,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const approvedCardVisual = (
-        <Card {...rest}
+        <Card {...cardProps}
+            hoverable
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -101,8 +133,9 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const reviewCardVisual = (
-        <Card {...rest}
+        <Card {...cardProps}
             styles={{ body: { padding: 16 } }}
+            hoverable
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
@@ -130,7 +163,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const draftCardVisual = (
-        <Card {...rest}
+        <Card {...cardProps}
+            hoverable
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -159,7 +193,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const cancelledCardVisual = (
-        <Card {...rest}
+        <Card {...cardProps}
+            hoverable
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -188,7 +223,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     const pastCardVisual = (
-        <Card {...rest}
+        <Card {...cardProps}
+            hoverable
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light)' }}>
             <div className='flex flex-col gap-1'>

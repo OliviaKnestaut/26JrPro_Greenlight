@@ -285,9 +285,12 @@ p {
 	font-weight: 500;
 	font-size: 14px;
 	line-height: 22px;
-	text-decoration: underline;
 	text-decoration-style: solid;
 	margin-bottom: 0.5rem;
+}
+
+.ant-card li a{
+	text-decoration: underline;
 }
 
 .regular {
@@ -494,7 +497,7 @@ p {
 
 /* BRAINSTORM */
 .toggle-nav{
-	width: 198px;
+	width: 206px;
 	height: 36px;
 	border: solid, 1px, var(--accent-gray-dark);
 	border-radius: 100px;
@@ -518,8 +521,8 @@ p {
 }
 
 .toggle-nav a.active {
-  background: var(--sea-green-9);
-  color: white;
+	background: var(--sea-green-9);
+	color: white;
 }
 
 .brainstorm-nav{

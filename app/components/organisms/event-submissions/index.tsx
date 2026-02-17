@@ -5,7 +5,7 @@ import { EventsByOrganizationDocument } from "~/lib/graphql/generated";
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Badge, Input, Button, Space, Switch, Popover, Checkbox, Tag, Collapse } from "antd";
+import { Typography, Badge, Input, Button, Space, Switch, Popover, Checkbox, Tag, Collapse, Skeleton, Card } from "antd";
 import { useSearchParams, useNavigate } from 'react-router';
 const { Title, Paragraph, Link } = Typography;
 import { FilterOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
@@ -17,13 +17,16 @@ export function EventSubmissionsContent() {
     const { user } = useAuth();
 
     const [events, setEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchOrgEvents = async () => {
+            setLoading(true);
             try {
                 const orgId = user?.organization?.id ?? user?.organizationId;
                 if (!orgId) {
                     console.debug('No organization id available on user', user);
+                    setLoading(false);
                     return;
                 }
                 const { data } = await apolloClient.query<any>({
@@ -36,11 +39,11 @@ export function EventSubmissionsContent() {
 
                 const drafts = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
                 const inReview = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
-                console.log('Organization events:', fetched);
-                console.log('In-Review events:', inReview);
-                console.log('Draft events:', drafts);
+
             } catch (err) {
                 console.error('Failed to fetch events by organization', err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchOrgEvents();
@@ -198,60 +201,76 @@ export function EventSubmissionsContent() {
             <div className="container w-auto flex gap-4">
                 {!query.trim() && selectedStatuses.length === 0 ? (
                     <Collapse className="my-4"
-                    defaultActiveKey={["1"]} expandIconPosition="end" items={[{
-                    key: '1',
-                    label: (
-                        <div className="flex items-center gap-2">
-                            <Title level={4} style={{ margin: 0 }}>In-Review</Title>
-                            <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
-                        </div>
-                    ),
-                    children: (() => {
-                        const withParsed = inReview.map((e: any) => ({
-                            ...e,
-                            parsedDate: e.eventDate ? new Date(e.eventDate) : null,
-                        }));
-                        const upcoming = withParsed.sort((a: any, b: any) => {
-                            if (!a.parsedDate && !b.parsedDate) return 0;
-                            if (!a.parsedDate) return 1;
-                            if (!b.parsedDate) return -1;
-                            const diff = (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime();
-                            if (diff !== 0) return diff;
-                            // fallback to event start time when dates tie
-                            const aTime = toMinutes(a.startTime);
-                            const bTime = toMinutes(b.startTime);
-                            if (aTime !== bTime) return aTime - bTime;
-                            const aSubmitted = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
-                            const bSubmitted = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
-                            return aSubmitted - bSubmitted;
-                        });
-                        return (
-                            <div className="flex gap-4" style={{ alignItems: 'center'}}>
-                                {upcoming.map((e: any) => {
-                                    const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < (new Date()).setHours(0,0,0,0) : false;
-                                    return (
-                                    <CardEvent
-                                        key={e.id}
-                                        isPast={isPast}
-                                        eventImg={e.eventImg}
-                                        style={{ width: "calc(50% - 0.5rem)" }}
-                                        title={e.title}
-                                        date={formatDateMDY(e.eventDate)}
-                                        location={e.location ?? ''}
-                                        startTime={e.startTime ?? ''}
-                                        description={e.description ?? ''}
-                                        submissionDate={formatDateMDY(e.submittedAt)}
-                                        status={serverToUi(e.eventStatus)}
-                                    />);
-                                })}
+                        defaultActiveKey={["1"]} expandIconPosition="end" items={[{
+                        key: '1',
+                        label: (
+                            <div className="flex items-center gap-2">
+                                <Title level={4} style={{ margin: 0 }}>In-Review</Title>
+                                <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                             </div>
-                        );
-                    })(),
-                }]} />
+                        ),
+                        children: (loading ? (
+                            <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} style={{ width: "calc(33% - 0.66rem)" }}>
+                                        <CardEvent loading skeletonVariant="compact" style={{ width: '100%' }} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (() => {
+                            const withParsed = inReview.map((e: any) => ({
+                                ...e,
+                                parsedDate: e.eventDate ? new Date(e.eventDate) : null,
+                            }));
+                            const upcoming = withParsed.sort((a: any, b: any) => {
+                                if (!a.parsedDate && !b.parsedDate) return 0;
+                                if (!a.parsedDate) return 1;
+                                if (!b.parsedDate) return -1;
+                                const diff = (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime();
+                                if (diff !== 0) return diff;
+                                // fallback to event start time when dates tie
+                                const aTime = toMinutes(a.startTime);
+                                const bTime = toMinutes(b.startTime);
+                                if (aTime !== bTime) return aTime - bTime;
+                                const aSubmitted = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+                                const bSubmitted = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+                                return aSubmitted - bSubmitted;
+                            });
+                            return (
+                                <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                                    {upcoming.map((e: any) => {
+                                        const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < (new Date()).setHours(0,0,0,0) : false;
+                                        const statusUi = serverToUi(e.eventStatus);
+                                        return (
+                                        <CardEvent
+                                            key={e.id}
+                                            isPast={isPast}
+                                            eventImg={e.eventImg}
+                                            onClick={statusUi !== 'draft' ? () => navigate(`/event-overview/${e.id}`) : undefined}
+                                            style={{ width: "calc(50% - 0.5rem)", cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
+                                            title={e.title}
+                                            date={formatDateMDY(e.eventDate)}
+                                            location={e.location ?? ''}
+                                            startTime={e.startTime ?? ''}
+                                            description={e.description ?? ''}
+                                            submissionDate={formatDateMDY(e.submittedAt)}
+                                            status={serverToUi(e.eventStatus)}
+                                        />);
+                                    })}
+                                </div>
+                            );
+                        })())
+                    }]} />
                 ) : null}
             </div>
             <div className="flex gap-4 flex-wrap w-full my-4">
-                {(() => {
+                {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} style={{ width: "calc(33% - 0.66rem)" }}>
+                            <CardEvent className="visual-card" loading skeletonVariant="visual" style={{ width: '100%' }} />
+                        </div>
+                    ))
+                ) : (() => {
                     const withParsed = events.map((e: any) => ({
                         ...e,
                         parsedDate: e.eventDate ? new Date(e.eventDate) : null,
@@ -304,12 +323,14 @@ export function EventSubmissionsContent() {
                     if (statusFiltered.length === 0) return <div>No events</div>;
                         return statusFiltered.map((e: any) => {
                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
+                        const statusUi = serverToUi(e.eventStatus);
                         return (
                         <CardEvent className="visual-card"
                             key={e.id}
                             isPast={isPast}
                             eventImg={e.eventImg}
-                            style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box' }}
+                            onClick={statusUi !== 'draft' ? () => navigate(`/event-overview/${e.id}`) : undefined}
+                            style={{ flex: '0 0 calc((100% - 2rem) / 3)', maxWidth: 'calc((100% - 2rem) / 3)', boxSizing: 'border-box', cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
                             title={e.title}
                             date={formatDateMDY(e.eventDate)}
                             location={e.location ?? ''}

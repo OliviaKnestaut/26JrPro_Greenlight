@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Input, Button, Typography, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useAuth } from '../../../auth/AuthProvider';
 import heroImg from "../../assets/login-hero.jpg";
 
@@ -9,6 +9,7 @@ const { Title, Paragraph, Link } = Typography;
 
 export function LoginContent() {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const auth = useAuth();
 
@@ -19,7 +20,9 @@ export function LoginContent() {
                 const success = await auth.login(username, password);
                 if (success) {
                     message.success('Signed in');
-                    navigate('/');
+                    // redirect back to the original location (if provided)
+                    const from = (location.state as any)?.from?.pathname || '/';
+                    navigate(from, { replace: true });
                 } else {
                     message.error('Invalid username or password');
                 }
