@@ -1,47 +1,64 @@
-import { Controller, useWatch } from "react-hook-form"
-import { Checkbox, Form, Radio } from "antd"
+import { Controller } from "react-hook-form";
+import { Checkbox, Typography } from "antd";
+
+const { Text } = Typography;
 
 type Props = {
-    control: any
-}
-
+    control: any;
+};
 
 export default function EventElementsSection({ control }: Props) {
-    const eventElements = useWatch({
-        control,
-        name: "eventElements",
-    })
-
+    // Define checkbox options
+    const elementOptions = [
+        { label: "Food", value: "food" },
+        { label: "Alcohol", value: "alcohol" },
+        { label: "Minors present", value: "minors" },
+        { label: "Movies / TV / copyrighted media", value: "movies" },
+        { label: "Raffles or prizes", value: "raffles" },
+        { label: "Fire pits or grills", value: "fire" },
+        { label: "SORC games or inflatables", value: "sorc_games" },
+    ];
 
     return (
-        <>
-            <Controller
-                name="eventElements"
-                control={control}
-                render={({ field }) => (
-                    <Form.Item label="What elements will your event include?">
-                        <Checkbox.Group {...field}>
-                            <Checkbox value="Food">Food</Checkbox>
-                            <Checkbox value="Movies + TV">Movies + TV</Checkbox>
-                            <Checkbox value="Raffles + Gaming">Raffles + Gaming</Checkbox>
-                        </Checkbox.Group>
-                    </Form.Item>
-                )}
-            />
-            
-            {/* 
-      {eventElements?.includes("Food") && (
         <Controller
-          name="foodDetails"
-          control={control}
-          render={({ field }) => (
-            <Form.Item label="Please provide details about the food you plan to serve:">
-              <Input.TextArea {...field} rows={4} />
-            </Form.Item>
-          )}
-        />
-      )} */}
+            name="form_data.elements"
+            control={control}
+            rules={{
+                validate: (val) =>
+                    val && Object.values(val).some(Boolean) || "At least one element must be selected"
+            }}
+            render={({ field, fieldState }) => {
+                // Convert the object to an array of selected keys for the Checkbox.Group
+                const selectedKeys = Object.keys(field.value || {}).filter(
+                    (key) => field.value[key]
+                );
 
-        </>
-    )
+                const onChange = (checkedValues: string[]) => {
+                    // Convert back to object mapping for form_data.elements
+                    const updated = elementOptions.reduce((acc, option) => {
+                        acc[option.value] = checkedValues.includes(option.value);
+                        return acc;
+                    }, {} as Record<string, boolean>);
+
+                    field.onChange(updated);
+                };
+
+                return (
+                    <div style={{ marginBottom: 24 }}>
+                        <Text>Which of the following apply to your event?</Text>
+                        <Checkbox.Group
+                            value={selectedKeys}
+                            options={elementOptions}
+                            onChange={onChange}
+                            style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
+                        />
+                        {fieldState.error && (
+                            <Text type="danger">{fieldState.error.message}</Text>
+                        )}
+                    </div>
+                );
+            }}
+        />
+    );
 }
+

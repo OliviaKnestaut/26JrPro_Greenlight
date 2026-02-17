@@ -12,22 +12,107 @@ import SuccessModal from "../../molecules/event-flow/success-modal";
 import DiscardModal from "../../molecules/event-flow/discard-modal";
 import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
 import styles from "./eventform.module.css";
-import NestFoodSection from "./sections/nest/nestFood";
-import NestVendorSection from "./sections/nest/nestVendor";
+import NestFoodSection from "./sections/nestedSections/elementNest/nestFood";
+import NestVendorSection from "./sections/nestedSections/nestVendor";
+import OnCampusSection from "./sections/nestedSections/locationNest/nestOn";
+import OffCampusSection from "./sections/nestedSections/locationNest/nestOff";
+import AlcoholSection from "./sections/nestedSections/elementNest/nestAlcohol";
+import MinorsSection from "./sections/nestedSections/elementNest/nestMinors";
+import MoviesSection from "./sections/nestedSections/elementNest/nestMovies";
+import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
+import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
+import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
 const { Panel } = Collapse;
+
 
 // Define the branching logic for nested sections
 const formBranching = [
+    // Date & Location nests
     {
-        when: "eventElements",
-        is: "Food",
-        key: "vendorDetails",
-        parent: "eventElements",
-        header: "Food",
-        component: NestFoodSection,
+        when: "location_type",
+        is: "On-Campus",
+        key: "onCampus",
+        parent: "dateLocation",
+        header: "On-Campus Details",
+        component: OnCampusSection,
+        indent: 32
+    },
+    {
+        when: "location_type",
+        is: "Off-Campus",
+        key: "offCampus",
+        parent: "dateLocation",
+        header: "Off-Campus Details",
+        component: OffCampusSection,
         indent: 32
     },
 
+    // Event Elements nests
+    {
+        when: "form_data.elements.food",
+        is: true,
+        key: "food",
+        parent: "eventElements",
+        header: "Food Details",
+        component: NestFoodSection,
+        indent: 32
+    },
+    {
+        when: "form_data.elements.alcohol",
+        is: true,
+        key: "alcohol",
+        parent: "eventElements",
+        header: "Alcohol Details",
+        component: AlcoholSection,
+        indent: 32
+    },
+    {
+        when: "form_data.elements.minors",
+        is: true,
+        key: "minors",
+        parent: "eventElements",
+        header: "Minors Details",
+        component: MinorsSection,
+        indent: 32
+    },
+    {
+        when: "form_data.elements.movies",
+        is: true,
+        key: "movies",
+        parent: "eventElements",
+        header: "Movies/Media Details",
+        component: MoviesSection,
+        indent: 32
+    },
+    {
+        when: "form_data.elements.raffles",
+        is: true,
+        key: "raffles",
+        parent: "eventElements",
+        header: "Raffles/Prizes Details",
+        component: RafflesSection,
+        indent: 32
+    },
+    {
+        when: "form_data.elements.fire",
+        is: true,
+        key: "fire",
+        parent: "eventElements",
+        header: "Fire Safety Details",
+        component: FireSafetySection,
+        indent: 32
+    },
+    {
+        when: "form_data.elements.sorc_games",
+        is: true,
+        key: "sorc_games",
+        parent: "eventElements",
+        header: "SORC Games Details",
+        component: SORCGamesSection,
+        indent: 32
+    },
+
+    // Budget & Purchases nests
     {
         when: "vendor",
         is: "yes",
@@ -42,7 +127,13 @@ const formBranching = [
 // Recursive function to render nested sections based on branching logic
 const formNesting = (parentKey: string, isSelected: Record<string, any>, control: any) => {
     return formBranching.filter((panel) => panel.parent === parentKey).map((panel) => {
-        const currentValue = isSelected?.[panel.when]
+        // Support nested field paths like "form_data.elements.food"
+        const fieldPath = panel.when.split('.');
+        let currentValue: any = isSelected;
+        for (const key of fieldPath) {
+            currentValue = currentValue?.[key];
+        }
+
         const displayPanel = Array.isArray(currentValue)
             ? currentValue.includes(panel.is)
             : currentValue === panel.is
@@ -67,7 +158,7 @@ export function EventForm() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false)
     const [isDraftModalOpen, setIsDraftModalOpen] = useState(false)
-    const { control, handleSubmit, getValues, reset } = useForm()
+    const { control, handleSubmit, getValues, reset, watch } = useForm()
     const isSelected = useWatch({ control });
     const navigate = useNavigate();
 
@@ -134,7 +225,7 @@ export function EventForm() {
                     <Collapse defaultActiveKey={["eventDetails", "dateLocation", "eventElements", "budgetPurchase"]} expandIconPosition="end">
                         {/* ! Event Details Section */}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
-                            <EventDetailsSection control={control} />
+                            <EventDetailsSection control={control} watch={watch} />
                         </Panel>
 
                         {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}

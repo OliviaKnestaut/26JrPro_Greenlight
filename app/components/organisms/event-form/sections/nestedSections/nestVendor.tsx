@@ -17,7 +17,7 @@ export default function NestVendorSection({ control }: Props) {
         rules={{ required: "Vendor type is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <Text strong>What type of vendor is this?</Text>
+            <Text>What type of vendor is this?</Text>
             <Select
               {...field}
               placeholder="Select vendor type"
@@ -42,7 +42,7 @@ export default function NestVendorSection({ control }: Props) {
         rules={{ required: "Vendor/Company name is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <Text strong>Vendor/Company Name</Text>
+            <Text>Vendor/Company Name</Text>
             <Input
               {...field}
               placeholder="Enter vendor or company name"
@@ -62,7 +62,7 @@ export default function NestVendorSection({ control }: Props) {
         rules={{ required: "Please select an option" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <Text strong>Have you worked with this vendor before?</Text>
+            <Text>Have you worked with this vendor before?</Text>
             <Radio.Group {...field}>
               <Radio value="yes">Yes</Radio>
               <Radio value="no">No</Radio>
@@ -81,7 +81,7 @@ export default function NestVendorSection({ control }: Props) {
         rules={{ required: "Amount is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-            <Text strong>How much are you paying this vendor?</Text>
+            <Text>How much are you paying this vendor?</Text>
             <Input
               {...field}
               placeholder="Enter amount (e.g., $500)"
