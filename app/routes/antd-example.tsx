@@ -44,6 +44,7 @@ import SuccessModal from '../components/molecules/event-flow/success-modal';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
 import DiscardModal from '~/components/molecules/event-flow/discard-modal';
+import ProgressTimeline from '~/components/molecules/event-flow/progress-timeline';
 
 export default function AntdExample() {
     const { Title, Paragraph, Text, Link } = Typography;
@@ -67,6 +68,15 @@ export default function AntdExample() {
         { key: '2', name: 'Jim Green', age: 42, address: 'London No. 1 Lake Park' },
         { key: '3', name: 'Joe Black', age: 28, address: 'Sydney No. 1 Lake Park' },
     ];
+    const demoTimelineValues = {
+        eventName: 'Event',
+        date: '2026-02-08',
+        location: 'Main Hall',
+        eventElements: [],
+        budget: null,
+        reviewed: false,
+    };
+    const getDemoTimelineValues = () => demoTimelineValues;
 
     return (
         <div style={{ padding: 16 }}>
@@ -313,6 +323,10 @@ export default function AntdExample() {
                     </div>
                     <div>
                         <StyledCalendar/>
+                    </div>
+
+                    <div>
+                        <ProgressTimeline getValues={getDemoTimelineValues} />
                     </div>
 
                     <Space wrap>

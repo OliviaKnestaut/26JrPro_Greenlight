@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Button, Collapse, Steps, Typography, Alert } from "antd";
+import { Form, Button, Collapse, Typography, Alert } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 const { Title, Link } = Typography;
 import { useForm, useWatch } from "react-hook-form";
@@ -10,6 +10,7 @@ import EventElementsSection from "../event-form/sections/EventElementsSection";
 import BudgetPurchaseSection from "../event-form/sections/BudgetPurchasesSection";
 import SuccessModal from "../../molecules/event-flow/success-modal";
 import DiscardModal from "../../molecules/event-flow/discard-modal";
+import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
 import styles from "./eventform.module.css";
 import NestFoodSection from "./sections/nest/nestFood";
 import NestVendorSection from "./sections/nest/nestVendor";
@@ -70,35 +71,6 @@ export function EventForm() {
     const isSelected = useWatch({ control });
     const navigate = useNavigate();
 
-    // Define main steps for the stepper
-    const steps = [
-        { title: "Event Details", key: "eventDetails" },
-        { title: "Date & Location", key: "dateLocation" },
-        { title: "Event Elements", key: "eventElements" },
-        { title: "Budget & Purchases", key: "budgetPurchase" },
-    ];
-
-    // Helper function to determine if a section is complete
-    const isSectionComplete = (key: string) => {
-        const values = getValues(); // get current form values
-        switch (key) {
-            case "eventDetails":
-                // Example: mark complete if event name exists
-                return !!values.eventName;
-            case "dateLocation":
-                return !!values.date && !!values.location;
-            case "eventElements":
-                return !!values.eventElements?.length;
-            case "budgetPurchase":
-                return !!values.budget;
-            default:
-                return false;
-        }
-    }
-
-    // Determine current step based on completed sections
-    const currentStep = steps.findIndex((s) => !isSectionComplete(s.key));
-    const activeStep = currentStep === -1 ? steps.length - 1 : currentStep;
 
     const onSubmit = (data: any) => {
         console.log("FORM DATA:", data)
@@ -151,20 +123,15 @@ export function EventForm() {
                 <p>Provide your event information for review and approval.</p>
             </div>
 
-            {/* Steps Component */}
-            <Steps
-                current={activeStep}
-                items={steps.map((step) => ({
-                    key: step.key,
-                    title: step.title,
-                }))}
-                style={{ marginBottom: 24 }}
-            />
+            {/* Progress Timeline */}
+            <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
+                <ProgressTimeline getValues={getValues} />
+            </div>
 
             {/* Form */}
             <div className={styles.collapseWrapper}>
                 <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-                    <Collapse defaultActiveKey={steps.map((s) => s.key)} expandIconPosition="end">
+                    <Collapse defaultActiveKey={["eventDetails", "dateLocation", "eventElements", "budgetPurchase"]} expandIconPosition="end">
                         {/* ! Event Details Section */}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
                             <EventDetailsSection control={control} />

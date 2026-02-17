@@ -17,7 +17,7 @@ type DiscardModalProps = {
 export default function DiscardModal({
     open,
     title = "Discard Event Form?",
-    message = "Any unsaved changes will be lost. Are you sure you want to discard this event form?",
+    message = "Are you sure you want to discard this event form? This action cannot be undone.",
     cancelButtonText = "Cancel",
     discardButtonText = "Discard",
     onDiscardClick,
