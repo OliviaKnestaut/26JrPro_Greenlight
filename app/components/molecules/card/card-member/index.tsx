@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Avatar } from 'antd';
+import { Card } from 'antd';
+import OptimizedImage from '../../../atoms/OptimizedImage';
 import styles from './index.module.css';
 
 export type CardMemberProps = React.ComponentProps<typeof Card> & {
@@ -13,7 +14,7 @@ export type CardMemberProps = React.ComponentProps<typeof Card> & {
 const CardMember: React.FC<CardMemberProps> = ({ children, avatarSrc, role, first, last, username, ...rest }) => (
     <Card className={styles.card}>
         <div className={styles.meta}>
-            {avatarSrc && <Avatar src={avatarSrc} size={64} />}
+            {avatarSrc && <div style={{ width: 64, height: 64, borderRadius: 8, overflow: 'hidden' }}><OptimizedImage src={avatarSrc} alt={`${first} ${last}`} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} /></div>}
         </div>
         <div className={styles.name}>{first} {last}</div>
         {role && <div className={styles.role}>{role}</div>}

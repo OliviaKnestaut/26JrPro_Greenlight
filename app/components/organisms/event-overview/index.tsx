@@ -5,6 +5,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetEventByIdQuery } from '~/lib/graphql/generated';
 import NavMini from "../../molecules/nav-mini";
+import OptimizedImage from '../../atoms/OptimizedImage';
 
 export function EventOverviewContent() {
     const navigate = useNavigate();
@@ -71,7 +72,7 @@ export function EventOverviewContent() {
                 (() => {
                     const base = (import.meta as any).env?.BASE_URL ?? '/';
                     const imgSrc = data?.event?.eventImg ? `${base}uploads/event_img/${data.event.eventImg}`.replace(/\\/g, '/') : 'https://placehold.co/1160x365';
-                    return <img style={{ width: '100%', height: 365, objectFit: 'cover' }} src={imgSrc} alt="Event header" />;
+                    return <OptimizedImage placeholder="grey" src={imgSrc} alt="Event header" style={{ width: '100%', height: 365, objectFit: 'cover' }} />;
                 })()
             }
 

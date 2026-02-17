@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { Outlet, useLocation, Navigate, useNavigate } from 'react-router';
 import { AppLayout } from '../components/organisms/app-layout';
 import { ConfigProvider } from 'antd';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
+import Loading from '../components/molecules/loading/Loading';
 
 
 export default function RootLayout() {
@@ -43,7 +44,7 @@ export default function RootLayout() {
 
 function AuthGate() {
     const location = useLocation();
-    const { user, logout } = useAuth();
+    const { user, loading, logout } = useAuth();
     const navigate = useNavigate();
 
     // Set document title and favicon
@@ -79,13 +80,20 @@ function AuthGate() {
         navigate('/login');
     };
 
+    if (loading) return <Loading text="Checking authentication..." />;
+
     const isLoginRoute = location.pathname === '/login';
-    if (isLoginRoute) return <Outlet />;
+    if (isLoginRoute) {
+        if (user) return <Navigate to="/" replace />;
+        return <Outlet />;
+    }
     if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
     return (
         <AppLayout isAuthenticated={true} user={user} onLogout={handleLogout}>
-            <Outlet />
+            <Suspense fallback={<Loading />}>
+                <Outlet />
+            </Suspense>
         </AppLayout>
     );
 }
