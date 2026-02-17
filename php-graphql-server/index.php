@@ -25,8 +25,25 @@ try {
             $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e2) {
-            echo json_encode(['errors' => [['message' => 'Database connection failed: ' . $e2->getMessage()]]]);
-            exit;
+            // try common unix socket locations before giving up
+            $sockets = ['/tmp/mysql.sock', '/var/run/mysqld/mysqld.sock', '/var/run/mysql/mysql.sock'];
+            $connected = false;
+            foreach ($sockets as $sock) {
+                try {
+                    $pdo = new PDO("mysql:unix_socket=$sock;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $connected = true;
+                    break;
+                } catch (PDOException $e3) {
+                    // continue to next socket
+                }
+            }
+            if (!$connected) {
+                @mkdir(__DIR__ . '/tmp', 0755, true);
+                @file_put_contents(__DIR__ . '/tmp/db-connection.log', date('c') . " DB connect failed: " . $e2->getMessage() . "; attempted sockets: " . implode(',', $sockets) . "\n", FILE_APPEND);
+                echo json_encode(['errors' => [['message' => 'Database connection failed: ' . $e2->getMessage()]]]);
+                exit;
+            }
         }
     } else {
         echo json_encode(['errors' => [['message' => 'Database connection failed: ' . $errMsg]]]);
@@ -95,6 +112,21 @@ $COL_MAP = [
     ],
 ];
 
+function locationDbToEnum($dbVal) {
+    if ($dbVal === null) return null;
+    $v = strtoupper(str_replace([' ', '-'], '_', (string)$dbVal));
+    $allowed = ['ON_CAMPUS', 'OFF_CAMPUS', 'VIRTUAL'];
+    return in_array($v, $allowed, true) ? $v : null;
+}
+
+function locationEnumToDb($enumVal) {
+    if ($enumVal === null) return null;
+    $allowed = ['ON_CAMPUS', 'OFF_CAMPUS', 'VIRTUAL'];
+    if (in_array($enumVal, $allowed, true)) return $enumVal;
+    $v = strtoupper(str_replace([' ', '-'], '_', (string)$enumVal));
+    return in_array($v, $allowed, true) ? $v : null;
+}
+
 // Helper: map DB row (snake_case columns) to GraphQL field keys using $COL_MAP
 function mapDbRowToGraphQL(array $row, string $type, array $COL_MAP) : array {
     $out = [];
@@ -118,12 +150,41 @@ function mapDbRowToGraphQL(array $row, string $type, array $COL_MAP) : array {
     }
     // post-process certain fields for specific types
     if ($type === 'Event') {
-        if (array_key_exists('locationType', $out) && $out['locationType'] !== null) {
-            $out['locationType'] = locationDbToEnum($out['locationType']);
-        }
-        if (array_key_exists('eventStatus', $out) && $out['eventStatus'] !== null) {
-            // normalize status to uppercase enum-like string
-            $out['eventStatus'] = strtoupper($out['eventStatus']);
+        try {
+            if (array_key_exists('locationType', $out) && $out['locationType'] !== null) {
+                $out['locationType'] = locationDbToEnum($out['locationType']);
+            }
+            if (array_key_exists('eventStatus', $out) && $out['eventStatus'] !== null) {
+                // normalize status to uppercase enum-like string
+                $out['eventStatus'] = strtoupper($out['eventStatus']);
+            }
+            // Normalize formData: store as decoded JSON if possible, null if empty string
+            if (array_key_exists('formData', $out)) {
+                $fd = $out['formData'];
+                if ($fd === null) {
+                    // leave as null
+                } elseif (is_string($fd)) {
+                    $trim = trim($fd);
+                    if ($trim === '') {
+                        $out['formData'] = null;
+                    } else {
+                        // Attempt to decode JSON payloads; if fails, keep original string
+                        if (($trim[0] === '{' || $trim[0] === '[')) {
+                            $decoded = json_decode($trim, true);
+                            if (json_last_error() === JSON_ERROR_NONE) {
+                                $out['formData'] = $decoded;
+                            } else {
+                                // leave as string but log malformed JSON
+                                @mkdir(__DIR__ . '/tmp', 0755, true);
+                                @file_put_contents(__DIR__ . '/tmp/graphql-events-error.log', date('c') . " malformed formData for event id=" . ($out['id'] ?? 'unknown') . " json_error=" . json_last_error_msg() . "\n", FILE_APPEND);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            @mkdir(__DIR__ . '/tmp', 0755, true);
+            @file_put_contents(__DIR__ . '/tmp/graphql-events-error.log', date('c') . " mapDbRowToGraphQL Event post-process error for id=" . ($out['id'] ?? 'unknown') . ": " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
         }
     }
     return $out;
@@ -160,43 +221,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // root resolvers for top-level fields
 $rootValue = [
     'events' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
-        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
-        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
-        $where = [];
-        $params = [];
-        if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
-        if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
-        if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
-        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // map DB rows to GraphQL field names and attach organization
-        $out = [];
-        foreach ($rows as $r) {
-            $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
-            $orgUsername = $r['organization'] ?? $r['organizationUsername'] ?? null;
-            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
-            $out[] = $mapped;
+        try {
+            $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+            $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+            $where = [];
+            $params = [];
+            if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
+            if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
+            if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
+            $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+            $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+            $stmt = $pdo->prepare($sql);
+            foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // map DB rows to GraphQL field names and attach organization
+            $out = [];
+            foreach ($rows as $r) {
+                $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
+                $orgUsername = $r['organization'] ?? $r['organizationUsername'] ?? null;
+                if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+                $out[] = $mapped;
+            }
+            return $out;
+        } catch (Throwable $e) {
+            @mkdir(__DIR__ . '/tmp', 0755, true);
+            @file_put_contents(__DIR__ . '/tmp/graphql-events-error.log', date('c') . " events resolver error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n", FILE_APPEND);
+            throw $e;
         }
-        return $out;
     },
 
     'event' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
-        $stmt = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
-        $stmt->execute([':id' => $args['id']]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            $mapped = mapDbRowToGraphQL($row, 'Event', $COL_MAP);
-            $orgUsername = $row['organization'] ?? $row['organizationUsername'] ?? null;
-            if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
-            return $mapped;
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM `greenlight-events` WHERE id = :id LIMIT 1");
+            $stmt->execute([':id' => $args['id']]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $mapped = mapDbRowToGraphQL($row, 'Event', $COL_MAP);
+                $orgUsername = $row['organization'] ?? $row['organizationUsername'] ?? null;
+                if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+                return $mapped;
+            }
+            return null;
+        } catch (Throwable $e) {
+            @mkdir(__DIR__ . '/tmp', 0755, true);
+            @file_put_contents(__DIR__ . '/tmp/graphql-events-error.log', date('c') . " event resolver error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n", FILE_APPEND);
+            throw $e;
         }
-        return null;
     },
 
     'organizations' => function($root, $args) use ($pdo, $COL_MAP) {
@@ -398,29 +471,35 @@ $rootValue = [
     },
 
     'eventsByOrganization' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
-        $orgUsername = $args['orgUsername'];
-        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
-        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
-        $where = ["`organization` = :orgUsername"];
-        $params = [':orgUsername' => $orgUsername];
-        if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
-        if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
-        if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
-        $whereSql = 'WHERE ' . implode(' AND ', $where);
-        $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
-        $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $out = [];
-        foreach ($rows as $r) {
-            $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
-            $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
-            $out[] = $mapped;
+        try {
+            $orgUsername = $args['orgUsername'];
+            $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+            $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+            $where = ["`organization` = :orgUsername"];
+            $params = [':orgUsername' => $orgUsername];
+            if (isset($args['status'])) { $where[] = "event_status = :status"; $params[':status'] = $args['status']; }
+            if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
+            if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
+            $whereSql = 'WHERE ' . implode(' AND ', $where);
+            $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+            $stmt = $pdo->prepare($sql);
+            foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $out = [];
+            foreach ($rows as $r) {
+                $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
+                $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
+                $out[] = $mapped;
+            }
+            return $out;
+        } catch (Throwable $e) {
+            @mkdir(__DIR__ . '/tmp', 0755, true);
+            @file_put_contents(__DIR__ . '/tmp/graphql-events-error.log', date('c') . " eventsByOrganization resolver error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n\n", FILE_APPEND);
+            throw $e;
         }
-        return $out;
     },
 
     'createOrganization' => function($root, $args) use ($pdo, $COL_MAP) {
