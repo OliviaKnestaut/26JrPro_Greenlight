@@ -7,24 +7,38 @@ export type NavMiniProps = {
 };
 
 export type NavMiniLink = {
-    href: string;
     title: React.ReactNode;
+    ref: React.RefObject<HTMLElement>;
 };
 
-const defaultLinks: NavMiniLink[] = [
-    { href: '#event-details', title: 'Event Details' },
-    { href: '#date-location', title: 'Date & Location' },
-    { href: '#event-elements', title: 'Event Elements' },
-    { href: '#budget-purchase', title: 'Budget & Purchase' },
-];
+const defaultLinks: NavMiniLink[] = [];
 
 const NavMini: React.FC<NavMiniProps> = ({ links }) => {
     const slice = (links && links.length ? links : defaultLinks).slice(0, 4);
-    const items = slice.map((l, i) => ({ key: l.href ?? `link-${i}`, href: l.href, title: l.title }));
+    
+    const items = slice.map((link, i) => ({
+        key: `link-${i}`,
+        href: `#link-${i}`,
+        title: link.title,
+    }));
+
+    const handleAnchorClick = (e: React.MouseEvent, link: NavMiniLink) => {
+        e.preventDefault();
+        if (link.ref?.current) {
+            link.ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
 
     return (
         <div className={styles.wrapper}>
-            <Anchor affix={false} items={items} />
+            <Anchor 
+                affix={false} 
+                items={items.map((item, i) => ({
+                    ...item,
+                    onClick: (e: React.MouseEvent) => handleAnchorClick(e, slice[i]),
+                }))}
+                offsetTop={60}
+            />
         </div>
     );
 };

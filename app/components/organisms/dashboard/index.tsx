@@ -13,7 +13,7 @@ import StyledCalendar from '../../molecules/calendar';
 const { Link, Title } = Typography;
 import { RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
-import { CardEvent } from '../../../components/molecules/card';
+import { CardCalendarUpcoming, CardEvent } from '../../../components/molecules/card';
 
 
 export function DashboardContent() {
@@ -250,6 +250,8 @@ export function DashboardContent() {
                         width: "33%"
                     }} >
                     <StyledCalendar/>
+                    <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
+                    <CardCalendarUpcoming/>
                 </Card>
             </div>
         </div >
