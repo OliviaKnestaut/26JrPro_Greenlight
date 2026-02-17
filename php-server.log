@@ -1,7 +1,0 @@
-[Tue Feb 17 15:31:24 2026] PHP 8.4.14 Development Server (http://0.0.0.0:8080) started
-[Tue Feb 17 15:31:38 2026] 127.0.0.1:64556 Accepted
-[Tue Feb 17 15:31:38 2026] 127.0.0.1:64556 [200]: GET /opcache_reset.php
-[Tue Feb 17 15:31:38 2026] 127.0.0.1:64556 Closing
-[Tue Feb 17 15:31:48 2026] 127.0.0.1:64603 Accepted
-[Tue Feb 17 15:31:48 2026] 127.0.0.1:64603 [200]: POST /index.php
-[Tue Feb 17 15:31:48 2026] 127.0.0.1:64603 Closing
