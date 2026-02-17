@@ -16,13 +16,14 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(() => {
         try {
-        const raw = localStorage.getItem('authUser');
-        return raw ? JSON.parse(raw) : null;
+            const raw = localStorage.getItem('authUser');
+            return raw ? JSON.parse(raw) : null;
         } catch {
-        return null;
+            return null;
         }
     });
-    const [loading, setLoading] = useState(false);
+    // start loading=true when we have a cached user that we will refresh from the server
+    const [loading, setLoading] = useState<boolean>(() => !!user);
 
     useEffect(() => {
         // persist user to localStorage
@@ -34,16 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If we have a cached user (from localStorage) but missing fields like profileImg,
         // refresh that user's data from the server to ensure UI has up-to-date fields.
         const tryRefresh = async () => {
-            if (user && user.id && !user.profileImg) {
-                try {
+            if (!user) return setLoading(false);
+            setLoading(true);
+            try {
+                if (user && user.id && !user.profileImg) {
                     const { data } = await apolloClient.query<any>({ query: GetUserDocument, variables: { id: user.id }, fetchPolicy: 'network-only' });
                     if (data?.user) {
                         setUser(data.user);
                     }
-                } catch (err) {
-                    // ignore refresh errors; keep existing user
-                    console.debug('Failed to refresh auth user', err);
                 }
+            } catch (err) {
+                // ignore refresh errors; keep existing user
+                console.debug('Failed to refresh auth user', err);
+            } finally {
+                setLoading(false);
             }
         };
         tryRefresh();

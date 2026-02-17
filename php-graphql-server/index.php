@@ -235,9 +235,12 @@ $rootValue = [
             foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            // time the DB query to help diagnose slow queries in production
+            $qStart = microtime(true);
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            // map DB rows to GraphQL field names and attach organization
+            $qMs = round((microtime(true) - $qStart) * 1000, 2);
+            @file_put_contents(__DIR__ . '/tmp/graphql-timings.log', date('c') . " EVENTS_QUERY ms=" . $qMs . " rows=" . count($rows) . " sql=" . substr($sql,0,300) . "\n", FILE_APPEND);
             $out = [];
             foreach ($rows as $r) {
                 $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
@@ -676,12 +679,21 @@ if ($query === null) {
     exit;
 }
 
+// Record request start to measure total handling time
+$requestStart = microtime(true);
 try {
     $result = GraphQL::executeQuery($schema, $query, $rootValue, null, $variables, null, null);
     $output = $result->toArray();
     header('Content-Type: application/json');
     echo json_encode($output);
+    // Log timing for this GraphQL request in production troubleshooting logs
+    $duration = round((microtime(true) - $requestStart) * 1000, 2);
+    @mkdir(__DIR__ . '/tmp', 0755, true);
+    $logLine = date('c') . " GRAPHQL_REQUEST path=" . ($_SERVER['REQUEST_URI'] ?? 'unknown') . " ms=" . $duration . " query=" . (strlen($query) > 200 ? substr($query,0,200) . '...' : $query) . "\n";
+    @file_put_contents(__DIR__ . '/tmp/graphql-timings.log', $logLine, FILE_APPEND);
 } catch (Throwable $e) {
     http_response_code(500);
+    @mkdir(__DIR__ . '/tmp', 0755, true);
+    @file_put_contents(__DIR__ . '/tmp/graphql-timings.log', date('c') . " GRAPHQL_ERROR path=" . ($_SERVER['REQUEST_URI'] ?? 'unknown') . " message=" . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
     echo json_encode(['errors' => [['message' => $e->getMessage()]]]);
 }
