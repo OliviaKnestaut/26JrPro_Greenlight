@@ -63,7 +63,7 @@ export function OrgMembersContent() {
                                         first={u.firstName ?? ""}
                                         last={u.lastName ?? ""}
                                         username={u.username ?? ""}
-                                        role={u.organization?.orgName ?? "Member"}
+                                        role={u.role ?? "Member"}
                                         avatarSrc={avatar}
                                     />
                                 );

@@ -7,7 +7,7 @@ scalar JSON
 # Basic types
 type Organization {
     id: ID!
-    orgName: String!            # maps to greenlight-orgs.orgName
+    orgName: String!            # maps to greenlight-orgs.org_name
     username: String!           # maps to greenlight-orgs.username
     bio: String                 # maps to greenlight-orgs.bio
     orgImg: String              # maps to greenlight-orgs.org_img
@@ -23,37 +23,59 @@ type User {
     username: String!
     password: String!
     profileImg: String
-    organizationId: ID!
-    organization: Organization
+    role: String
+    organization: Organization      # resolved via `greenlight-users.organization` (username)
+    organizationUsername: String    # raw username stored in users.organization
     createdAt: DateTime
     updatedAt: DateTime
 }
 
 type Event {
     id: ID!
-    organizationId: ID!        # maps to greenlight-events.organization_id
-    organization: Organization # resolver may fetch organization by organizationId
+    organizationUsername: String!   # maps to greenlight-events.organization (stores org username)
+    organization: Organization      # resolver may fetch organization by username
+    createdBy: String               # maps to greenlight-events.created_by
     title: String!
     description: String
     eventDate: Date            # maps to greenlight-events.event_date
     setupTime: Time            # maps to greenlight-events.setup_time
-    startTime: Time            # maps to greenlight-events.start_time
-    endTime: Time              # maps to greenlight-events.end_time
+    startTime: Time
+    endTime: Time
     location: String
+    locationType: LocationType
+    eventLevel: Int
     eventImg: String
-    eventStatus: EventStatus!       # maps to greenlight-events.event_status
+    eventStatus: EventStatus 
+    formData: JSON
     submittedAt: DateTime
     createdAt: DateTime
     updatedAt: DateTime
+}
+
+type Purchase {
+    id: ID!
+    organizationUsername: String!
+    organization: Organization
+    dateSubmitted: DateTime!
+    itemTitle: String!
+    itemCategory: String!
+    eventId: ID!
+    orderStatus: String!
+    itemCost: Float!
 }
 
 enum EventStatus {
     DRAFT
     REVIEW
     APPROVED
-    PAST
     REJECTED
     CANCELLED
+}
+
+enum LocationType {
+    ON_CAMPUS
+    OFF_CAMPUS
+    VIRTUAL
 }
 
 # Queries
@@ -67,30 +89,36 @@ type Query {
     events(limit: Int = 25, offset: Int = 0, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
 
     # Events for a specific organization
-    eventsByOrganization(orgId: ID!, limit: Int = 25, offset: Int = 0, status: EventStatus, fromDate: Date, toDate: Date): [Event!]!
+    eventsByOrganization(orgUsername: String!, limit: Int = 25, offset: Int = 0, status: String, fromDate: Date, toDate: Date): [Event!]!
     
     # Users (backed by greenlight-users table)
     user(id: ID!): User
     users(limit: Int = 25, offset: Int = 0, username: String): [User!]!
+
+    # Purchases
+    purchase(id: ID!): Purchase
+    purchases(limit: Int = 25, offset: Int = 0): [Purchase!]!
+    purchasesByOrganization(orgUsername: String!, limit: Int = 25, offset: Int = 0): [Purchase!]!
 }
 
 # Input types for mutations
 input CreateOrganizationInput {
     orgName: String!
     username: String!
-    password: String!    # server must hash before storing
     bio: String
+    orgImg: String
 }
 
 input UpdateOrganizationInput {
     orgName: String
     username: String
-    password: String     # server must hash before storing
     bio: String
+    orgImg: String
 }
 
 input CreateEventInput {
-    organizationId: ID!
+    organizationUsername: String!
+    createdBy: String
     title: String!
     description: String
     eventDate: Date
@@ -98,7 +126,11 @@ input CreateEventInput {
     startTime: Time
     endTime: Time
     location: String
-    eventStatus: EventStatus = DRAFT
+    locationType: LocationType
+    eventLevel: Int
+    eventImg: String
+    eventStatus: String
+    formData: JSON
 }
 
 input UpdateEventInput {
@@ -109,7 +141,11 @@ input UpdateEventInput {
     startTime: Time
     endTime: Time
     location: String
-    eventStatus: EventStatus
+    locationType: LocationType
+    eventLevel: Int
+    eventImg: String
+    eventStatus: String
+    formData: JSON
 }
 
 input CreateUserInput {
@@ -118,7 +154,8 @@ input CreateUserInput {
     username: String!
     password: String!
     profileImg: String
-    organizationId: ID!
+    role: String
+    organizationUsername: String!
 }
 
 input UpdateUserInput {
@@ -127,7 +164,26 @@ input UpdateUserInput {
     profileImg: String
     username: String
     password: String
-    organizationId: ID
+    role: String
+    organizationUsername: String
+}
+
+input CreatePurchaseInput {
+    organizationUsername: String!
+    dateSubmitted: DateTime!
+    itemTitle: String!
+    itemCategory: String!
+    eventId: ID!
+    orderStatus: String!
+    itemCost: Float!
+}
+
+input UpdatePurchaseInput {
+    itemTitle: String
+    itemCategory: String
+    eventId: ID
+    orderStatus: String
+    itemCost: Float
 }
 
 # Mutations
@@ -146,4 +202,8 @@ type Mutation {
     createUser(input: CreateUserInput!): User!
     updateUser(id: ID!, input: UpdateUserInput!): User!
     deleteUser(id: ID!): Boolean!
+    # Purchases
+    createPurchase(input: CreatePurchaseInput!): Purchase!
+    updatePurchase(id: ID!, input: UpdatePurchaseInput!): Purchase!
+    deletePurchase(id: ID!): Boolean!
 }

@@ -23,15 +23,15 @@ export function EventSubmissionsContent() {
         const fetchOrgEvents = async () => {
             setLoading(true);
             try {
-                const orgId = user?.organization?.id ?? user?.organizationId;
-                if (!orgId) {
-                    console.debug('No organization id available on user', user);
+                const orgUsername = user?.organization?.username ?? user?.organizationUsername;
+                if (!orgUsername) {
+                    console.debug('No organization username available on user', user);
                     setLoading(false);
                     return;
                 }
                 const { data } = await apolloClient.query<any>({
                     query: EventsByOrganizationDocument,
-                    variables: { orgId },
+                    variables: { orgUsername },
                     fetchPolicy: 'network-only',
                 });
                 const fetched = data?.eventsByOrganization ?? [];
