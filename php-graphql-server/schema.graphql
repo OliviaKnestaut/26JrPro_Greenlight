@@ -42,6 +42,7 @@ type Event {
     startTime: Time
     endTime: Time
     location: String
+    locationId: Int
     locationType: LocationType
     eventLevel: Int
     eventImg: String
@@ -50,6 +51,16 @@ type Event {
     submittedAt: DateTime
     createdAt: DateTime
     updatedAt: DateTime
+}
+
+# Locations table: optional additional metadata for an event's location
+type Location {
+    id: ID!
+    buildingCode: String
+    buildingDisplayName: String
+    roomTitle: String
+    roomType: String
+    maxCapacity: String
 }
 
 type Purchase {
@@ -95,6 +106,10 @@ type Query {
     user(id: ID!): User
     users(limit: Int = 25, offset: Int = 0, username: String): [User!]!
 
+    # Locations
+    location(id: ID!): Location
+    locations(limit: Int = 25, offset: Int = 0): [Location!]!
+
     # Purchases
     purchase(id: ID!): Purchase
     purchases(limit: Int = 25, offset: Int = 0): [Purchase!]!
@@ -128,6 +143,7 @@ input CreateEventInput {
     location: String
     locationType: LocationType
     eventLevel: Int
+    locationId: Int
     eventImg: String
     eventStatus: String
     formData: JSON
@@ -143,6 +159,7 @@ input UpdateEventInput {
     location: String
     locationType: LocationType
     eventLevel: Int
+    locationId: Int
     eventImg: String
     eventStatus: String
     formData: JSON

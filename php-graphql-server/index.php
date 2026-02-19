@@ -73,6 +73,7 @@ $COL_MAP = [
         'startTime' => 'start_time',
         'endTime' => 'end_time',
         'location' => 'location',
+        'locationId' => 'location_id',
         'locationType' => 'location_type',
         'eventLevel' => 'event_level',
         'eventImg' => 'event_img',
@@ -81,6 +82,13 @@ $COL_MAP = [
         'submittedAt' => 'submitted_at',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
+    ],
+    'Location' => [
+        'buildingCode' => 'buildingCode',
+        'buildingDisplayName' => 'buildingDisplayName',
+        'roomTitle' => 'roomTitle',
+        'roomType' => 'roomType',
+        'maxCapacity' => 'maxCapacity',
     ],
     'Organization' => [
         'orgName' => 'org_name',
@@ -204,6 +212,16 @@ $fetchOrganization = function($pdo, $idOrUsername) use ($COL_MAP) {
     return mapDbRowToGraphQL($row, 'Organization', $COL_MAP);
 };
 
+// helper: fetch location by id
+$fetchLocation = function($pdo, $id) use ($COL_MAP) {
+    $stmt = $pdo->prepare("SELECT * FROM `greenlight-locations` WHERE id = :id LIMIT 1");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    if (!$row) return null;
+    // Use mapDbRowToGraphQL so fields can be normalized if COL_MAP has entries
+    return mapDbRowToGraphQL($row, 'Location', $COL_MAP);
+};
+
 // CORS helper - allow requests from browser clients (adjust origin in production)
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
 header('Access-Control-Allow-Origin: ' . $origin);
@@ -230,7 +248,7 @@ $rootValue = [
             if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
             if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
             $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-            $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+            $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id ASC LIMIT :limit OFFSET :offset";
             $stmt = $pdo->prepare($sql);
             foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -244,6 +262,10 @@ $rootValue = [
             $out = [];
             foreach ($rows as $r) {
                 $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
+                // ensure locationId is present on the GraphQL Event response
+                if (array_key_exists('location_id', $r)) {
+                    $mapped['locationId'] = $r['location_id'] === null ? null : (int)$r['location_id'];
+                }
                 $orgUsername = $r['organization'] ?? $r['organizationUsername'] ?? null;
                 if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
                 $out[] = $mapped;
@@ -263,6 +285,9 @@ $rootValue = [
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($row) {
                 $mapped = mapDbRowToGraphQL($row, 'Event', $COL_MAP);
+                if (array_key_exists('location_id', $row)) {
+                    $mapped['locationId'] = $row['location_id'] === null ? null : (int)$row['location_id'];
+                }
                 $orgUsername = $row['organization'] ?? $row['organizationUsername'] ?? null;
                 if ($orgUsername) $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
                 return $mapped;
@@ -282,7 +307,7 @@ $rootValue = [
         $params = [];
         if (isset($args['username'])) { $where[] = "username = :username"; $params[':username'] = $args['username']; }
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = "SELECT * FROM `greenlight-orgs` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $sql = "SELECT * FROM `greenlight-orgs` $whereSql ORDER BY id ASC LIMIT :limit OFFSET :offset";
         $stmt = $pdo->prepare($sql);
         foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -301,6 +326,26 @@ $rootValue = [
         return $row ? mapDbRowToGraphQL($row, 'Organization', $COL_MAP) : null;
     },
 
+    // Locations
+    'location' => function($root, $args) use ($pdo, $fetchLocation) {
+        $id = $args['id'];
+        return $fetchLocation($pdo, $id);
+    },
+
+    'locations' => function($root, $args) use ($pdo, $COL_MAP) {
+        $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
+        $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
+        $sql = "SELECT * FROM `greenlight-locations` ORDER BY id ASC LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) { $out[] = mapDbRowToGraphQL($r, 'Location', $COL_MAP); }
+        return $out;
+    },
+
     // Users
     'users' => function($root, $args) use ($pdo, $COL_MAP, $fetchOrganization) {
         $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
@@ -309,7 +354,7 @@ $rootValue = [
         $params = [];
         if (isset($args['username'])) { $where[] = "username = :username"; $params[':username'] = $args['username']; }
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = "SELECT * FROM `greenlight-users` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $sql = "SELECT * FROM `greenlight-users` $whereSql ORDER BY id ASC LIMIT :limit OFFSET :offset";
         $stmt = $pdo->prepare($sql);
         foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -417,7 +462,7 @@ $rootValue = [
     'purchases' => function($root, $args) use ($pdo, $fetchOrganization, $COL_MAP) {
         $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
         $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
-        $sql = "SELECT * FROM `greenlight-purchases` ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $sql = "SELECT * FROM `greenlight-purchases` ORDER BY id ASC LIMIT :limit OFFSET :offset";
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -454,7 +499,7 @@ $rootValue = [
         $limit = isset($args['limit']) ? (int)$args['limit'] : 25;
         $offset = isset($args['offset']) ? (int)$args['offset'] : 0;
         $where = "`organization` = :orgUsername";
-        $sql = "SELECT * FROM `greenlight-purchases` WHERE $where ORDER BY id DESC LIMIT :limit OFFSET :offset";
+        $sql = "SELECT * FROM `greenlight-purchases` WHERE $where ORDER BY id ASC LIMIT :limit OFFSET :offset";
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':orgUsername', $orgUsername);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -484,7 +529,7 @@ $rootValue = [
             if (isset($args['fromDate'])) { $where[] = "event_date >= :fromDate"; $params[':fromDate'] = $args['fromDate']; }
             if (isset($args['toDate'])) { $where[] = "event_date <= :toDate"; $params[':toDate'] = $args['toDate']; }
             $whereSql = 'WHERE ' . implode(' AND ', $where);
-            $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id DESC LIMIT :limit OFFSET :offset";
+            $sql = "SELECT * FROM `greenlight-events` $whereSql ORDER BY id ASC LIMIT :limit OFFSET :offset";
             $stmt = $pdo->prepare($sql);
             foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -494,6 +539,9 @@ $rootValue = [
             $out = [];
             foreach ($rows as $r) {
                 $mapped = mapDbRowToGraphQL($r, 'Event', $COL_MAP);
+                if (array_key_exists('location_id', $r)) {
+                    $mapped['locationId'] = $r['location_id'] === null ? null : (int)$r['location_id'];
+                }
                 $mapped['organization'] = $fetchOrganization($pdo, $orgUsername);
                 $out[] = $mapped;
             }

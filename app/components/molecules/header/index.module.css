@@ -50,3 +50,19 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+.btn {
+	position: fixed;
+	top: 1rem;
+	right: 1rem;
+	z-index: 1100;
+}
+
+@media (max-width: 992px) {
+
+	.btn {
+		top: 1rem;
+		right: 3rem;
+		z-index: 1100;
+	}
+}

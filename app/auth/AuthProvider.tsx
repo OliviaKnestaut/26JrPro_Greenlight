@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apolloClient } from '../lib/apollo-client';
-import { GetUsersDocument, GetUserDocument } from '../lib/graphql/generated';
+import { GetUserDocument } from '../lib/graphql/generated';
+import { gql } from '@apollo/client';
 
 type User = any;
 
@@ -58,13 +59,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (username: string, password: string) => {
         setLoading(true);
         try {
+        // Query the server for the specific username to avoid fetching the entire users list
         const { data } = await apolloClient.query<any>({
-            query: GetUsersDocument,
-            variables: { limit: 1000, offset: 0 },
+            query: gql`
+              query FindUser($username: String!) {
+                users(limit: 1, username: $username) {
+                  id
+                  firstName
+                  lastName
+                  username
+                  password
+                  profileImg
+                  role
+                  organization { id orgName username bio orgImg }
+                  createdAt
+                  updatedAt
+                }
+              }
+            `,
+            variables: { username },
             fetchPolicy: 'network-only',
         });
-        const found = data?.users?.find((u: any) => u.username === username && u.password === password) || null;
-        if (found) {
+        const found = data?.users?.[0] || null;
+        if (found && found.password === password) {
             setUser(found);
             // simple token for demo; replace with real token if backend supports it
             localStorage.setItem('authToken', found.id ?? username);
