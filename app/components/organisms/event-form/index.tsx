@@ -125,7 +125,7 @@ const formBranching = [
 ]
 
 // Recursive function to render nested sections based on branching logic
-const formNesting = (parentKey: string, isSelected: Record<string, any>, control: any) => {
+const formNesting = (parentKey: string, isSelected: Record<string, any>, control: any, setValue: any) => {
     return formBranching.filter((panel) => panel.parent === parentKey).map((panel) => {
         // Support nested field paths like "form_data.elements.food"
         const fieldPath = panel.when.split('.');
@@ -147,8 +147,8 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
                 header={<h4 style={{ margin: 0 }}>{panel.header}</h4>}
                 key={panel.key}
                 style={{ marginLeft: panel.indent || 0 }}>
-                <PanelComponent control={control} />
-                {formNesting(panel.key, isSelected, control)}
+                <PanelComponent control={control} setValue={setValue} />
+                {formNesting(panel.key, isSelected, control, setValue)}
             </Panel>
         )
     },)
@@ -158,7 +158,7 @@ export function EventForm() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false)
     const [isDraftModalOpen, setIsDraftModalOpen] = useState(false)
-    const { control, handleSubmit, getValues, reset, watch } = useForm()
+    const { control, handleSubmit, getValues, reset, watch, setValue } = useForm()
     const isSelected = useWatch({ control });
     const navigate = useNavigate();
 
@@ -229,7 +229,7 @@ export function EventForm() {
                         </Panel>
 
                         {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}
-                        {formNesting("eventDetails", isSelected, control)}
+                        {formNesting("eventDetails", isSelected, control, setValue)}
 
                         {/* Date & Location Section */}
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
@@ -237,7 +237,7 @@ export function EventForm() {
                         </Panel>
 
                         {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}
-                        {formNesting("dateLocation", isSelected, control)}
+                        {formNesting("dateLocation", isSelected, control, setValue)}
 
                         {/* Event Elements Section */}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Elements</h4>} key="eventElements">
@@ -245,7 +245,7 @@ export function EventForm() {
                         </Panel>
 
                         {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}
-                        {formNesting("eventElements", isSelected, control)}
+                        {formNesting("eventElements", isSelected, control, setValue)}
 
                         {/* Budget & Purchases Section */}
                         <Panel header={<h4 style={{ margin: 0 }}>Budget & Purchases</h4>} key="budgetPurchase">
@@ -253,7 +253,7 @@ export function EventForm() {
                         </Panel>
 
                         {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}
-                        {formNesting("budgetPurchase", isSelected, control)}
+                        {formNesting("budgetPurchase", isSelected, control, setValue)}
                     </Collapse>
 
                     {/* Form buttons */}

@@ -12,11 +12,11 @@ export default function EventElementsSection({ control }: Props) {
     const elementOptions = [
         { label: "Food", value: "food" },
         { label: "Alcohol", value: "alcohol" },
-        { label: "Minors present", value: "minors" },
-        { label: "Movies / TV / copyrighted media", value: "movies" },
-        { label: "Raffles or prizes", value: "raffles" },
-        { label: "Fire pits or grills", value: "fire" },
-        { label: "SORC games or inflatables", value: "sorc_games" },
+        { label: "Minors Present", value: "minors" },
+        { label: "Movies / TV / Copyrighted Media", value: "movies" },
+        { label: "Raffles or Prizes", value: "raffles" },
+        { label: "Fire Pits or Grills", value: "fire" },
+        { label: "SORC Games", value: "sorc_games" },
     ];
 
     return (

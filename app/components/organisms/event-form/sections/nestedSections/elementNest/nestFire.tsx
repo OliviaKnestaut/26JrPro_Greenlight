@@ -1,4 +1,4 @@
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { Radio, Input, Typography } from "antd";
 
 const { Text } = Typography;
@@ -8,10 +8,15 @@ type Props = {
 };
 
 export default function FireSafetySection({ control }: Props) {
+    const fireType = useWatch({
+        control,
+        name: "form_data.fire.type",
+    });
+
     return (
         <div style={{ marginTop: 24 }}>
 
-            {/* FS1 — Fire Source Type */}
+            {/* FS1 - Fire Source Type */}
             <Controller
                 name="form_data.fire.type"
                 control={control}
@@ -30,12 +35,6 @@ export default function FireSafetySection({ control }: Props) {
                                     <div>
                                         <Text type="secondary">
                                             Fire pit provided and managed by SORC staff
-                                        </Text>
-                                    </div>
-                                    <div>
-                                        <Text type="secondary">
-                                            Additional cost applies (per As-Is DragonLink); cost handled
-                                            through SORC request
                                         </Text>
                                     </div>
                                 </div>
@@ -62,7 +61,37 @@ export default function FireSafetySection({ control }: Props) {
                 )}
             />
 
-            {/* FS2 — Fire Safety Plan */}
+            {/* FS1b - SORC Fire Pit Agreement */}
+            {fireType === "sorc_fire_pit" && (
+                <Controller
+                    name="form_data.fire.sorc_agreement"
+                    control={control}
+                    rules={{ required: "You must agree to the additional charge to use the SORC fire pit" }}
+                    render={({ field, fieldState }) => (
+                        <div style={{ marginBottom: 16 }}>
+                            <Text>
+                                If you select SORC fire pit, there will be an additional charge added to your organization&apos;s account. Do you agree to this if the event is approved?
+                            </Text>
+
+                            <Radio.Group
+                                {...field}
+                                style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
+                            >
+                                <Radio value="yes">Yes</Radio>
+                                <Radio value="no">No</Radio>
+                            </Radio.Group>
+
+                            {fieldState.error && (
+                                <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                    {fieldState.error.message}
+                                </Text>
+                            )}
+                        </div>
+                    )}
+                />
+            )}
+
+            {/* FS2 - Fire Safety Plan */}
             <Controller
                 name="form_data.fire.safety_plan"
                 control={control}

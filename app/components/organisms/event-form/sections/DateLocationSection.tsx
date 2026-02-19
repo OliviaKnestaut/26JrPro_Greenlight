@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 const { TextArea } = Input;
 const { Text } = Typography;
 
+
 type Props = {
     control: any;
 };
@@ -84,17 +85,15 @@ export default function DateLocationSection({ control }: Props) {
                 name="setup_time"
                 control={control}
                 render={({ field }) => (
-                    <div style={{ marginBottom: 24 }}>
-                        <Text>Setup / Takedown Time (minutes)</Text>
+                    <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                        <Text>Does your event require additional setup or takedown time?</Text>
+                        <Text type="secondary">If so, please provide the number of minutes. If not, you can leave this blank or enter 0.</Text>
                         <InputNumber
                             {...field}
                             min={0}
                             placeholder="Ex: 30"
                             style={{ display: "block", marginTop: 8 }}
                         />
-                        <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
-                            Include vendor and planner arrival time
-                        </Text>
                     </div>
                 )}
             />

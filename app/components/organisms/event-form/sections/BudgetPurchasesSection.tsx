@@ -1,6 +1,6 @@
 import { Controller, useFieldArray } from "react-hook-form";
-import { Input, Button, Upload, Checkbox, Select, Typography, InputNumber } from "antd";
-import { UploadOutlined, PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
+import { Input, Button, Select, Typography, InputNumber, Radio, Upload, Checkbox } from "antd";
+import { PlusOutlined, MinusCircleOutlined, UploadOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -10,87 +10,354 @@ type Props = {
 };
 
 export default function BudgetPurchasesSection({ control }: Props) {
-    // Purchase Requests repeater
-    const { fields: purchaseFields, append: appendPurchase, remove: removePurchase } = useFieldArray({
+    // Vendors repeater
+    const { fields: vendorFields, append: appendVendor, remove: removeVendor } = useFieldArray({
         control,
-        name: "form_data.purchases",
-    });
-
-    // Contracts repeater
-    const { fields: contractFields, append: appendContract, remove: removeContract } = useFieldArray({
-        control,
-        name: "form_data.contracts",
+        name: "form_data.vendors",
     });
 
     return (
         <div style={{ marginBottom: 24 }}>
-            <Text>23. Purchase Requests</Text>
-            {purchaseFields.map((field, index) => (
-                <div key={field.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <Controller
-                        name={`form_data.purchases.${index}.item`}
-                        control={control}
-                        render={({ field }) => <Input {...field} placeholder="Item name" />}
-                    />
-                    <Controller
-                        name={`form_data.purchases.${index}.estimated_cost`}
-                        control={control}
-                        render={({ field }) => <InputNumber {...field} placeholder="Estimated cost" min={0} />}
-                    />
-                    <MinusCircleOutlined onClick={() => removePurchase(index)} style={{ marginTop: 4 }} />
-                </div>
-            ))}
-            <Button type="dashed" onClick={() => appendPurchase({ item: "", estimated_cost: 0 })} icon={<PlusOutlined />} style={{ marginTop: 8 }}>
-                Add Purchase
-            </Button>
+            <Text style={{ display: "block", marginTop: 24 }}>23. Vendors</Text>
+            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+                Add all vendors you will be working with for this event.
+            </Text>
 
-            <Text style={{ display: "block", marginTop: 24 }}>24. Required Contracts</Text>
-            {contractFields.map((field, index) => (
-                <div key={field.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <Controller
-                        name={`form_data.contracts.${index}.vendor`}
-                        control={control}
-                        render={({ field }) => <Input {...field} placeholder="Vendor Name" />}
+            {vendorFields.map((field, index) => (
+                <div key={field.id} style={{ 
+                    marginTop: 16, 
+                    padding: 16, 
+                    border: "1px solid #d9d9d9", 
+                    borderRadius: 4,
+                    position: "relative"
+                }}>
+                    <MinusCircleOutlined 
+                        onClick={() => removeVendor(index)} 
+                        style={{ 
+                            position: "absolute", 
+                            top: 16, 
+                            right: 16, 
+                            fontSize: 18,
+                            color: "#ff4d4f",
+                            cursor: "pointer"
+                        }} 
                     />
+
+                    {/* Vendor Type */}
                     <Controller
-                        name={`form_data.contracts.${index}.amount`}
+                        name={`form_data.vendors.${index}.type`}
                         control={control}
-                        render={({ field }) => <InputNumber {...field} placeholder="Amount" min={0} />}
-                    />
-                    <Controller
-                        name={`form_data.contracts.${index}.preferred`}
-                        control={control}
-                        render={({ field }) => (
-                            <Checkbox {...field} checked={field.value}>Preferred Vendor</Checkbox>
+                        rules={{ required: "Vendor type is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>What type of vendor is this?</Text>
+                                <Select
+                                    {...field}
+                                    placeholder="Select vendor type"
+                                    style={{ width: "100%", marginTop: 8 }}
+                                >
+                                    <Option value="food">Food</Option>
+                                    <Option value="paid_speaker">Paid Speaker</Option>
+                                    <Option value="non_paid_speaker">Non-paid Speaker</Option>
+                                    <Option value="inflatable_game">Inflatable/Game Company (i.e. Bettes Bounces, Dunk Tank, Photo Booth)</Option>
+                                    <Option value="performer">Performer/Entertainer (DJ, Musician, Dance Artist, etc.)</Option>
+                                    <Option value="outside_venue">Outside venue where you are hosting an event</Option>
+                                    <Option value="photographer">Photographer</Option>
+                                    <Option value="audio_video">Audio/Video Equipment (NOT DUST)</Option>
+                                    <Option value="other">Other</Option>
+                                </Select>
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
                         )}
                     />
+
+                    {/* Vendor/Company Name */}
                     <Controller
-                        name={`form_data.contracts.${index}.file`}
+                        name={`form_data.vendors.${index}.companyName`}
                         control={control}
-                        render={({ field }) => (
-                            <Upload beforeUpload={() => false} maxCount={1} onChange={(info) => {
-                                const file = info.fileList[0]?.originFileObj;
-                                field.onChange(file);
-                            }}>
-                                <Button icon={<UploadOutlined />}>Upload</Button>
-                            </Upload>
+                        rules={{ required: "Vendor/Company name is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Vendor/Company/Agency Name (N/A if you are not working through a company)</Text>
+                                <Input
+                                    {...field}
+                                    placeholder="Enter vendor or company name, or N/A"
+                                    style={{ marginTop: 8 }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
                         )}
                     />
-                    <MinusCircleOutlined onClick={() => removeContract(index)} style={{ marginTop: 4 }} />
+
+                    {/* Name of person in contact with / performing */}
+                    <Controller
+                        name={`form_data.vendors.${index}.contactPersonName`}
+                        control={control}
+                        rules={{ required: "Contact person name is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Name(s) of person(s) you are in contact with and/or the person performing</Text>
+                                <Input
+                                    {...field}
+                                    placeholder="Enter contact or performer name"
+                                    style={{ marginTop: 8 }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Contact Email */}
+                    <Controller
+                        name={`form_data.vendors.${index}.contactEmail`}
+                        control={control}
+                        rules={{ 
+                            required: "Contact email is required",
+                            pattern: {
+                                value: /^\S+@\S+$/i,
+                                message: "Enter a valid email address"
+                            }
+                        }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Contact Email Address</Text>
+                                <Input
+                                    {...field}
+                                    placeholder="vendor@example.com"
+                                    style={{ marginTop: 8 }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Contact Phone */}
+                    <Controller
+                        name={`form_data.vendors.${index}.contactPhone`}
+                        control={control}
+                        rules={{ required: "Contact phone number is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Contact Phone Number</Text>
+                                <Input
+                                    {...field}
+                                    placeholder="(123) 456-7890"
+                                    style={{ marginTop: 8 }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Have you worked with this vendor before? */}
+                    <Controller
+                        name={`form_data.vendors.${index}.workedBefore`}
+                        control={control}
+                        rules={{ required: "Please select an option" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Have you worked with this vendor before?</Text>
+                                <Radio.Group {...field} style={{ display: "block", marginTop: 8 }}>
+                                    <Radio value="yes">Yes</Radio>
+                                    <Radio value="no">No</Radio>
+                                    <Radio value="not_sure">Not Sure</Radio>
+                                </Radio.Group>
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Is vendor a current/recent Drexel student? */}
+                    <Controller
+                        name={`form_data.vendors.${index}.isDrexelStudent`}
+                        control={control}
+                        rules={{ required: "Please select an option" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Is the vendor a current Drexel student or have they been within the last year?</Text>
+                                <Radio.Group {...field} style={{ display: "block", marginTop: 8 }}>
+                                    <Radio value="yes">Yes</Radio>
+                                    <Radio value="no">No</Radio>
+                                </Radio.Group>
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Payment Amount */}
+                    <Controller
+                        name={`form_data.vendors.${index}.amount`}
+                        control={control}
+                        rules={{ required: "Amount is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Amount the vendor is being paid</Text>
+                                <InputNumber
+                                    {...field}
+                                    min={0}
+                                    step={1}
+                                    style={{ display: "block", marginTop: 8, width: 200 }}
+                                    formatter={(value) =>
+                                        value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
+                                    }
+                                    parser={(value) =>
+                                        value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
+                                    }
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Upload Quote */}
+                    <Controller
+                        name={`form_data.vendors.${index}.quote_file`}
+                        control={control}
+                        render={({ field }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Please upload official quote from the vendor, if you have received one.</Text>
+                                <br />
+                                <Upload 
+                                    beforeUpload={() => false} 
+                                    maxCount={1} 
+                                    onChange={(info) => {
+                                        const file = info.fileList[0]?.originFileObj;
+                                        field.onChange(file);
+                                    }}
+                                    style={{ marginTop: 8 }}
+                                >
+                                    <div style={{ cursor: "pointer" }}>
+                                        <UploadOutlined /> Click to Upload
+                                    </div>
+                                </Upload>
+                            </div>
+                        )}
+                    />
+
+                    {/* Description of what vendor is doing */}
+                    <Controller
+                        name={`form_data.vendors.${index}.description`}
+                        control={control}
+                        rules={{ required: "Description is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Please give a brief, but detailed description of what exactly this vendor is doing for your event</Text>
+                                <Input.TextArea
+                                    {...field}
+                                    rows={3}
+                                    placeholder="Describe vendor services"
+                                    style={{ marginTop: 8 }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
+
+                    {/* Equipment/service org is providing */}
+                    <Controller
+                        name={`form_data.vendors.${index}.org_providing`}
+                        control={control}
+                        rules={{ required: "Please specify what you are providing, or write N/A" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Text>Student Organization will provide the following equipment/service (if you are not providing anything please write N/A)</Text>
+                                <Input.TextArea
+                                    {...field}
+                                    rows={2}
+                                    placeholder="Enter equipment/services or N/A"
+                                    style={{ marginTop: 8 }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
+                            </div>
+                        )}
+                    />
                 </div>
             ))}
-            <Button type="dashed" onClick={() => appendContract({ vendor: "", amount: 0, preferred: false, file: null })} icon={<PlusOutlined />} style={{ marginTop: 8 }}>
-                Add Contract
+
+            <Button 
+                type="dashed" 
+                onClick={() => appendVendor({ 
+                    type: "",
+                    companyName: "",
+                    contactPersonName: "",
+                    contactEmail: "",
+                    contactPhone: "",
+                    workedBefore: "",
+                    isDrexelStudent: "",
+                    amount: 0,
+                    quote_file: null,
+                    description: "",
+                    org_providing: ""
+                })} 
+                icon={<PlusOutlined />} 
+                style={{ marginTop: 16, width: "100%" }}
+            >
+                Add Vendor
             </Button>
 
-            <Text style={{ display: "block", marginTop: 24 }}>25. Additional Vendors?</Text>
+            {/* Vendor Letter Notice - Single checkbox for all vendors */}
             <Controller
-                name="form_data.contracts.additional"
+                name="form_data.vendors_notice_acknowledged"
                 control={control}
-                render={({ field }) => <Input {...field} placeholder="Additional vendor names" />}
+                rules={{ 
+                    required: "You must acknowledge reading the vendor letter notice",
+                    validate: (value) => value === true || "You must check this box to proceed"
+                }}
+                render={({ field, fieldState }) => (
+                    <div style={{ marginTop: 24, marginBottom: 16, padding: 12, backgroundColor: "#f0f0f0", borderRadius: 4 }}>
+                        <Checkbox {...field} checked={field.value}>
+                            I have read the vendor letter notice and have or will send the letter to my vendor(s).
+                        </Checkbox>
+                        {fieldState.error && (
+                            <div><Text type="danger" style={{ display: "block", marginTop: 4, fontSize: 12 }}>
+                                {fieldState.error.message}
+                            </Text></div>
+                        )}
+                    </div>
+                )}
             />
 
-            <Text style={{ display: "block", marginTop: 24 }}>26. Funding Source</Text>
+            <Text style={{ display: "block", marginTop: 24 }}>24. Funding Source</Text>
             <Controller
                 name="form_data.budget.source"
                 control={control}
@@ -105,7 +372,7 @@ export default function BudgetPurchasesSection({ control }: Props) {
                 )}
             />
 
-            <Text style={{ display: "block", marginTop: 24 }}>27. Account Number</Text>
+            <Text style={{ display: "block", marginTop: 24 }}>25. Account Number</Text>
             <Controller
                 name="form_data.budget.account_number"
                 control={control}

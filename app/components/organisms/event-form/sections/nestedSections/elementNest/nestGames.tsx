@@ -115,7 +115,7 @@ export default function SORCGamesSection({ control }: Props) {
                 rules={{ required: "Setup location is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Where will the SORC games be set up?</Text>
+                        <Text>Where in your event location will the SORC games be set up?</Text>
                         <Input
                             {...field}
                             placeholder="Enter setup location"
@@ -136,7 +136,7 @@ export default function SORCGamesSection({ control }: Props) {
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
                         <Text>
-                            Will SORC staff be present for setup and supervision?
+                            Will SORC staff need to be present for setup and supervision?
                         </Text>
 
                         <Radio.Group

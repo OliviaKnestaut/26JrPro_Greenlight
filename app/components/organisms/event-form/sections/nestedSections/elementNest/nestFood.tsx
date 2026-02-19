@@ -8,10 +8,26 @@ type Props = {
 };
 
 const foodOptions = [
-  { label: "Potluck (no purchases)", value: "potluck" },
-  { label: "Purchased snacks (under $500)", value: "snacks_under_500" },
-  { label: "Chestnut Street Catering", value: "chestnut_catering" },
-  { label: "Off-campus restaurant / external caterer", value: "external_caterer" },
+  { 
+    label: "Potluck-style event (closed event for 50 or less organization members only)", 
+    value: "potluck" 
+  },
+  { 
+    label: "Under $500 - Purchase request through DragonLink (not Chestnut Street)", 
+    value: "under_500_dragonlink" 
+  },
+  { 
+    label: "Over $500 - Ordering through Chestnut Street Catering", 
+    value: "over_500_chestnut" 
+  },
+  { 
+    label: "Over $500 - Requesting catering exception", 
+    value: "over_500_exception" 
+  },
+  { 
+    label: "Off-campus restaurant or food service establishment", 
+    value: "offcampus_restaurant" 
+  },
 ];
 
 export default function FoodSection({ control }: Props) {
@@ -20,9 +36,11 @@ export default function FoodSection({ control }: Props) {
     name: "form_data.food.type",
   });
 
-  const showCost = foodType && foodType !== "potluck";
-  const showVendor =
-    foodType === "chestnut_catering" || foodType === "external_caterer";
+  // Show vendor field for exception and off-campus options
+  const showVendor = foodType && [
+    "over_500_exception",
+    "offcampus_restaurant"
+  ].includes(foodType);
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -30,10 +48,10 @@ export default function FoodSection({ control }: Props) {
       <Controller
         name="form_data.food.type"
         control={control}
-        rules={{ required: "Please select how food will be provided" }}
+        rules={{ required: "Please select a food option" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 16 }}>
-            <Text>How will food be provided?</Text>
+            <Text>How will you provide food for this event?</Text>
             <Radio.Group
               {...field}
               onChange={(e) => field.onChange(e.target.value)}
@@ -53,18 +71,21 @@ export default function FoodSection({ control }: Props) {
         )}
       />
 
-      {/* F2 — Estimated Cost */}
-      {showCost && (
+      {/* F2a — Under $500 DragonLink with note */}
+      {foodType === "under_500_dragonlink" && (
         <Controller
           name="form_data.food.estimated_cost"
           control={control}
           rules={{
-            required: "Enter estimated food cost",
+            required: "Estimated cost is required",
             min: { value: 0, message: "Cost cannot be negative" },
           }}
           render={({ field, fieldState }) => (
             <div style={{ marginBottom: 16 }}>
-              <Text>Estimated total cost of food</Text>
+              <Text>Estimated food cost</Text>
+              <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
+                Note: You must submit a separate purchase request through DragonLink
+              </Text>
               <InputNumber
                 {...field}
                 min={0}
@@ -85,19 +106,29 @@ export default function FoodSection({ control }: Props) {
         />
       )}
 
-      {/* F3 — Vendor Name */}
-      {showVendor && (
+      {/* F2b — Chestnut Street Catering Cost */}
+      {foodType === "over_500_chestnut" && (
         <Controller
-          name="form_data.food.vendor"
+          name="form_data.food.estimated_cost"
           control={control}
-          rules={{ required: "Vendor name is required" }}
+          rules={{
+            required: "Estimated Chestnut Street catering cost is required",
+            min: { value: 0, message: "Cost cannot be negative" },
+          }}
           render={({ field, fieldState }) => (
             <div style={{ marginBottom: 16 }}>
-              <Text>Food vendor name</Text>
-              <Input
+              <Text>Estimated cost of Chestnut Street Catering</Text>
+              <InputNumber
                 {...field}
-                placeholder="Enter vendor name"
-                style={{ marginTop: 8 }}
+                min={0}
+                step={1}
+                style={{ display: "block", marginTop: 8 }}
+                formatter={(value) =>
+                  value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
+                }
+                parser={(value) =>
+                  value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
+                }
               />
               {fieldState.error && (
                 <Text type="danger">{fieldState.error.message}</Text>
@@ -105,6 +136,59 @@ export default function FoodSection({ control }: Props) {
             </div>
           )}
         />
+      )}
+
+      {/* F2c — Exception or Off-Campus Cost + Vendor */}
+      {(foodType === "over_500_exception" || foodType === "offcampus_restaurant") && (
+        <>
+          <Controller
+            name="form_data.food.vendor"
+            control={control}
+            rules={{ required: "Vendor or restaurant name is required" }}
+            render={({ field, fieldState }) => (
+              <div style={{ marginBottom: 16 }}>
+                <Text>Vendor or restaurant name</Text>
+                <Input
+                  {...field}
+                  placeholder="Enter vendor name"
+                  style={{ marginTop: 8 }}
+                />
+                {fieldState.error && (
+                  <Text type="danger">{fieldState.error.message}</Text>
+                )}
+              </div>
+            )}
+          />
+
+          <Controller
+            name="form_data.food.estimated_cost"
+            control={control}
+            rules={{
+              required: "Estimated cost is required",
+              min: { value: 0, message: "Cost cannot be negative" },
+            }}
+            render={({ field, fieldState }) => (
+              <div style={{ marginBottom: 16 }}>
+                <Text>Estimated food cost</Text>
+                <InputNumber
+                  {...field}
+                  min={0}
+                  step={1}
+                  style={{ display: "block", marginTop: 8 }}
+                  formatter={(value) =>
+                    value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
+                  }
+                  parser={(value) =>
+                    value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
+                  }
+                />
+                {fieldState.error && (
+                  <Text type="danger">{fieldState.error.message}</Text>
+                )}
+              </div>
+            )}
+          />
+        </>
       )}
     </div>
   );
