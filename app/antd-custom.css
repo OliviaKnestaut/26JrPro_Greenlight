@@ -544,6 +544,10 @@ p {
 	padding: 13px;
 	border-radius: 0px;
 }
+.custom-doc-card:hover {
+    cursor: pointer;
+    box-shadow: 0px 2px 0px 0px var(--gray-4);
+}
 
 .card-title-row{
 	display: flex;
@@ -566,4 +570,16 @@ p {
 
 .ant-table-tbody > tr:hover > td:first-child {
     background: #D8E3D6 !important;
+}
+/* Primary button hover — lighter teal */
+.ant-btn-primary:hover {
+    background-color: var(--sea-green-7) !important;
+    border-color: var(--sea-green-7) !important;
+}
+
+/* Default/secondary button hover — for "New Brainstorm" style buttons */
+.ant-btn-default:hover {
+    color: var(--sea-green-8) !important;
+    border-color: var(--sea-green-8) !important;
+    background-color: var(--sea-green-1) !important;
 }
