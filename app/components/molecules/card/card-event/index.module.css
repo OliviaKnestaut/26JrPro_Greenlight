@@ -10,35 +10,11 @@
 }
 
 .submitted {
-  color: var(--accent-gray-dark);
+  color: var(--gray-8);
   font-size: 14px;
   margin-bottom: 0 !important;
 }
 
-/*.draftCard:hover {
-    border-color: var(--sea-green-5) !important;
-}
-
-.draftCardSubmissions:hover {
-    border-color: var(--sea-green-5) !important;
-}
-
-.reviewCardSubmissions:hover {
-    border-color: var(--gold-5) !important;
-}
-
-.approvedCardSubmissions:hover {
-    border-color: var(--green-6) !important;
-}
-
-.cancelledCardSubmissions:hover {
-    border-color: var(--gray-7) !important;
-}
-
-.passedCardSubmissions:hover {
-    border-color: var(--gray-7) !important;
-}
- */
  .draftCard.draftCard:hover {
     border-color: var(--sea-green-5) !important;
 }

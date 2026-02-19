@@ -363,9 +363,9 @@ p {
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
-	color: var(--accent-gray-dark) !important;
+	color: var(--gray-8) !important;
 	background-color: var(--color-bg-layout);
-	border: 1px solid var(--accent-gray-light-2);
+	border: 1px solid var(--gray-5);
 	padding: 4px 8px;
 	margin-right: 4px;
 	margin-bottom: 4px;
