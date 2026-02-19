@@ -471,14 +471,14 @@ export type GetEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
 
 export type GetEventByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
+export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
 
 export type GetOrganizationsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -499,7 +499,7 @@ export type EventsByOrganizationQueryVariables = Exact<{
 }>;
 
 
-export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
+export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type GetDbDumpQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -1047,6 +1047,9 @@ export const GetEventsDocument = gql`
     description
     eventImg
     locationType
+    createdBy
+    eventLevel
+    formData
     eventDate
     setupTime
     startTime
@@ -1114,6 +1117,9 @@ export const GetEventByIdDocument = gql`
     description
     eventImg
     locationType
+    createdBy
+    eventLevel
+    formData
     eventDate
     setupTime
     startTime
@@ -1235,6 +1241,9 @@ export const EventsByOrganizationDocument = gql`
     description
     eventImg
     locationType
+    createdBy
+    eventLevel
+    formData
     eventDate
     setupTime
     startTime
