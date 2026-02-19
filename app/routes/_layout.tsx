@@ -80,14 +80,33 @@ function AuthGate() {
         navigate('/login');
     };
 
+    const isLoginRoute = location.pathname === '/login';
+
+    // Avoid render-time redirects (which can cause update loops) by navigating in effects.
+    useEffect(() => {
+        if (isLoginRoute && user) {
+            // user just became authenticated while on /login -> navigate to home
+            navigate('/', { replace: true });
+        }
+    }, [isLoginRoute, user, navigate]);
+
+    useEffect(() => {
+        if (!isLoginRoute && !user) {
+            // unauthenticated user attempting to access a protected route -> send to login
+            navigate('/login', { replace: true, state: { from: location } });
+        }
+    }, [isLoginRoute, user, navigate, location]);
+
     if (loading) return <Loading text="Checking authentication..." />;
 
-    const isLoginRoute = location.pathname === '/login';
     if (isLoginRoute) {
-        if (user) return <Navigate to="/" replace />;
         return <Outlet />;
     }
-    if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+
+    if (!user) {
+        // navigation effect is handling redirect; render a lightweight placeholder
+        return <Loading text="Redirecting to login..." />;
+    }
 
     return (
         <AppLayout isAuthenticated={true} user={user} onLogout={handleLogout}>

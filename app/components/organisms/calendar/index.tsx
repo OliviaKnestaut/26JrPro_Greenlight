@@ -32,7 +32,7 @@ export function CalendarContent() {
 
 
     return (
-        <div className="container m-8 w-auto">
+        <div >
             <div className="container">
                 <Title level={5}>
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>

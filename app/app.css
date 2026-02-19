@@ -25,3 +25,11 @@ button {
   font-size: 14px;
   border-radius: 8px;
 }
+
+/* Override Tailwind's .container max-width at large screens so it fills the available width */
+
+@media (width >= 40rem) {
+  .container {
+    max-width: 100% !important;
+  }
+}

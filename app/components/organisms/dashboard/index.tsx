@@ -28,7 +28,7 @@ export function DashboardContent() {
             try {
                 const orgUsername = user?.organization?.username ?? user?.organizationUsername;
                 if (!orgUsername) {
-                    console.debug('No organization username available on user', user);
+                    if (import.meta.env.DEV) console.debug('No organization username available on user', user);
                     setLoading(false);
                     return;
                 }
@@ -42,9 +42,11 @@ export function DashboardContent() {
 
                 const drafts = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
                 const inReview = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
-                console.log('Organization events:', fetched);
-                console.log('In-Review events:', inReview);
-                console.log('Draft events:', drafts);
+                if (import.meta.env.DEV) {
+                    console.log('Organization events:', fetched);
+                    console.log('In-Review events:', inReview);
+                    console.log('Draft events:', drafts);
+                }
             } catch (err) {
                 console.error('Failed to fetch events by organization', err);
             } finally {
@@ -57,47 +59,69 @@ export function DashboardContent() {
     const drafts = events.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
     const inReview = events.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
 
+    // Prepare calendar items (next 30 days) for CardCalendarUpcoming
+    const calendarItems = (() => {
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const end = new Date(now);
+        end.setDate(end.getDate() + 30);
+
+        return (events || [])
+            .map((e: any) => ({ ...e, parsed: e.eventDate ? new Date(e.eventDate) : null }))
+            .filter((e: any) => e.parsed && e.parsed.getTime() >= now.getTime() && e.parsed.getTime() <= end.getTime())
+            .filter((e: any) => {
+                const s = serverToUi(e.eventStatus);
+                return s === 'approved' || s === 'in-review';
+            })
+            .sort((a: any, b: any) => (a.parsed as Date).getTime() - (b.parsed as Date).getTime())
+            .map((e: any) => ({ id: e.id, title: e.title, date: formatDateMDY(e.eventDate), time: e.startTime }));
+    })();
+
     return (
-        <div className="container m-6 w-auto">
-            <div className="container my-4 w-auto flex" style={{ gap: '1rem', alignItems: 'stretch' }}>
-                <CardWelcome
-                    title={`Welcome back, ${user?.firstName ?? "there"}`}
-                    subtitle="Ready to plan your next event?"
-                />
-                <CardAnnouncements
-                    title="Announcements"
-                    items={[
-                        {
-                            id: "a1",
-                            title: (
-                            <span>
-                                <Link href="#">“Coffee Chat With Women in Tech”</Link> has 1 new comment; update submission
-                            </span>
-                            ),
-                        },
-                        {
-                            id: "a2",
-                            title: (
-                            <span>
-                                John Doe has submitted <Link href="#">“Public Speaking Workshop”</Link> for review
-                            </span>
-                            ),
-                        },
-                    ]}
-                />
+        <>
+            <div className="container my-4 w-auto flex flex-col md:flex-row" style={{ gap: '1rem', alignItems: 'stretch' }}>
+                <div className="w-full md:w-2/5">
+                    <CardWelcome
+                        title={`Welcome back, ${user?.firstName ?? "there"}`}
+                        subtitle="Ready to plan your next event?"
+                    />
+                </div>
+                <div className="w-full md:w-3/5">
+                    <CardAnnouncements
+                        title="Announcements"
+                        items={[
+                            {
+                                id: "a1",
+                                title: (
+                                <span>
+                                    <Link href="#">“Coffee Chat With Women in Tech”</Link> has 1 new comment; update submission
+                                </span>
+                                ),
+                            },
+                            {
+                                id: "a2",
+                                title: (
+                                <span>
+                                    John Doe has submitted <Link href="#">“Public Speaking Workshop”</Link> for review
+                                </span>
+                                ),
+                            },
+                        ]}
+                    />
+                </div>
             </div>
-            <div className="container my-4 w-auto flex gap-4">
-                <Card  style={{
-                        background: "var(--background-2)",
-                        border: "1px solid var(--accent-gray-light)",
-                        width: "66%",
-                    }}
+            <div className="container my-4 w-auto flex gap-4 md:flex-row flex-col">
+                <Card  className="w-full md:w-2/3"
+                    style={{
+                            background: "var(--background-2)",
+                            border: "1px solid var(--accent-gray-light)",
+                        }}
                 >
-                    <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions')}>
+                    <div className="flex justify-between items-center " style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions')}>
                         <Title level={4} >In-Review <RightOutlined style={{fontSize:"12px"}}/> </Title>
                         <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
-                    <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
                         {
                             (() => {
                                 const today = new Date();
@@ -113,7 +137,7 @@ export function DashboardContent() {
                                 const top = upcoming.slice(0, 2);
                                 if (loading) {
                                     return Array.from({ length: 2 }).map((_, i) => (
-                                        <CardEvent key={`skeleton-inreview-${i}`} loading skeletonVariant="compact" style={{ width: "calc(50% - 0.5rem)" }} />
+                                        <CardEvent key={`skeleton-inreview-${i}`} loading skeletonVariant="compact" className="w-full lg:w-1/2" />
                                     ));
                                 }
                                 if (top.length === 0) return <div>No upcoming in-review events</div>;
@@ -125,7 +149,8 @@ export function DashboardContent() {
                                         isPast={isPast}
                                         eventImg={e.eventImg}
                                         onClick={() => navigate(`/event-overview/${e.id}`)}
-                                        style={{ width: "calc(50% - 0.5rem)", cursor: 'pointer' }}
+                                        className="w-full lg:w-1/2"
+                                        style={{ cursor: 'pointer' }}
                                         title={e.title}
                                         date={formatDateMDY(e.eventDate)}
                                         location={e.location ?? ''}
@@ -140,11 +165,12 @@ export function DashboardContent() {
                     </div>
                 </Card>
 
-                <Card  style={{
-                        background: "var(--background-2)",
-                        border: "1px solid var(--accent-gray-light)",
-                        width: "33%"
-                    }} >
+                <Card  className="w-full md:w-1/3" 
+                    style={{
+                            background: "var(--background-2)",
+                            border: "1px solid var(--accent-gray-light)",
+                        }} >
+
                     <div
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                         onClick={() => navigate('/budget')}
@@ -184,11 +210,11 @@ export function DashboardContent() {
                 </Card>
             </div>
 
-            <div className="container my-4 w-auto flex gap-4">
-                <Card  style={{
+            <div className="container my-4 w-auto flex gap-4 md:flex-row flex-col">
+                <Card  className="w-full md:w-2/3"
+                    style={{
                         background: "var(--background-2)",
                         border: "1px solid var(--accent-gray-light)",
-                        width: "66%"
                     }} >
                     <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions?status=draft&past=1')}>
                         <Title level={4}>Drafts <RightOutlined style={{fontSize:"12px"}}/> </Title>
@@ -209,14 +235,14 @@ export function DashboardContent() {
                             if (loading) {
                                 return (
                                     <>
-                                        <div className="flex gap-4">
+                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 " style={{ alignItems: 'stretch' }}>
                                             {Array.from({ length: 2 }).map((_, i) => (
-                                                <CardEvent key={`skeleton-draft-a-${i}`} loading skeletonVariant="compact" style={{ width: "calc(50% - 0.5rem)" }} />
+                                                <CardEvent key={`skeleton-draft-a-${i}`} loading skeletonVariant="compact" className="w-full xl:w-1/2" />
                                             ))}
                                         </div>
-                                        <div className="flex gap-4">
+                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ alignItems: 'stretch' }}>
                                             {Array.from({ length: 2 }).map((_, i) => (
-                                                <CardEvent key={`skeleton-draft-b-${i}`} loading skeletonVariant="compact" style={{ width: "calc(50% - 0.5rem)" }} />
+                                                <CardEvent key={`skeleton-draft-b-${i}`} loading skeletonVariant="compact" className="w-full xl:w-1/2" />
                                             ))}
                                         </div>
                                     </>
@@ -227,15 +253,15 @@ export function DashboardContent() {
                             const secondRow = top.slice(2, 4);
                             return (
                                 <>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ alignItems: 'stretch' }}>
                                         {firstRow.map((e: any) => {
                                             const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                                             return (
-                                            <CardEvent
+                                                <CardEvent
                                                 key={e.id}
                                                 isPast={isPast}
                                                 eventImg={e.eventImg}
-                                                style={{ width: "calc(50% - 0.5rem)" }}
+                                                className="w-full lg:w-1/2"
                                                 title={e.title}
                                                 date={formatDateMDY(e.eventDate)}
                                                 location={e.location ?? ''}
@@ -245,7 +271,7 @@ export function DashboardContent() {
                                             />);
                                         })}
                                     </div>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ alignItems: 'stretch' }}>
                                         {secondRow.map((e: any) => {
                                             const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                                             return (
@@ -253,7 +279,7 @@ export function DashboardContent() {
                                                 key={e.id}
                                                 isPast={isPast}
                                                 eventImg={e.eventImg}
-                                                style={{ width: "calc(50% - 0.5rem)" }}
+                                                className="w-full lg:w-1/2"
                                                 title={e.title}
                                                 date={formatDateMDY(e.eventDate)}
                                                 location={e.location ?? ''}
@@ -268,16 +294,16 @@ export function DashboardContent() {
                         })()}
                     </div>
                 </Card>
-                <Card  style={{
+                <Card  className="w-full md:w-1/3"
+                    style={{
                         background: "var(--background-2)",
                         border: "1px solid var(--accent-gray-light)",
-                        width: "33%"
                     }} >
                     <StyledCalendar/>
                     <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
-                    <CardCalendarUpcoming/>
+                    <CardCalendarUpcoming events={calendarItems} />
                 </Card>
             </div>
-        </div >
+        </>
     );
 }

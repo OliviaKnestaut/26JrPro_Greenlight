@@ -2,8 +2,8 @@
 .card {
   border-radius: 8px;
   overflow: hidden;
-  width: 60%; /* 670px will need to be looked at again */
   background-color: #D4F1E8;
+  height: 100%;
   padding: 24px 24px 16px 24px;
 }
 

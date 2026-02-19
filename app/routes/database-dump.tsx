@@ -1,6 +1,8 @@
 import { useGetEventsQuery, useGetOrganizationsQuery, useGetUsersQuery, useGetPurchasesQuery } from '~/lib/graphql/generated';
 import type { GetDbDumpQuery } from '~/lib/graphql/generated';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { gql } from '@apollo/client';
+import { apolloClient } from '~/lib/apollo-client';
 import { Table, Avatar, Image } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -26,6 +28,40 @@ export default function DatabaseDump() {
   const { data: orgsData, loading: orgsLoading, error: orgsError } = useGetOrganizationsQuery({ variables: { limit: BIG_LIMIT, offset: 0 }, errorPolicy: 'all' });
   const { data: usersData, loading: usersLoading, error: usersError } = useGetUsersQuery({ variables: { limit: BIG_LIMIT, offset: 0 }, errorPolicy: 'all' });
   const { data: purchasesData, loading: purchasesLoading, error: purchasesError } = useGetPurchasesQuery({ variables: { limit: BIG_LIMIT, offset: 0 }, errorPolicy: 'all' });
+
+  // Locations: fetch via apollo client since generated hook may not exist
+  const [locationsData, setLocationsData] = useState<any | null>(null);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [locationsError, setLocationsError] = useState<any | null>(null);
+  // Controlled pagination state for Events table
+  const [eventsPage, setEventsPage] = useState(1);
+
+  useEffect(() => {
+    let mounted = true;
+    setLocationsLoading(true);
+    const LOC_Q = gql`
+      query Locations($limit: Int, $offset: Int) {
+        locations(limit: $limit, offset: $offset) {
+          id
+          buildingCode
+          buildingDisplayName
+          roomTitle
+          roomType
+          maxCapacity
+        }
+      }
+    `;
+    apolloClient.query({ query: LOC_Q, variables: { limit: BIG_LIMIT, offset: 0 } }).then((res) => {
+      if (!mounted) return;
+      setLocationsData(res.data);
+      setLocationsLoading(false);
+    }).catch((err) => {
+      if (!mounted) return;
+      setLocationsError(err);
+      setLocationsLoading(false);
+    });
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <div className="container mx-auto p-8">
@@ -66,6 +102,7 @@ export default function DatabaseDump() {
               { title: 'Start Time', dataIndex: 'startTime', key: 'startTime' },
               { title: 'End Time', dataIndex: 'endTime', key: 'endTime' },
               { title: 'Location', dataIndex: 'location', key: 'location' },
+              { title: 'Location ID', dataIndex: 'locationId', key: 'locationId' },
               { title: 'Location Type', dataIndex: 'locationType', key: 'locationType', render: (lt: any) => lt ?? '-' },
               { title: 'Event Level', dataIndex: 'eventLevel', key: 'eventLevel', render: (lvl: any) => (lvl == null ? '' : String(lvl)) },
               { title: 'Form Data', dataIndex: 'formData', key: 'formData', render: (fd: any) => fd ? JSON.stringify(fd) : '-' },
@@ -79,12 +116,12 @@ export default function DatabaseDump() {
               },
             ];
 
-            const dataSource = eventsData!.events.map((e) => ({ ...e, key: e.id }));
+            const dataSource = eventsData!.events.slice().sort((a: any, b: any) => Number(a.id) - Number(b.id)).map((e) => ({ ...e, key: e.id }));
 
             return (
               <div style={{ overflowX: 'auto' }}>
                 <div style={{ minWidth: columns.length * 150 }}>
-                  <Table columns={columns} dataSource={dataSource} pagination={false} loading={eventsLoading} />
+                  <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 20 }} loading={eventsLoading} />
                 </div>
               </div>
             );
@@ -115,9 +152,9 @@ export default function DatabaseDump() {
               },
             ];
 
-            const dataSource = purchasesData!.purchases.map((p: any) => ({ ...p, key: p.id }));
+            const dataSource = purchasesData!.purchases.slice().sort((a: any, b: any) => Number(a.id) - Number(b.id)).map((p: any) => ({ ...p, key: p.id }));
 
-            return <Table columns={columns} dataSource={dataSource} pagination={false} loading={purchasesLoading} />;
+            return <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 20 }} loading={purchasesLoading} />;
           })()
         ) : (
           <p>No purchases found.</p>
@@ -153,9 +190,9 @@ export default function DatabaseDump() {
               },
             ];
 
-            const dataSource = usersData!.users.map((u: any) => ({ ...u, key: u.id }));
+            const dataSource = usersData!.users.slice().sort((a: any, b: any) => Number(a.id) - Number(b.id)).map((u: any) => ({ ...u, key: u.id }));
 
-            return <Table columns={columns} dataSource={dataSource} pagination={false} loading={usersLoading} />;
+            return <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 20 }} loading={usersLoading} />;
           })()
         ) : (
           <p>No users found.</p>
@@ -181,14 +218,38 @@ export default function DatabaseDump() {
               { title: 'Bio', dataIndex: 'bio', key: 'bio' },
             ];
 
-            const dataSource = orgsData!.organizations.map((o) => ({ ...o, key: o.id }));
+            const dataSource = orgsData!.organizations.slice().sort((a: any, b: any) => Number(a.id) - Number(b.id)).map((o) => ({ ...o, key: o.id }));
 
-            return <Table columns={columns} dataSource={dataSource} pagination={false} loading={orgsLoading} />;
+            return <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 20 }} loading={orgsLoading} />;
           })()
         ) : (
           <p>No organizations found.</p>
         )}
       </section>
+
+        <section className="mt-8">
+          <h2 className="text-xl font-semibold mb-4">Locations</h2>
+          {locationsLoading && <p>Loading locations...</p>}
+          {locationsError && (
+            <div className="p-4 bg-red-50 text-red-700 rounded-md">Error loading locations: {String(locationsError.message ?? locationsError)}</div>
+          )}
+          {locationsData?.locations?.length ? (
+            (() => {
+              const columns = [
+                { title: 'ID', dataIndex: 'id', key: 'id' },
+                { title: 'Building Code', dataIndex: 'buildingCode', key: 'buildingCode' },
+                { title: 'Building Display', dataIndex: 'buildingDisplayName', key: 'buildingDisplayName' },
+                { title: 'Room Title', dataIndex: 'roomTitle', key: 'roomTitle' },
+                { title: 'Room Type', dataIndex: 'roomType', key: 'roomType' },
+                { title: 'Max Capacity', dataIndex: 'maxCapacity', key: 'maxCapacity' },
+              ];
+              const dataSource = locationsData!.locations.slice().sort((a: any, b: any) => Number(a.id) - Number(b.id)).map((l: any) => ({ ...l, key: l.id }));
+              return <Table columns={columns} dataSource={dataSource} pagination={{ pageSize: 20 }} loading={locationsLoading} />;
+            })()
+          ) : (
+            !locationsLoading && <p>No locations found.</p>
+          )}
+        </section>
     </div>
   );
 }
