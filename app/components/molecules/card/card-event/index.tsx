@@ -25,17 +25,18 @@ export type CardEventProps = React.ComponentProps<typeof Card> & {
     loading?: boolean;
     skeletonImage?: boolean;
     skeletonVariant?: 'compact' | 'visual';
+    disableHover?: boolean;
 };
 
-const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime, location, description, submissionDate, status, isPast, eventImg, loading, skeletonImage, skeletonVariant, ...rest }) => {
+const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime, location, description, submissionDate, status, isPast, eventImg, loading, skeletonImage, skeletonVariant, disableHover, ...rest }) => {
     // detect visual-card via `className` prop
     const classNameProp = (rest as any)?.className ?? '';
     const isVisual = classNameProp.split(/\s+/).includes('visual-card');
     const incomingStyle = (rest as any)?.style ?? {};
     const base = (import.meta as any).env?.BASE_URL ?? '/';
     const imagePath = eventImg ? `${base}uploads/event_img/${eventImg}`.replace(/\\/g, '/') : undefined;
-    const combinedClassName = [styles.card, (rest as any)?.className].filter(Boolean).join(' ');
-    const cardProps = { ...(rest as any), className: combinedClassName };
+    //const combinedClassName = [styles.card, (rest as any)?.className].filter(Boolean).join(' ');
+
 
     // Compute whether the event is in the past. Prefer the explicit `isPast`
     // prop if provided; otherwise derive from the `date` string.
@@ -49,7 +50,17 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     };
 
     const isPastEvent = computeIsPastEvent(isPast, date);
-
+    const combinedClassName = [
+    styles.card,
+    status === 'draft' && styles.draftCard,
+    status === 'in-review' && styles.reviewCard,
+    status === 'approved' && !isPastEvent && styles.approvedCard,
+    status === 'cancelled' && styles.cancelledCard,
+    status === 'approved' && isPastEvent && styles.pastCard,
+    disableHover && styles.noHover, 
+    (rest as any)?.className,
+].filter(Boolean).join(' ');
+const cardProps = { ...(rest as any), className: combinedClassName };
     if (loading) {
         const variant = skeletonVariant || (isVisual ? 'visual' : 'compact');
         if (variant === 'visual') {
@@ -78,7 +89,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const inReviewCard = (
         <Card {...cardProps}
-            hoverable
+            hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -97,7 +108,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const draftCard = (
         <Card {...cardProps}
-            hoverable
+            hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -118,7 +129,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const approvedCardVisual = (
         <Card {...cardProps}
-            hoverable
+            hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -149,7 +160,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     const reviewCardVisual = (
         <Card {...cardProps}
             styles={{ body: { padding: 16 } }}
-            hoverable
+            hoverable={!disableHover}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
@@ -178,7 +189,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const draftCardVisual = (
         <Card {...cardProps}
-            hoverable
+            hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -208,7 +219,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const cancelledCardVisual = (
         <Card {...cardProps}
-            hoverable
+            hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
@@ -238,7 +249,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const pastCardVisual = (
         <Card {...cardProps}
-            hoverable
+            hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light)' }}>
             <div className='flex flex-col gap-1'>
