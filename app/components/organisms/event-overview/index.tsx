@@ -89,11 +89,13 @@ export function EventOverviewContent() {
                 <section style={{ display: "flex", flexDirection: "column", flexGrow: 1}}>
                     <Title level={2}>{formData?.event?.name || "Pitch and Paint Night"}</Title>
 
+                    <Paragraph>Created By:</Paragraph>
+
                     <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem", marginTop: "2rem",}}>
-                        <Statistic title="Event Level" value="N/A" />
-                        <Statistic title="Estimated Cost" value={formData?.vendor?.amount || "N/A"} />
-                        <Statistic title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
-                        <Statistic title="Location Type" value={formData?.location?.type || "N/A"} />
+                        <Statistic className="stat-card-gray-border" title="Event Level" value="N/A" />
+                        <Statistic className="stat-card-gray-border" title="Estimated Cost" value={formData?.vendor?.amount || "N/A"} />
+                        <Statistic className="stat-card-gray-border" title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
+                        <Statistic className="stat-card-gray-border" title="Location Type" value={formData?.location?.type || "N/A"} />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "1rem"}}>
                         <Card ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", marginTop: "1rem", scrollMarginTop: "2rem" }}>

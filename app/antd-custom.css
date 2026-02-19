@@ -478,6 +478,10 @@ p {
 	background-color: var(--background-2) !important;
 }
 
+.stat-card-gray-border {
+	border-color: var(--gray-6) !important;
+}
+
 .ant-statistic-content-value {
 	font-family: var(--font-body) !important;
 	font-weight: 500 !important;

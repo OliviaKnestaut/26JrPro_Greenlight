@@ -13,7 +13,6 @@ import DiscardModal from "../../molecules/event-flow/discard-modal";
 import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
 import styles from "./eventform.module.css";
 import NestFoodSection from "./sections/nestedSections/elementNest/nestFood";
-import NestVendorSection from "./sections/nestedSections/nestVendor";
 import OnCampusSection from "./sections/nestedSections/locationNest/nestOn";
 import OffCampusSection from "./sections/nestedSections/locationNest/nestOff";
 import AlcoholSection from "./sections/nestedSections/elementNest/nestAlcohol";
@@ -109,17 +108,6 @@ const formBranching = [
         parent: "eventElements",
         header: "SORC Games Details",
         component: SORCGamesSection,
-        indent: 32
-    },
-
-    // Budget & Purchases nests
-    {
-        when: "vendor",
-        is: "yes",
-        key: "vendor",
-        parent: "budgetPurchase",
-        header: "Vendor Details",
-        component: NestVendorSection,
         indent: 32
     },
 ]
@@ -228,8 +216,7 @@ export function EventForm() {
                             <EventDetailsSection control={control} watch={watch} />
                         </Panel>
 
-                        {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}
-                        {formNesting("eventDetails", isSelected, control, setValue)}
+                        {/* Event Details has no nested sections */}
 
                         {/* Date & Location Section */}
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
@@ -252,8 +239,8 @@ export function EventForm() {
                             <BudgetPurchaseSection control={control} />
                         </Panel>
 
-                        {/* Render nested sections FOR THIS PARENT SECTION based on branching logic */}
-                        {formNesting("budgetPurchase", isSelected, control, setValue)}
+                        {/* Budget & Purchases has no nested sections */}
+
                     </Collapse>
 
                     {/* Form buttons */}

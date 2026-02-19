@@ -18,7 +18,7 @@ export default function BudgetPurchasesSection({ control }: Props) {
 
     return (
         <div style={{ marginBottom: 24 }}>
-            <Text style={{ display: "block", marginTop: 24 }}>23. Vendors</Text>
+            <Text style={{ display: "block", marginTop: 24 }}>What contracts requests (vendors) are you planning to use for your event?</Text>
             <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
                 Add all vendors you will be working with for this event.
             </Text>
@@ -357,7 +357,7 @@ export default function BudgetPurchasesSection({ control }: Props) {
                 )}
             />
 
-            <Text style={{ display: "block", marginTop: 24 }}>24. Funding Source</Text>
+            <Text style={{ display: "block", marginTop: 24 }}>How will you be funding your event?</Text>
             <Controller
                 name="form_data.budget.source"
                 control={control}
@@ -367,12 +367,11 @@ export default function BudgetPurchasesSection({ control }: Props) {
                         <Option value="Rollover">Rollover</Option>
                         <Option value="Department">Department</Option>
                         <Option value="FSL">FSL</Option>
-                        <Option value="No Cost">No Cost</Option>
                     </Select>
                 )}
             />
 
-            <Text style={{ display: "block", marginTop: 24 }}>25. Account Number</Text>
+            <Text style={{ display: "block", marginTop: 24 }}>What account number will be used to fund this event?</Text>
             <Controller
                 name="form_data.budget.account_number"
                 control={control}
