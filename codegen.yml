@@ -1,4 +1,4 @@
-schema: "php-graphQL-server/schema.graphql"
+schema: "./php-graphql-server/schema.graphql"
 documents: "app/lib/graphql/**/*.graphql"
 generates:
   app/lib/graphql/generated.tsx:

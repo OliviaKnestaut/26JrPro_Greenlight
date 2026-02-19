@@ -53,7 +53,7 @@ type Event {
     updatedAt: DateTime
 }
 
-# Locations table: optional additional metadata for an event's location
+# Locations table
 type Location {
     id: ID!
     buildingCode: String

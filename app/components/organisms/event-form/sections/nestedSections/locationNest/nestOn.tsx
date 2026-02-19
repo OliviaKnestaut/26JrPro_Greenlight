@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
+import { useGetOnCampusQuery } from "~/lib/graphql/generated";
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -7,13 +9,8 @@ const { Option } = Select;
 
 type Props = {
     control: any;
+    setValue?: (name: string, value: any, options?: { shouldDirty?: boolean; shouldValidate?: boolean }) => void;
 };
-
-const specialSpaces = [
-    "Dornsife Center",
-    "Center for Black Culture",
-    "Graduate Student Lounge",
-];
 
 const indoorRoomOptions = [
     "Auditorium/Theater",
@@ -35,15 +32,116 @@ const furnitureOptions = [
 ];
 
 const avOptions = ["Projector", "Microphone(s)", "Speakers", "Laptop / HDMI hookup"];
+const fallbackBuildings = [
+    "Lindy Center",
+    "Dornsife Center",
+    "Center for Black Culture",
+    "SCDI",
+    "Graduate Student Lounge",
+    "Outdoor Quad",
+];
+const BIG_LIMIT = 100000;
 
-export default function OnCampusSection({ control }: Props) {
+export default function OnCampusSection({ control, setValue }: Props) {
+    const { data: onCampusData, loading: buildingsLoading } = useGetOnCampusQuery({
+        variables: { limit: BIG_LIMIT, offset: 0 },
+    });
     const selectedLocation = useWatch({ control, name: "form_data.location.selected" });
+    const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
+    const attendeeCountRaw = useWatch({ control, name: "attendees" });
+    const attendeeCountNested = useWatch({ control, name: "form_data.event.attendees" });
     const { fields: furnitureFields, append, remove } = useFieldArray({
         control,
         name: "form_data.location.furniture",
     });
 
-    const isSpecialSpace = specialSpaces.includes(selectedLocation);
+    const attendeeCount = useMemo(() => {
+        const value = attendeeCountRaw ?? attendeeCountNested;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    }, [attendeeCountRaw, attendeeCountNested]);
+
+    const specialSpacesList = useMemo(() => {
+        const spaces = new Set<string>();
+        (onCampusData?.locations ?? []).forEach((loc) => {
+            const buildingCode = loc?.buildingCode?.toUpperCase();
+            const roomTitle = loc?.roomTitle?.toLowerCase();
+            const buildingDisplayName = loc?.buildingDisplayName;
+
+            if (
+                buildingCode === "DORNCH" ||
+                buildingCode === "DORNRH" ||
+                roomTitle?.includes("center for black culture") ||
+                roomTitle?.includes("graduate student lounge")
+            ) {
+                if (buildingDisplayName) {
+                    spaces.add(buildingDisplayName);
+                }
+            }
+        });
+        return Array.from(spaces);
+    }, [onCampusData]);
+
+    const buildingOptions = useMemo(() => {
+        const locations = onCampusData?.locations ?? [];
+        const capacityFiltered = attendeeCount
+            ? locations.filter((loc) => {
+                const capacityValue = loc?.maxCapacity?.match(/\d+/g)?.map(Number) ?? [];
+                if (capacityValue.length === 0) {
+                    return true;
+                }
+                const maxCapacity = Math.max(...capacityValue);
+                return maxCapacity >= attendeeCount;
+            })
+            : locations;
+
+        const names = capacityFiltered
+            .map((loc) => loc?.buildingDisplayName)
+            .filter((name): name is string => Boolean(name));
+        return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
+    }, [attendeeCount, onCampusData]);
+
+    const filteredLocations = useMemo(() => {
+        if (!selectedLocation) {
+            return [];
+        }
+
+        const matchingLocations = (onCampusData?.locations ?? []).filter(
+            (loc) => loc?.buildingDisplayName === selectedLocation
+        );
+
+        if (!attendeeCount) {
+            return matchingLocations;
+        }
+
+        return matchingLocations.filter((loc) => {
+            const capacityValue = loc?.maxCapacity?.match(/\d+/g)?.map(Number) ?? [];
+            if (capacityValue.length === 0) {
+                return true;
+            }
+            const maxCapacity = Math.max(...capacityValue);
+            return maxCapacity >= attendeeCount;
+        });
+    }, [attendeeCount, onCampusData, selectedLocation]);
+
+    const roomTypeOptions = useMemo(() => {
+        const types = filteredLocations
+            .map((loc) => loc?.roomType)
+            .filter((type): type is string => Boolean(type));
+        return Array.from(new Set(types)).sort((a, b) => a.localeCompare(b));
+    }, [filteredLocations]);
+
+    const roomTitleOptions = useMemo(() => {
+        const scopedLocations = selectedRoomType
+            ? filteredLocations.filter((loc) => loc?.roomType === selectedRoomType)
+            : filteredLocations;
+        const titles = scopedLocations
+            .map((loc) => loc?.roomTitle)
+            .filter((title): title is string => Boolean(title));
+        return Array.from(new Set(titles)).sort((a, b) => a.localeCompare(b));
+    }, [filteredLocations, selectedRoomType]);
+
+    const isSpecialSpace = specialSpacesList.includes(selectedLocation);
     const isOutdoor = selectedLocation?.toLowerCase().includes("outdoor"); // simple example
     const isIndoor = !isOutdoor;
 
@@ -57,17 +155,78 @@ export default function OnCampusSection({ control }: Props) {
                 render={({ field }) => (
                     <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                         <Text>Which campus space will your event be held in?</Text>
-                        <Select {...field} placeholder="Select building and room" style={{ width: 300 }}>
-                            <Option value="Lindy Center">Lindy Center</Option>
-                            <Option value="Dornsife Center">Dornsife Center</Option>
-                            <Option value="Center for Black Culture">Center for Black Culture</Option>
-                            <Option value="SCDI">SCDI</Option>
-                            <Option value="Graduate Student Lounge">Graduate Student Lounge</Option>
-                            <Option value="Outdoor Quad">Outdoor Quad</Option>
+                        <Select
+                            {...field}
+                            placeholder="Select building and room"
+                            style={{ width: 300 }}
+                            loading={buildingsLoading}
+                            onChange={(value) => {
+                                field.onChange(value);
+                                setValue?.("form_data.location.room_type", undefined, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                });
+                                setValue?.("form_data.location.room_title", undefined, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                });
+                            }}
+                        >
+                            {(buildingOptions.length ? buildingOptions : fallbackBuildings).map((opt) => (
+                                <Option key={opt} value={opt}>{opt}</Option>
+                            ))}
                         </Select>
                     </div>
                 )}
             />
+
+            {/* Select Room Type or Room Title based on maxCapacity and Campus Space Selection*/}
+            <div style={{ display: "flex", flexDirection: "row", gap: 16, marginBottom: 16 }}>
+                {(isIndoor || isOutdoor) && (
+                    <Controller
+                        name="form_data.location.room_type"
+                        control={control}
+                        render={({ field }) => (
+                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
+                                <Text>What kind of room do you want to use?</Text>
+                                <Select
+                                    {...field}
+                                    placeholder="Select room type"
+                                    style={{ width: 300 }}
+                                    loading={buildingsLoading}
+                                    options={roomTypeOptions.map((type) => ({ value: type, label: type }))}
+                                    onChange={(value) => {
+                                        field.onChange(value);
+                                        setValue?.("form_data.location.room_title", undefined, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        });
+                                    }}
+                                />
+                            </div>
+                        )}
+                    />
+                )}
+
+                {(isIndoor || isOutdoor) && (
+                    <Controller
+                        name="form_data.location.room_title"
+                        control={control}
+                        render={({ field }) => (
+                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
+                                <Text>What is the room number or title?</Text>
+                                <Select
+                                    {...field}
+                                    placeholder="Select room"
+                                    style={{ width: 300 }}
+                                    loading={buildingsLoading}
+                                    options={roomTitleOptions.map((title) => ({ value: title, label: title }))}
+                                />
+                            </div>
+                        )}
+                    />
+                )}
+            </div>
 
             {/* Q11: Space Alignment Statement */}
             {isSpecialSpace && (

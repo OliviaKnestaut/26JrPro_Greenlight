@@ -51,6 +51,7 @@ export default function DateLocationSection({ control }: Props) {
                                     value={field.value ? dayjs(field.value, "h:mm A") : null}
                                     format="h:mm A"
                                     use12Hours
+                                    minuteStep={5}
                                     onChange={(time) => field.onChange(time ? time.format("h:mm A") : null)}
                                     style={{ display: "block", width: "100%", marginTop: 4 }}
                                 />
@@ -70,6 +71,7 @@ export default function DateLocationSection({ control }: Props) {
                                     value={field.value ? dayjs(field.value, "h:mm A") : null}
                                     format="h:mm A"
                                     use12Hours
+                                    minuteStep={5}
                                     onChange={(time) => field.onChange(time ? time.format("h:mm A") : null)}
                                     style={{ display: "block", width: "100%", marginTop: 4 }}
                                 />

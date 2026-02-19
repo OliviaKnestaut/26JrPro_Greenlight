@@ -220,3 +220,16 @@ query PurchasesByOrganization($orgUsername: String!, $limit: Int = 25, $offset: 
         itemCost
     }
 }
+
+# Locations
+
+query GetOnCampus($limit: Int = 25, $offset: Int = 0) {
+    locations(limit: $limit, offset: $offset) {
+        id
+        buildingCode
+        buildingDisplayName
+        roomTitle
+        roomType
+        maxCapacity
+    }
+}
