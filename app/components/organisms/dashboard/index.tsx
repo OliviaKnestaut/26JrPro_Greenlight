@@ -25,7 +25,7 @@ export function DashboardContent() {
     useEffect(() => {
         const fetchOrgEvents = async () => {
             setLoading(true);
-                try {
+            try {
                 const orgUsername = user?.organization?.username ?? user?.organizationUsername;
                 if (!orgUsername) {
                     if (import.meta.env.DEV) console.debug('No organization username available on user', user);
@@ -58,6 +58,24 @@ export function DashboardContent() {
 
     const drafts = events.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
     const inReview = events.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
+
+    // Prepare calendar items (next 30 days) for CardCalendarUpcoming
+    const calendarItems = (() => {
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const end = new Date(now);
+        end.setDate(end.getDate() + 30);
+
+        return (events || [])
+            .map((e: any) => ({ ...e, parsed: e.eventDate ? new Date(e.eventDate) : null }))
+            .filter((e: any) => e.parsed && e.parsed.getTime() >= now.getTime() && e.parsed.getTime() <= end.getTime())
+            .filter((e: any) => {
+                const s = serverToUi(e.eventStatus);
+                return s === 'approved' || s === 'in-review';
+            })
+            .sort((a: any, b: any) => (a.parsed as Date).getTime() - (b.parsed as Date).getTime())
+            .map((e: any) => ({ id: e.id, title: e.title, date: formatDateMDY(e.eventDate), time: e.startTime }));
+    })();
 
     return (
         <>
@@ -99,7 +117,7 @@ export function DashboardContent() {
                             border: "1px solid var(--accent-gray-light)",
                         }}
                 >
-                    <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions')}>
+                    <div className="flex justify-between items-center " style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions')}>
                         <Title level={4} >In-Review <RightOutlined style={{fontSize:"12px"}}/> </Title>
                         <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
@@ -214,15 +232,15 @@ export function DashboardContent() {
                                 .filter((x: any) => x.parsedDate && x.parsedDate >= today)
                                 .sort((a: any, b: any) => (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime());
                             const top = upcoming.slice(0, 4);
-                                if (loading) {
+                            if (loading) {
                                 return (
                                     <>
-                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 ">
+                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 " style={{ alignItems: 'stretch' }}>
                                             {Array.from({ length: 2 }).map((_, i) => (
                                                 <CardEvent key={`skeleton-draft-a-${i}`} loading skeletonVariant="compact" className="w-full xl:w-1/2" />
                                             ))}
                                         </div>
-                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
+                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ alignItems: 'stretch' }}>
                                             {Array.from({ length: 2 }).map((_, i) => (
                                                 <CardEvent key={`skeleton-draft-b-${i}`} loading skeletonVariant="compact" className="w-full xl:w-1/2" />
                                             ))}
@@ -235,11 +253,11 @@ export function DashboardContent() {
                             const secondRow = top.slice(2, 4);
                             return (
                                 <>
-                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
-                                                {firstRow.map((e: any) => {
+                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ alignItems: 'stretch' }}>
+                                        {firstRow.map((e: any) => {
                                             const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                                             return (
-                                            <CardEvent
+                                                <CardEvent
                                                 key={e.id}
                                                 isPast={isPast}
                                                 eventImg={e.eventImg}
@@ -253,7 +271,7 @@ export function DashboardContent() {
                                             />);
                                         })}
                                     </div>
-                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
+                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ alignItems: 'stretch' }}>
                                         {secondRow.map((e: any) => {
                                             const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                                             return (
@@ -283,7 +301,7 @@ export function DashboardContent() {
                     }} >
                     <StyledCalendar/>
                     <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
-                    <CardCalendarUpcoming/>
+                    <CardCalendarUpcoming events={calendarItems} />
                 </Card>
             </div>
         </>

@@ -39,6 +39,7 @@ export type CreateEventInput = {
   eventStatus?: InputMaybe<Scalars['String']['input']>;
   formData?: InputMaybe<Scalars['JSON']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
+  locationId?: InputMaybe<Scalars['Int']['input']>;
   locationType?: InputMaybe<LocationType>;
   organizationUsername: Scalars['String']['input'];
   setupTime?: InputMaybe<Scalars['Time']['input']>;
@@ -86,6 +87,7 @@ export type Event = {
   formData?: Maybe<Scalars['JSON']['output']>;
   id: Scalars['ID']['output'];
   location?: Maybe<Scalars['String']['output']>;
+  locationId?: Maybe<Scalars['Int']['output']>;
   locationType?: Maybe<LocationType>;
   organization?: Maybe<Organization>;
   organizationUsername: Scalars['String']['output'];
@@ -103,6 +105,16 @@ export enum EventStatus {
   Rejected = 'REJECTED',
   Review = 'REVIEW'
 }
+
+export type Location = {
+  __typename?: 'Location';
+  buildingCode?: Maybe<Scalars['String']['output']>;
+  buildingDisplayName?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  maxCapacity?: Maybe<Scalars['String']['output']>;
+  roomTitle?: Maybe<Scalars['String']['output']>;
+  roomType?: Maybe<Scalars['String']['output']>;
+};
 
 export enum LocationType {
   OffCampus = 'OFF_CAMPUS',
@@ -236,6 +248,8 @@ export type Query = {
   event?: Maybe<Event>;
   events: Array<Event>;
   eventsByOrganization: Array<Event>;
+  location?: Maybe<Location>;
+  locations: Array<Location>;
   organization?: Maybe<Organization>;
   organizations: Array<Organization>;
   purchase?: Maybe<Purchase>;
@@ -267,6 +281,17 @@ export type QueryEventsByOrganizationArgs = {
   orgUsername: Scalars['String']['input'];
   status?: InputMaybe<Scalars['String']['input']>;
   toDate?: InputMaybe<Scalars['Date']['input']>;
+};
+
+
+export type QueryLocationArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryLocationsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -320,6 +345,7 @@ export type UpdateEventInput = {
   eventStatus?: InputMaybe<Scalars['String']['input']>;
   formData?: InputMaybe<Scalars['JSON']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
+  locationId?: InputMaybe<Scalars['Int']['input']>;
   locationType?: InputMaybe<LocationType>;
   setupTime?: InputMaybe<Scalars['Time']['input']>;
   startTime?: InputMaybe<Scalars['Time']['input']>;
@@ -471,14 +497,14 @@ export type GetEventsQueryVariables = Exact<{
 }>;
 
 
-export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
+export type GetEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, locationId?: number | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }> };
 
 export type GetEventByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
+export type GetEventByIdQuery = { __typename?: 'Query', event?: { __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, locationId?: number | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null } | null };
 
 export type GetOrganizationsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -499,7 +525,7 @@ export type EventsByOrganizationQueryVariables = Exact<{
 }>;
 
 
-export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
+export type EventsByOrganizationQuery = { __typename?: 'Query', eventsByOrganization: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, locationId?: number | null, createdBy?: string | null, eventLevel?: number | null, formData?: any | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null }> };
 
 export type GetDbDumpQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -507,7 +533,7 @@ export type GetDbDumpQueryVariables = Exact<{
 }>;
 
 
-export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
+export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', id: string, organizationUsername: string, title: string, description?: string | null, eventImg?: string | null, locationType?: LocationType | null, locationId?: number | null, eventDate?: any | null, setupTime?: any | null, startTime?: any | null, endTime?: any | null, location?: string | null, eventStatus?: EventStatus | null, submittedAt?: any | null, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null } | null }>, organizations: Array<{ __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null, createdAt?: any | null, updatedAt?: any | null }>, users: Array<{ __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string, profileImg?: string | null, password: string, createdAt?: any | null, updatedAt?: any | null, organization?: { __typename?: 'Organization', id: string, orgName: string, username: string, bio?: string | null, orgImg?: string | null } | null }> };
 
 export type GetUsersQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -1047,6 +1073,7 @@ export const GetEventsDocument = gql`
     description
     eventImg
     locationType
+    locationId
     createdBy
     eventLevel
     formData
@@ -1117,6 +1144,7 @@ export const GetEventByIdDocument = gql`
     description
     eventImg
     locationType
+    locationId
     createdBy
     eventLevel
     formData
@@ -1241,6 +1269,7 @@ export const EventsByOrganizationDocument = gql`
     description
     eventImg
     locationType
+    locationId
     createdBy
     eventLevel
     formData
@@ -1306,6 +1335,7 @@ export const GetDbDumpDocument = gql`
     description
     eventImg
     locationType
+    locationId
     eventDate
     setupTime
     startTime

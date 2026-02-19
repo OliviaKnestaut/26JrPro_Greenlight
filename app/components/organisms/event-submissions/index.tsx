@@ -54,7 +54,6 @@ export function EventSubmissionsContent() {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [pendingStatuses, setPendingStatuses] = useState<string[]>([]);
-    const [showPast, setShowPast] = useState(false);
     const [mainTab, setMainTab] = useState<'upcoming'|'past'>('upcoming');
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -82,7 +81,6 @@ export function EventSubmissionsContent() {
         setQuery(q);
         setSelectedStatuses(statusParam ? statusParam.split(',').filter(Boolean) : []);
         const isPast = pastParam === '1' || pastParam === 'true';
-        setShowPast(isPast);
         setMainTab(isPast ? 'past' : 'upcoming');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -105,7 +103,7 @@ export function EventSubmissionsContent() {
     };
 
     return (
-        <div className="container m-8 w-auto">
+        <div>
             <div className="container">
                 <Title level={5}>
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined  /> Back </Link>
@@ -208,7 +206,7 @@ export function EventSubmissionsContent() {
                             </div>
                         ),
                         children: (loading ? (
-                            <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                            <div className="flex gap-4">
                                 {Array.from({ length: 3 }).map((_, i) => (
                                     <div key={i} style={{ width: "calc(33% - 0.66rem)" }}>
                                         <CardEvent loading skeletonVariant="compact" style={{ width: '100%' }} />
@@ -234,7 +232,7 @@ export function EventSubmissionsContent() {
                                 return aSubmitted - bSubmitted;
                             });
                             return (
-                                <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                                <div className="flex gap-4">
                                     {upcoming.map((e: any) => {
                                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < (new Date()).setHours(0,0,0,0) : false;
                                         const statusUi = serverToUi(e.eventStatus);
@@ -317,7 +315,7 @@ export function EventSubmissionsContent() {
                                 return bCreated - aCreated;
                             });
                         }
-                        if (query && String(mainTab) !== 'past') return upcomingOnly;
+                        if (query) return upcomingOnly;
                         return sorted.filter((ev: any) => !ev.parsedDate || (ev.parsedDate as Date).getTime() >= today.getTime());
                     })();
 

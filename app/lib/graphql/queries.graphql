@@ -8,6 +8,7 @@ query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromD
         description
         eventImg
         locationType
+        locationId
         createdBy
         eventLevel
         formData
@@ -37,6 +38,7 @@ query GetEventById($id: ID!) {
         description
         eventImg
         locationType
+        locationId
         createdBy
         eventLevel
         formData
@@ -78,6 +80,7 @@ query EventsByOrganization($orgUsername: String!, $limit: Int = 25, $offset: Int
         description
         eventImg
         locationType
+        locationId
         createdBy
         eventLevel
         formData
@@ -101,6 +104,7 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
         description
         eventImg
         locationType
+        locationId
         eventDate
         setupTime
         startTime
