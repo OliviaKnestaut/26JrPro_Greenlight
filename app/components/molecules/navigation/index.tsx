@@ -137,7 +137,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 				<div className={styles.hamburgerContainer} style={{ zIndex: 1050 }}>
 					<Button
 						className={styles.hamburger ?? ''}
-						icon={mobileOpen ? <CloseOutlined /> : <MenuOutlined />}
+						icon={mobileOpen ? <CloseOutlined style={{ color: 'var(--primary)' }}/> : <MenuOutlined style={{ color: 'var(--primary)' }}/>}
 						onClick={() => setMobileOpen(!mobileOpen)}
 						type="text"
 						aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
@@ -148,7 +148,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 			{isAuthenticated && (
 				<Sider
 					className={styles.sidebar ?? ''}
-					breakpoint="md"
+					breakpoint="lg"
 					collapsedWidth="0"
 					width={208}
 					trigger={null}
@@ -204,15 +204,26 @@ export const Navigation: React.FC<NavigationProps> = ({
 						style={{ border: 'none', flex: 1 }}
 						selectedKeys={[selectedKey || (location.pathname === '/' ? 'dashboard' : location.pathname.replace(/^\//, '').split('/')[0]) ]}
 					/>
-					<Button
-						className={styles.logoutMobile ?? ''}
-						icon={<LogoutOutlined />}
-						type="text"
-						onClick={onLogout}
-						style={{ width: '100%', marginTop: 24 }}
-					>
-						Log Out
-					</Button>
+					<div className={styles.userSection}>
+						{(() => {
+							const src = user?.profileImg;
+							if (!src) return <Avatar icon={<UserOutlined />} />;
+							const base = (import.meta as any).env?.BASE_URL ?? '/';
+							const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+							const profilePath = `${normalizedBase}uploads/profile_img/${src}`.replace(/\\/g, '/');
+							return <Avatar className={styles.avatar} src={profilePath} />;
+						})()}
+
+						<div>
+							<span className={styles.userName}>{user?.firstName} {user?.lastName ? user.lastName.charAt(0) + '.' : ''}</span>
+						</div>
+						<Button
+							className={styles.logout}
+							icon={<LogoutOutlined />}
+							type="link"
+							onClick={onLogout}>
+						</Button>
+					</div>
 				</Drawer>
 			)}
 		</ConfigProvider>

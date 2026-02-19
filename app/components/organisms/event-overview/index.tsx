@@ -71,7 +71,7 @@ export function EventOverviewContent() {
             {
                 (() => {
                     const base = (import.meta as any).env?.BASE_URL ?? '/';
-                    const imgSrc = data?.event?.eventImg ? `${base}uploads/event_img/${data.event.eventImg}`.replace(/\\/g, '/') : 'https://placehold.co/1160x365';
+                    const imgSrc = data?.event?.eventImg ? `${base}uploads/event_img/${data.event.eventImg}`.replace(/\\/g, '/') : '';
                     return <OptimizedImage placeholder="grey" src={imgSrc} alt="Event header" style={{ width: '100%', height: 365, objectFit: 'cover' }} />;
                 })()
             }

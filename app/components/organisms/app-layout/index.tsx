@@ -51,7 +51,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 				selectedKey={selectedKey ?? ''}
 			/>
 			<main className={styles.content}>
-				<div style={{ minHeight: 'calc(100% - 78px)' }}>
+				<div className="container m-6 w-auto" style={{ minHeight: 'calc(100% - 78px)' }}>
 					{children}
 				</div>
 				<Footer />

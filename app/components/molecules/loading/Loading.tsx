@@ -12,7 +12,9 @@ export const Loading: React.FC<{ text?: string }> = ({ text = 'Loading...' }) =>
     };
     return (
         <div style={style}>
-            <Spin size="large" tip={text} />
+            <Spin size="large" tip={text}>
+                <div style={{ height: '100%', width: '100%' }} />
+            </Spin>
         </div>
     );
 };

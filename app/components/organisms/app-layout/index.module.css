@@ -31,14 +31,12 @@
 :global(.ant-layout-has-sider) .content {
 	margin-left: 208px;
 }
-@media (max-width: 768px) {
+@media (max-width: 992px) {
 	.bodyWrapper {
 		flex-direction: column;
 		align-items: stretch;
 	}
-	.content {
-		padding: 16px;
-	}
+	
 	:global(.footer) {
 		width: 100%;
 		align-self: stretch;
