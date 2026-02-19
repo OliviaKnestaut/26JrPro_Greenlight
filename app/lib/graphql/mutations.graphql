@@ -79,3 +79,35 @@ mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
 mutation DeleteUser($id: ID!) {
     deleteUser(id: $id)
 }
+
+# Purchases
+mutation CreatePurchase($input: CreatePurchaseInput!) {
+    createPurchase(input: $input) {
+        id
+        organizationUsername
+        dateSubmitted
+        itemTitle
+        itemCategory
+        eventId
+        orderStatus
+        itemCost
+        organization { id orgName username }
+    }
+}
+
+mutation UpdatePurchase($id: ID!, $input: UpdatePurchaseInput!) {
+    updatePurchase(id: $id, input: $input) {
+        id
+        organizationUsername
+        dateSubmitted
+        itemTitle
+        itemCategory
+        eventId
+        orderStatus
+        itemCost
+    }
+}
+
+mutation DeletePurchase($id: ID!) {
+    deletePurchase(id: $id)
+}

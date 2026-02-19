@@ -3,10 +3,15 @@
 query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
     events(limit: $limit, offset: $offset, status: $status, fromDate: $fromDate, toDate: $toDate) {
         id
-        organizationId
+        organizationUsername
         title
         description
         eventImg
+        locationType
+        locationId
+        createdBy
+        eventLevel
+        formData
         eventDate
         setupTime
         startTime
@@ -28,10 +33,15 @@ query GetEvents($limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromD
 query GetEventById($id: ID!) {
     event(id: $id) {
         id
-        organizationId
+        organizationUsername
         title
         description
         eventImg
+        locationType
+        locationId
+        createdBy
+        eventLevel
+        formData
         eventDate
         setupTime
         startTime
@@ -62,13 +72,18 @@ query GetOrganizations($limit: Int = 25, $offset: Int = 0, $username: String) {
     }
 }
 
-query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $status: EventStatus, $fromDate: Date, $toDate: Date) {
-    eventsByOrganization(orgId: $orgId, limit: $limit, offset: $offset, status: $status, fromDate: $fromDate, toDate: $toDate) {
+query EventsByOrganization($orgUsername: String!, $limit: Int = 25, $offset: Int = 0, $status: String, $fromDate: Date, $toDate: Date) {
+    eventsByOrganization(orgUsername: $orgUsername, limit: $limit, offset: $offset, status: $status, fromDate: $fromDate, toDate: $toDate) {
         id
-        organizationId
+        organizationUsername
         title
         description
         eventImg
+        locationType
+        locationId
+        createdBy
+        eventLevel
+        formData
         eventDate
         setupTime
         startTime
@@ -84,10 +99,12 @@ query EventsByOrganization($orgId: ID!, $limit: Int = 25, $offset: Int = 0, $sta
 query GetDbDump($limit: Int = 25, $offset: Int = 0) {
     events(limit: $limit, offset: $offset) {
         id
-        organizationId
+        organizationUsername
         title
         description
         eventImg
+        locationType
+        locationId
         eventDate
         setupTime
         startTime
@@ -140,6 +157,7 @@ query GetUsers($limit: Int = 25, $offset: Int = 0) {
         username
         profileImg
         password
+        role
         organization { id orgName username bio orgImg }
         createdAt
         updatedAt
@@ -154,8 +172,51 @@ query GetUser($id: ID!) {
         username
         profileImg
         password
+        role
         organization { id orgName username bio orgImg }
         createdAt
         updatedAt
+    }
+}
+
+# Purchases
+query GetPurchases($limit: Int = 25, $offset: Int = 0) {
+    purchases(limit: $limit, offset: $offset) {
+        id
+        organizationUsername
+        dateSubmitted
+        itemTitle
+        itemCategory
+        eventId
+        orderStatus
+        itemCost
+        organization { id orgName username }
+    }
+}
+
+query GetPurchase($id: ID!) {
+    purchase(id: $id) {
+        id
+        organizationUsername
+        dateSubmitted
+        itemTitle
+        itemCategory
+        eventId
+        orderStatus
+        itemCost
+        organization { id orgName username }
+    }
+}
+
+query PurchasesByOrganization($orgUsername: String!, $limit: Int = 25, $offset: Int = 0) {
+    purchasesByOrganization(orgUsername: $orgUsername, limit: $limit, offset: $offset) {
+        id
+        organizationUsername
+        dateSubmitted
+        itemTitle
+        itemCategory
+        eventId
+        orderStatus
+        itemCost
     }
 }

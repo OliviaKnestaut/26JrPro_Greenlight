@@ -1,19 +1,28 @@
-import { Typography, Card, Statistic, Progress, Button } from "antd";
+import { Typography, Card, Statistic, Progress, Button, Table, Tag } from "antd";
 import { useState } from "react";
 import type { ColumnsType } from "antd/es/table";
 const { Title, Paragraph, Link } = Typography;
 import { useNavigate } from "react-router";
 import { ArrowLeftOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
-
-type BudgetRow = {
-    key: string;
-    category: string;
-    allocated: number;
-    spent: number;
-};
+import { useAuth } from "~/auth/AuthProvider";
+import { usePurchasesByOrganizationQuery, useEventsByOrganizationQuery } from "~/lib/graphql/generated";
+import { formatDateMDY } from "~/lib/formatters";
 
 export function BudgetContent() {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const orgUsername = user?.organization?.username ?? user?.organizationUsername ?? '';
+
+    const { data: purchasesData, loading: purchasesLoading } = usePurchasesByOrganizationQuery({
+        variables: { orgUsername: orgUsername || '', limit: 100, offset: 0 },
+        skip: !orgUsername,
+        fetchPolicy: 'network-only',
+    });
+
+    const { data: eventsData } = useEventsByOrganizationQuery({
+        variables: { orgUsername: orgUsername || '', limit: 500, offset: 0 },
+        skip: !orgUsername,
+    });
     const [showFullAccount17, setShowFullAccount17] = useState(false);
     const [showFullAccount19, setShowFullAccount19] = useState(false);
 
@@ -23,54 +32,8 @@ export function BudgetContent() {
     const totalRemaining = totalAllocated - 2500;
     const utilization = Math.round((totalSpent / totalAllocated) * 100);
 
-    const columns: ColumnsType<BudgetRow> = [
-        {
-            title: 'Category',
-            dataIndex: 'category',
-            key: 'category',
-        },
-        {
-            title: 'Allocated',
-            dataIndex: 'allocated',
-            key: 'allocated',
-            render: (val: number) => `$${val.toLocaleString()}`,
-        },
-        {
-            title: 'Spent',
-            dataIndex: 'spent',
-            key: 'spent',
-            render: (val: number) => `$${val.toLocaleString()}`,
-        },
-        {
-            title: 'Remaining',
-            key: 'remaining',
-            render: (_: any, record: BudgetRow) => `$${(record.allocated - record.spent).toLocaleString()}`,
-        },
-        {
-            title: 'Status',
-            key: 'util',
-            render: (_: any, record: BudgetRow) => {
-                const pct = Math.round((record.spent / record.allocated) * 100);
-                return <Progress percent={pct} size="small" />;
-            }
-        },
-        {
-            title: 'Cost',
-            key: 'util',
-            render: (_: any, record: BudgetRow) => {
-                const pct = Math.round((record.spent / record.allocated) * 100);
-                return <Progress percent={pct} size="small" />;
-            }
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: () => <Button type="link">View</Button>
-        }
-    ];
-
     return (
-        <div className="container m-8 w-auto">
+        <div>
             <div className="container">
                 <Title level={5}>
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
@@ -130,6 +93,70 @@ export function BudgetContent() {
 
             <Card>
                 <Title level={4}>Purchase Requests</Title>
+                <div style={{ marginTop: 12 }}>
+                    {
+                        (() => {
+                            if (!orgUsername) return <div>No organization associated with your account.</div>;
+
+                            const eventMap = new Map<string, string>((eventsData?.eventsByOrganization ?? []).map((e: any) => [e.id, e.title]));
+
+                            const rows = (purchasesData?.purchasesByOrganization ?? []).map((p: any) => ({
+                                key: p.id,
+                                date: p.dateSubmitted,
+                                title: p.itemTitle,
+                                categories: p.itemCategory,
+                                eventId: p.eventId,
+                                eventTitle: eventMap.get(p.eventId) ?? null,
+                                status: p.orderStatus,
+                                cost: p.itemCost,
+                            }));
+
+                            const columns: ColumnsType<any> = [
+                                {
+                                    title: 'Date',
+                                    dataIndex: 'date',
+                                    key: 'date',
+                                    render: (d: string) => formatDateMDY(d),
+                                },
+                                {
+                                    title: 'Title',
+                                    dataIndex: 'title',
+                                    key: 'title',
+                                },
+                                {
+                                    title: 'Categories',
+                                    dataIndex: 'categories',
+                                    key: 'categories',
+                                },
+                                {
+                                    title: 'Event',
+                                    dataIndex: 'eventTitle',
+                                    key: 'event',
+                                    render: (t: any, row: any) => t ? t : row.eventId ? `#${row.eventId}` : '-',
+                                },
+                                {
+                                    title: 'Status',
+                                    dataIndex: 'status',
+                                    key: 'status',
+                                    render: (s: string) => {
+                                        const color = s === 'approved' ? 'green' : s === 'rejected' ? 'red' : s === 'ordered' ? 'blue' : 'gold';
+                                        return <Tag color={color}>{s}</Tag>;
+                                    }
+                                },
+                                {
+                                    title: 'Cost',
+                                    dataIndex: 'cost',
+                                    key: 'cost',
+                                    render: (c: number) => c == null ? '-' : `$${Number(c).toFixed(2)}`,
+                                }
+                            ];
+
+                            return (
+                                <Table columns={columns} dataSource={rows} loading={purchasesLoading} pagination={{ pageSize: 10 }} />
+                            );
+                        })()
+                    }
+                </div>
             </Card>
         </div>
     );

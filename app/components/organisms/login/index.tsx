@@ -10,8 +10,8 @@ const { Title, Paragraph, Link } = Typography;
 export function LoginContent() {
     const navigate = useNavigate();
     const location = useLocation();
-
     const auth = useAuth();
+    const [messageApi, contextHolder] = message.useMessage();
 
         const onFinish = async (values: any) => {
             const username = values.username?.trim();
@@ -19,20 +19,22 @@ export function LoginContent() {
             try {
                 const success = await auth.login(username, password);
                 if (success) {
-                    message.success('Signed in');
+                    messageApi.success('Signed in');
                     // redirect back to the original location (if provided)
                     const from = (location.state as any)?.from?.pathname || '/';
                     navigate(from, { replace: true });
                 } else {
-                    message.error('Invalid username or password');
+                    messageApi.error('Invalid username or password');
                 }
             } catch (err) {
                 console.error(err);
-                message.error('Login failed');
+                messageApi.error('Login failed');
             }
         };
 
     return (
+        <>
+        {contextHolder}
         <div className="flex flex-col md:flex-row-reverse min-h-screen">
             <div
                 className="md:w-1/2 w-full h-56 md:h-auto"
@@ -82,6 +84,7 @@ export function LoginContent() {
                 </div>
             </div>
         </div>
+        </>
     );
 }
 

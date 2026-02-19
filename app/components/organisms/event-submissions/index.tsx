@@ -5,7 +5,7 @@ import { EventsByOrganizationDocument } from "~/lib/graphql/generated";
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Badge, Input, Button, Space, Switch, Popover, Checkbox, Tag, Collapse, Skeleton, Card } from "antd";
+import { Typography, Badge, Input, Button, Space, Popover, Checkbox, Tag, Collapse, Skeleton, Card, Tabs } from "antd";
 import { useSearchParams, useNavigate } from 'react-router';
 const { Title, Paragraph, Link } = Typography;
 import { FilterOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
@@ -23,15 +23,15 @@ export function EventSubmissionsContent() {
         const fetchOrgEvents = async () => {
             setLoading(true);
             try {
-                const orgId = user?.organization?.id ?? user?.organizationId;
-                if (!orgId) {
-                    console.debug('No organization id available on user', user);
+                const orgUsername = user?.organization?.username ?? user?.organizationUsername;
+                if (!orgUsername) {
+                    console.debug('No organization username available on user', user);
                     setLoading(false);
                     return;
                 }
                 const { data } = await apolloClient.query<any>({
                     query: EventsByOrganizationDocument,
-                    variables: { orgId },
+                    variables: { orgUsername },
                     fetchPolicy: 'network-only',
                 });
                 const fetched = data?.eventsByOrganization ?? [];
@@ -54,7 +54,7 @@ export function EventSubmissionsContent() {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [pendingStatuses, setPendingStatuses] = useState<string[]>([]);
-    const [showPast, setShowPast] = useState(false);
+    const [mainTab, setMainTab] = useState<'upcoming'|'past'>('upcoming');
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -80,7 +80,8 @@ export function EventSubmissionsContent() {
         const pastParam = searchParams.get('past');
         setQuery(q);
         setSelectedStatuses(statusParam ? statusParam.split(',').filter(Boolean) : []);
-        setShowPast(pastParam === '1' || pastParam === 'true');
+        const isPast = pastParam === '1' || pastParam === 'true';
+        setMainTab(isPast ? 'past' : 'upcoming');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -88,9 +89,9 @@ export function EventSubmissionsContent() {
         const params = new URLSearchParams();
         if (query && query.trim() !== '') params.set('q', query.trim());
         if (selectedStatuses && selectedStatuses.length > 0) params.set('status', selectedStatuses.join(','));
-        if (showPast) params.set('past', '1');
+        if (mainTab === 'past') params.set('past', '1');
         setSearchParams(params, { replace: true });
-    }, [query, selectedStatuses, showPast, setSearchParams]);
+    }, [query, selectedStatuses, mainTab, setSearchParams]);
 
     const toMinutes = (t?: string) => {
         if (!t) return 0;
@@ -102,7 +103,7 @@ export function EventSubmissionsContent() {
     };
 
     return (
-        <div className="container m-8 w-auto">
+        <div>
             <div className="container">
                 <Title level={5}>
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined  /> Back </Link>
@@ -141,7 +142,7 @@ export function EventSubmissionsContent() {
                                         <Checkbox checked={pendingStatuses.includes('in-review')} onChange={() => toggleStatus('in-review')}>In-Review</Checkbox>
                                         <Checkbox checked={pendingStatuses.includes('approved')} onChange={() => toggleStatus('approved')}>Approved</Checkbox>
                                         <Checkbox checked={pendingStatuses.includes('cancelled')} onChange={() => toggleStatus('cancelled')}>Cancelled</Checkbox>
-                                        <Checkbox checked={pendingStatuses.includes('past')} onChange={() => toggleStatus('past')}>Past</Checkbox>
+                                        {/* removed 'Past' from filter options per request */}
                                         <Checkbox checked={pendingStatuses.includes('rejected')} onChange={() => toggleStatus('rejected')}>Rejected</Checkbox>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
                                             <Button type="link" style={{ padding: 0 }} onClick={() => { setPendingStatuses([]); }}>Reset</Button>
@@ -166,12 +167,7 @@ export function EventSubmissionsContent() {
                                 Filter
                             </Button>
                         </Popover>
-                    <div 
-                    className="flex items-center justify-end gap-2"
-                    style={{ width: 155 }}>
-                        <span style={{ whiteSpace: 'nowrap' }}>{showPast ? 'Showing Past' : 'Upcoming Only'}</span>
-                        <Switch checked={showPast} onChange={(v) => setShowPast(v)} />
-                    </div>
+                    
                 </div>
             </div>
             <div>
@@ -210,7 +206,7 @@ export function EventSubmissionsContent() {
                             </div>
                         ),
                         children: (loading ? (
-                            <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                            <div className="flex gap-4">
                                 {Array.from({ length: 3 }).map((_, i) => (
                                     <div key={i} style={{ width: "calc(33% - 0.66rem)" }}>
                                         <CardEvent loading skeletonVariant="compact" style={{ width: '100%' }} />
@@ -228,7 +224,6 @@ export function EventSubmissionsContent() {
                                 if (!b.parsedDate) return -1;
                                 const diff = (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime();
                                 if (diff !== 0) return diff;
-                                // fallback to event start time when dates tie
                                 const aTime = toMinutes(a.startTime);
                                 const bTime = toMinutes(b.startTime);
                                 if (aTime !== bTime) return aTime - bTime;
@@ -237,7 +232,7 @@ export function EventSubmissionsContent() {
                                 return aSubmitted - bSubmitted;
                             });
                             return (
-                                <div className="flex gap-4" style={{ alignItems: 'center'}}>
+                                <div className="flex gap-4">
                                     {upcoming.map((e: any) => {
                                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < (new Date()).setHours(0,0,0,0) : false;
                                         const statusUi = serverToUi(e.eventStatus);
@@ -263,6 +258,18 @@ export function EventSubmissionsContent() {
                     }]} />
                 ) : null}
             </div>
+
+            <div style={{ marginTop: 16 }}>
+                <Tabs
+                    activeKey={mainTab}
+                    onChange={(k) => setMainTab(k as 'upcoming'|'past')}
+                    items={[
+                        { key: 'upcoming', label: 'Upcoming' },
+                        { key: 'past', label: 'Past' },
+                    ]}
+                />
+            </div>
+
             <div className="flex gap-4 flex-wrap w-full my-4">
                 {loading ? (
                     Array.from({ length: 3 }).map((_, i) => (
@@ -293,9 +300,23 @@ export function EventSubmissionsContent() {
                         });
                     // If searching, restrict search base to upcoming events unless showPast is enabled.
                     const upcomingOnly = sorted.filter((ev: any) => ev.parsedDate && (ev.parsedDate as Date).getTime() >= today.getTime());
+                    const pastOnly = sorted.filter((ev: any) => ev.parsedDate && (ev.parsedDate as Date).getTime() < today.getTime());
                     const visibleByDate = (() => {
-                        if (query && !showPast) return upcomingOnly;
-                        return showPast ? sorted : sorted.filter((ev: any) => !ev.parsedDate || (ev.parsedDate as Date).getTime() >= today.getTime());
+                        if (mainTab === 'past') {
+                            return [...pastOnly].sort((a: any, b: any) => {
+                                const aTime = (a.parsedDate as Date).getTime();
+                                const bTime = (b.parsedDate as Date).getTime();
+                                if (bTime !== aTime) return bTime - aTime; // most recent first
+                                const aStart = toMinutes(a.startTime);
+                                const bStart = toMinutes(b.startTime);
+                                if (bStart !== aStart) return bStart - aStart;
+                                const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                                const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                                return bCreated - aCreated;
+                            });
+                        }
+                        if (query) return upcomingOnly;
+                        return sorted.filter((ev: any) => !ev.parsedDate || (ev.parsedDate as Date).getTime() >= today.getTime());
                     })();
 
                     const filtered = visibleByDate.filter((e: any) => {

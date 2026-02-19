@@ -81,32 +81,9 @@
 	align-self:flex-end;
 }
 
-@media (max-width: 768px) {
-
-	.sidebar{
-		padding: 0;
-	}
-	.hamburgerContainer {
-		display: flex;
-		position: fixed;
-		top: 1rem;
-		right: 10px;
-		z-index: 1100;
-	}
-	.hamburger {
-		display: flex;
-	}
-	.logoutDesktop {
-		display: none;
-	}
-	.logoutMobile {
-		display: block;
-		margin-top: 2rem;
-	}
-}
-
-@media (max-width: 600px) {
+@media (max-width: 992px) {
 	.sidebar {
+		padding: 0;
 		transform: translateX(-100%);
 		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		width: 80vw;
@@ -123,5 +100,12 @@
 	}
 	.hamburger {
 		display: flex;
+	}
+	.logoutDesktop {
+		display: none;
+	}
+	.logoutMobile {
+		display: block;
+		margin-top: 2rem;
 	}
 }

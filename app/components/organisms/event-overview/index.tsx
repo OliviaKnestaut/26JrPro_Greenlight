@@ -5,10 +5,22 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetEventByIdQuery } from '~/lib/graphql/generated';
 import NavMini from "../../molecules/nav-mini";
+import OptimizedImage from '../../atoms/OptimizedImage';
 
 export function EventOverviewContent() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState<any>(null);
+    const formatLocationType = (val?: string) => {
+        if (!val) return '';
+        const map: Record<string, string> = {
+            'ON_CAMPUS': 'On Campus',
+            'OFF_CAMPUS': 'Off Campus',
+            'VIRTUAL': 'Virtual',
+        };
+        const key = String(val).toUpperCase();
+        if (map[key]) return map[key];
+        return String(val).replace(/_/g, ' ').split(/\s+/).map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
+    };
     const { id } = useParams();
     const { data, loading, error } = useGetEventByIdQuery({ variables: { id: id ?? '' }, skip: !id });
 
@@ -17,19 +29,22 @@ export function EventOverviewContent() {
             const ev = data.event;
             const mapped = {
                 event: {
-                    name: ev.title,
-                    description: ev.description,
-                    attendees: /* ev.attendees || */ '',
+                    name: ev.title || '',
+                    description: ev.description || '',
+                    attendees: (ev as any).formData?.attendees || (ev as any).attendees || '',
                     dateRange: ev.eventDate ? [ev.eventDate, ev.eventDate] : [],
                 },
                 location: {
                     name: ev.location || '',
-                    type: '',
+                    type: formatLocationType(ev.locationType || ''),
                 },
-                vendor: { amount: (ev as any).estimatedCost || '' },
-                account: '',
-                budget: '',
-                eventElements: [],
+                vendor: {
+                    amount: (ev as any).formData?.estimatedCost || (ev as any).estimatedCost || '',
+                    vendor: (ev as any).formData?.vendorNeeded === true || (ev as any).vendorNeeded === 'yes' ? 'yes' : 'no',
+                },
+                account: (ev as any).formData?.account || '',
+                budget: (ev as any).formData?.budget || '',
+                eventElements: Array.isArray((ev as any).formData?.elements) ? (ev as any).formData.elements : [],
             };
             setFormData(mapped);
             return;
@@ -53,7 +68,13 @@ export function EventOverviewContent() {
                     <Link onClick={() => navigate(-1)}><ArrowLeftOutlined/> Back </Link>
                 </Title>
             </div>
-            <img style={{ width: '100%', height: '100%' }} src="https://placehold.co/1160x356" />
+            {
+                (() => {
+                    const base = (import.meta as any).env?.BASE_URL ?? '/';
+                    const imgSrc = data?.event?.eventImg ? `${base}uploads/event_img/${data.event.eventImg}`.replace(/\\/g, '/') : undefined;
+                    return <OptimizedImage placeholder="grey" src={imgSrc} alt="Event header" style={{ width: '100%', height: 365, objectFit: 'cover' }} />;
+                })()
+            }
 
             <section style={{ display: "flex", flexDirection: "row", marginTop: "2rem", gap: "2rem" }}>
                 <section>
@@ -69,10 +90,10 @@ export function EventOverviewContent() {
                     <Title level={2}>{formData?.event?.name || "Pitch and Paint Night"}</Title>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem", marginTop: "2rem",}}>
-                        <Statistic title="Event Level" value="Level 2" />
-                        <Statistic title="Estimated Cost" value={formData?.vendor?.amount || "$1,400"} />
-                        <Statistic title="Estimated Attendees" value={formData?.event?.attendees || "50"} />
-                        <Statistic title="Location Type" value={formData?.location?.type || "On Campus"} />
+                        <Statistic title="Event Level" value="N/A" />
+                        <Statistic title="Estimated Cost" value={formData?.vendor?.amount || "N/A"} />
+                        <Statistic title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
+                        <Statistic title="Location Type" value={formData?.location?.type || "N/A"} />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "1rem"}}>
                         <Card ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", marginTop: "1rem", scrollMarginTop: "2rem" }}>

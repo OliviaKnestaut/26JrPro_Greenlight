@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { Outlet, useLocation, Navigate, useNavigate } from 'react-router';
 import { AppLayout } from '../components/organisms/app-layout';
 import { ConfigProvider } from 'antd';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
+import Loading from '../components/molecules/loading/Loading';
 
 
 export default function RootLayout() {
@@ -43,7 +44,7 @@ export default function RootLayout() {
 
 function AuthGate() {
     const location = useLocation();
-    const { user, logout } = useAuth();
+    const { user, loading, logout } = useAuth();
     const navigate = useNavigate();
 
     // Set document title and favicon
@@ -80,12 +81,38 @@ function AuthGate() {
     };
 
     const isLoginRoute = location.pathname === '/login';
-    if (isLoginRoute) return <Outlet />;
-    if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+
+    // Avoid render-time redirects (which can cause update loops) by navigating in effects.
+    useEffect(() => {
+        if (isLoginRoute && user) {
+            // user just became authenticated while on /login -> navigate to home
+            navigate('/', { replace: true });
+        }
+    }, [isLoginRoute, user, navigate]);
+
+    useEffect(() => {
+        if (!isLoginRoute && !user) {
+            // unauthenticated user attempting to access a protected route -> send to login
+            navigate('/login', { replace: true, state: { from: location } });
+        }
+    }, [isLoginRoute, user, navigate, location]);
+
+    if (loading) return <Loading text="Checking authentication..." />;
+
+    if (isLoginRoute) {
+        return <Outlet />;
+    }
+
+    if (!user) {
+        // navigation effect is handling redirect; render a lightweight placeholder
+        return <Loading text="Redirecting to login..." />;
+    }
 
     return (
         <AppLayout isAuthenticated={true} user={user} onLogout={handleLogout}>
-            <Outlet />
+            <Suspense fallback={<Loading />}>
+                <Outlet />
+            </Suspense>
         </AppLayout>
     );
 }

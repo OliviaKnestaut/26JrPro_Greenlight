@@ -20,7 +20,7 @@ export function BrainstormContent() {
     }
 
     return (
-        <div className="container m-8 w-auto">
+        <div >
             <h1 className="text-2xl font-bold">{title}</h1>
 
             <div className="brainstorm-nav">

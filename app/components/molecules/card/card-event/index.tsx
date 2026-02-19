@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 
 import styles from './index.module.css';
+import OptimizedImage from '../../../atoms/OptimizedImage';
 import { formatTime } from '~/lib/formatters';
 
 export type CardEventProps = React.ComponentProps<typeof Card> & {
@@ -35,6 +36,19 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     const imagePath = eventImg ? `${base}uploads/event_img/${eventImg}`.replace(/\\/g, '/') : undefined;
     const combinedClassName = [styles.card, (rest as any)?.className].filter(Boolean).join(' ');
     const cardProps = { ...(rest as any), className: combinedClassName };
+
+    // Compute whether the event is in the past. Prefer the explicit `isPast`
+    // prop if provided; otherwise derive from the `date` string.
+    const computeIsPastEvent = (explicit?: boolean | undefined, dateStr?: string | undefined) => {
+        if (typeof explicit === 'boolean') return explicit;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return false;
+        const now = new Date();
+        return d < now;
+    };
+
+    const isPastEvent = computeIsPastEvent(isPast, date);
 
     if (loading) {
         const variant = skeletonVariant || (isVisual ? 'visual' : 'compact');
@@ -109,8 +123,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
-                    <img
-                        alt="basic"
+                    <OptimizedImage
+                        alt="event"
                         src={imagePath ?? eventImg ?? "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
                     />
@@ -139,8 +153,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
-                    <img
-                        alt="basic"
+                    <OptimizedImage
+                        alt="event"
                         src={imagePath ?? eventImg ?? "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
                     />
@@ -169,8 +183,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
             style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
-                    <img
-                        alt="basic"
+                    <OptimizedImage
+                        alt="event"
                         src={imagePath ?? eventImg ?? "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
                     />
@@ -199,8 +213,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
             style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
-                    <img
-                        alt="basic"
+                    <OptimizedImage
+                        alt="event"
                         src={imagePath ?? eventImg ?? "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', position: 'absolute', top: 0, left: 0 }}
                     />
@@ -229,8 +243,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
             style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
-                    <img
-                        alt="basic"
+                    <OptimizedImage
+                        alt="event"
                         src={imagePath ?? eventImg ?? "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
                     />
@@ -253,11 +267,11 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     );
 
     if (isVisual) {
+        if (status === "approved" && isPastEvent) return pastCardVisual;
         if (status === "in-review") return reviewCardVisual;
         if (status === "draft") return draftCardVisual;
         if (status === "approved") return approvedCardVisual;
         if (status === "cancelled") return cancelledCardVisual;
-        if (status === "past") return pastCardVisual;
     }
     if (status === "in-review") return inReviewCard;
     if (status === "draft") return draftCard;
