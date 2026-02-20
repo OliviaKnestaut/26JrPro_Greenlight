@@ -356,7 +356,9 @@ p {
 	box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.02);
 	cursor: pointer;
 }
-
+.ant-select-suffix{
+	color: var(--gray-8) !important;
+}
 /* TAGS */
 
 .eventDetailTag {
@@ -497,6 +499,9 @@ p {
 
 .ant-table-tbody > tr > td:first-child {
 	background: var(--sage-3);
+}
+.ant-table-cell {
+    padding: 8px 16px !important;
 }
 
 /* BRAINSTORM */
