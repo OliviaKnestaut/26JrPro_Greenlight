@@ -43,6 +43,8 @@ import StyledCalendar from '../components/molecules/calendar';
 import SuccessModal from '../components/molecules/event-flow/success-modal';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
+import CommentInput from '../components/molecules/comment-input';
+
 import DiscardModal from '~/components/molecules/event-flow/discard-modal';
 import ProgressTimeline from '~/components/molecules/event-flow/progress-timeline';
 
@@ -314,6 +316,7 @@ export default function AntdExample() {
                         >
                             <p>Member bio</p>
                         </CardMember>
+                        <CommentInput />
                     </div>
 
                     <NavMini />

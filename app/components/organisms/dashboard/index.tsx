@@ -145,6 +145,7 @@ export function DashboardContent() {
                                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                                         return (
                                         <CardEvent
+                                        disableHover 
                                         key={e.id}
                                         isPast={isPast}
                                         eventImg={e.eventImg}
