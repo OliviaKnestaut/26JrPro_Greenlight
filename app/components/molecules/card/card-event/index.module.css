@@ -10,7 +10,52 @@
 }
 
 .submitted {
-  color: var(--accent-gray-dark);
+  color: var(--gray-8);
   font-size: 14px;
   margin-bottom: 0 !important;
+}
+
+ .draftCard.draftCard:hover {
+    border-color: var(--sea-green-5) !important;
+}
+
+.reviewCard.reviewCard:hover {
+    border-color: var(--gold-5) !important;
+}
+
+.approvedCard.approvedCard:hover {
+    border-color: var(--green-6) !important;
+}
+
+.cancelledCard.cancelledCard:hover {
+    border-color: var(--gray-7) !important;
+}
+
+.pastCard.pastCard:hover {
+    border-color: var(--gray-7) !important;
+}
+
+.noHover {
+    box-shadow: none !important;
+}
+
+.noHover:hover {
+    box-shadow: none !important;
+    border-color: inherit !important;
+}
+
+.card {
+    box-shadow: none !important;
+}
+
+.card:hover {
+    box-shadow: none !important;
+}
+
+.noHover.draftCard:hover,
+.noHover.reviewCard:hover,
+.noHover.approvedCard:hover,
+.noHover.cancelledCard:hover,
+.noHover.pastCard:hover {
+    border-color: var(--accent-gray-light-2) !important;
 }

@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useGetEventByIdQuery } from '~/lib/graphql/generated';
 import NavMini from "../../molecules/nav-mini";
 import OptimizedImage from '../../atoms/OptimizedImage';
+import CommentInput from '../../molecules/comment-input';
 
 export function EventOverviewContent() {
     const navigate = useNavigate();
@@ -141,8 +142,10 @@ export function EventOverviewContent() {
                             <Paragraph>{formData?.vendor?.vendor === "yes" ? "Yes" : "No"}</Paragraph>
                         </Card>
                     </div>
+                    <CommentInput />
                 </section>
             </section>
         </div>
+
     );
 }
