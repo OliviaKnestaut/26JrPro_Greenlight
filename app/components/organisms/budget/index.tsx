@@ -119,9 +119,7 @@ export function BudgetContent() {
                     <div style={{ marginTop: 12 }}>
                         {(() => {
                             if (!orgUsername) return <div>No organization associated with your account.</div>;
-
                             const eventMap = new Map<string, string>((eventsData?.eventsByOrganization ?? []).map((e: any) => [e.id, e.title]));
-
                             const rows = (purchasesData?.purchasesByOrganization ?? []).map((p: any) => ({
                                 key: p.id,
                                 date: p.dateSubmitted,
@@ -132,7 +130,6 @@ export function BudgetContent() {
                                 status: p.orderStatus,
                                 cost: p.itemCost,
                             }));
-
                             const columns: ColumnsType<any> = [
                                 { title: 'Date', dataIndex: 'date', key: 'date', render: (d: string) => formatDateMDY(d) },
                                 { title: 'Title', dataIndex: 'title', key: 'title' },
@@ -157,7 +154,6 @@ export function BudgetContent() {
                                 },
                                 { title: 'Cost', dataIndex: 'cost', key: 'cost', render: (c: number) => c == null ? '-' : `$${Number(c).toFixed(2)}` },
                             ];
-
                             return (
                                 <div style={{ minHeight: 280 }}>
                                     <Table 
