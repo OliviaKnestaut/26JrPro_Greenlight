@@ -3,16 +3,27 @@
     padding-right: 8px;
     padding-top: 8px;
     padding-bottom: 8px;
+    width: 100%;
 }
 .card { 
     border-radius: 8px;
-    width:50%;
+    width: auto;
     max-height: 62px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    background-color: #ffffff;
+    border-left: 2.4px solid transparent;
+}
+
+.approved {
     background-color: #F6FFED;
-    border-left: 2.4px solid #95DE64 ;
+    border-left-color: #95DE64;
+}
+
+.inReview {
+    background-color: #FFFBE6;
+    border-left-color: #FFD666;
 }
 
 .item { display:flex; 
@@ -34,8 +45,8 @@
     align-self: center;
     color: #135200;
     width: 100%;
-    min-width: 0;  
-    flex-wrap: nowrap; 
+    min-width: 0;
+    overflow: hidden;
 }
 
 .eventTitle p{
@@ -68,8 +79,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     display: block;
-    /* allow shrinking inside flex containers */
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
 }
 
