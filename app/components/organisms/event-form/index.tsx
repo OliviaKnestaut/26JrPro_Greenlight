@@ -299,23 +299,28 @@ export function EventForm() {
         const mutationInput = buildMutationInput(data, "DRAFT", !!draftId);
         console.log("💾 SAVING DRAFT:", mutationInput);
 
-        if (draftId) {
-            console.log(`🔄 Updating draft ${draftId}`);
-            const { data: result } = await updateEvent({ variables: { id: draftId, input: mutationInput } });
-            if (result?.updateEvent?.id) {
-                console.log("✅ Draft updated successfully");
-                setDraftAlertMessage('updated');
-                setTimeout(() => setDraftAlertMessage(''), 3000);
+        try {
+            if (draftId) {
+                console.log(`🔄 Updating draft ${draftId}`);
+                const { data: result } = await updateEvent({ variables: { id: draftId, input: mutationInput } });
+                if (result?.updateEvent?.id) {
+                    console.log("✅ Draft updated successfully");
+                    setDraftAlertMessage('updated');
+                    setTimeout(() => setDraftAlertMessage(''), 3000);
+                }
+            } else {
+                console.log("✨ Creating new draft");
+                const { data: result } = await createEvent({ variables: { input: mutationInput } });
+                if (result?.createEvent?.id) {
+                    console.log("✅ Draft created successfully:", result.createEvent.id);
+                    setDraftId(result.createEvent.id);
+                    setDraftAlertMessage('created');
+                    setTimeout(() => setDraftAlertMessage(''), 3000);
+                }
             }
-        } else {
-            console.log("✨ Creating new draft");
-            const { data: result } = await createEvent({ variables: { input: mutationInput } });
-            if (result?.createEvent?.id) {
-                console.log("✅ Draft created successfully:", result.createEvent.id);
-                setDraftId(result.createEvent.id);
-                setDraftAlertMessage('created');
-                setTimeout(() => setDraftAlertMessage(''), 3000);
-            }
+        } catch (err) {
+            console.error("❌ Error saving draft:", err);
+            message.error("Failed to save draft. Please try again.");
         }
     };
 
