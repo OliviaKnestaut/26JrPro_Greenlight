@@ -90,7 +90,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
     }, [hasMoreData, buildingsLoading, currentOffset, fetchMore]);
     
     useEffect(() => {
-        if (hasMoreData && allLocations.length > 0 && allLocations.length < 2000) {
+        if (hasMoreData && allLocations.length > 0) {
             loadMoreLocations();
         }
     }, [allLocations.length, hasMoreData, loadMoreLocations]);
