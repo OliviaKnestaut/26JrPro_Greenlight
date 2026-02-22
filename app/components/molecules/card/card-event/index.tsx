@@ -373,7 +373,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    {renderMoreMenu()}
+                    {(onRename || onDiscard) && renderMoreMenu()}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
