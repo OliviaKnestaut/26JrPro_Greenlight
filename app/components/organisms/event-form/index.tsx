@@ -85,7 +85,9 @@ export function EventForm() {
 
     useEffect(() => {
         if (blocker.state === "blocked") {
-            setPendingNavigation(blocker.location.pathname);
+            setPendingNavigation(
+                `${blocker.location.pathname}${blocker.location.search}${blocker.location.hash}`
+            );
             setIsExplicitDiscard(false); // Navigation attempt, not explicit discard
             setIsDiscardModalOpen(true);
         }
