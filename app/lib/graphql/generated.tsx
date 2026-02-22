@@ -538,6 +538,7 @@ export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?
 export type GetUsersQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
+  username?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -573,6 +574,14 @@ export type PurchasesByOrganizationQueryVariables = Exact<{
 
 
 export type PurchasesByOrganizationQuery = { __typename?: 'Query', purchasesByOrganization: Array<{ __typename?: 'Purchase', id: string, organizationUsername: string, dateSubmitted: any, itemTitle: string, itemCategory: string, eventId: string, orderStatus: string, itemCost: number }> };
+
+export type GetOnCampusQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetOnCampusQuery = { __typename?: 'Query', locations: Array<{ __typename?: 'Location', id: string, buildingCode?: string | null, buildingDisplayName?: string | null, roomTitle?: string | null, roomType?: string | null, maxCapacity?: string | null }> };
 
 
 export const CreateEventDocument = gql`
@@ -1418,8 +1427,8 @@ export type GetDbDumpLazyQueryHookResult = ReturnType<typeof useGetDbDumpLazyQue
 export type GetDbDumpSuspenseQueryHookResult = ReturnType<typeof useGetDbDumpSuspenseQuery>;
 export type GetDbDumpQueryResult = ApolloReactCommon.QueryResult<GetDbDumpQuery, GetDbDumpQueryVariables>;
 export const GetUsersDocument = gql`
-    query GetUsers($limit: Int = 25, $offset: Int = 0) {
-  users(limit: $limit, offset: $offset) {
+    query GetUsers($limit: Int = 25, $offset: Int = 0, $username: String) {
+  users(limit: $limit, offset: $offset, username: $username) {
     id
     firstName
     lastName
@@ -1701,3 +1710,52 @@ export type PurchasesByOrganizationQueryHookResult = ReturnType<typeof usePurcha
 export type PurchasesByOrganizationLazyQueryHookResult = ReturnType<typeof usePurchasesByOrganizationLazyQuery>;
 export type PurchasesByOrganizationSuspenseQueryHookResult = ReturnType<typeof usePurchasesByOrganizationSuspenseQuery>;
 export type PurchasesByOrganizationQueryResult = ApolloReactCommon.QueryResult<PurchasesByOrganizationQuery, PurchasesByOrganizationQueryVariables>;
+export const GetOnCampusDocument = gql`
+    query GetOnCampus($limit: Int = 25, $offset: Int = 0) {
+  locations(limit: $limit, offset: $offset) {
+    id
+    buildingCode
+    buildingDisplayName
+    roomTitle
+    roomType
+    maxCapacity
+  }
+}
+    `;
+
+/**
+ * __useGetOnCampusQuery__
+ *
+ * To run a query within a React component, call `useGetOnCampusQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetOnCampusQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetOnCampusQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *   },
+ * });
+ */
+export function useGetOnCampusQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetOnCampusQuery, GetOnCampusQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetOnCampusQuery, GetOnCampusQueryVariables>(GetOnCampusDocument, options);
+      }
+export function useGetOnCampusLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetOnCampusQuery, GetOnCampusQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetOnCampusQuery, GetOnCampusQueryVariables>(GetOnCampusDocument, options);
+        }
+// @ts-ignore
+export function useGetOnCampusSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetOnCampusQuery, GetOnCampusQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetOnCampusQuery, GetOnCampusQueryVariables>;
+export function useGetOnCampusSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetOnCampusQuery, GetOnCampusQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetOnCampusQuery | undefined, GetOnCampusQueryVariables>;
+export function useGetOnCampusSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetOnCampusQuery, GetOnCampusQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetOnCampusQuery, GetOnCampusQueryVariables>(GetOnCampusDocument, options);
+        }
+export type GetOnCampusQueryHookResult = ReturnType<typeof useGetOnCampusQuery>;
+export type GetOnCampusLazyQueryHookResult = ReturnType<typeof useGetOnCampusLazyQuery>;
+export type GetOnCampusSuspenseQueryHookResult = ReturnType<typeof useGetOnCampusSuspenseQuery>;
+export type GetOnCampusQueryResult = ApolloReactCommon.QueryResult<GetOnCampusQuery, GetOnCampusQueryVariables>;
