@@ -80,8 +80,8 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 const cardProps = { ...(rest as any), className: combinedClassName };
 
     const menuItems = [
-        { key: 'rename', label: 'Rename' },
-        { key: 'discard', label: 'Discard', danger: true },
+        ...(onRename ? [{ key: 'rename', label: 'Rename' }] : []),
+        ...(onDiscard ? [{ key: 'discard', label: 'Discard', danger: true }] : []),
     ];
 
     const openRename = () => {
@@ -98,7 +98,9 @@ const cardProps = { ...(rest as any), className: combinedClassName };
         if (key === 'discard') openDiscardConfirm();
     };
 
-    const renderMoreMenu = (iconColor?: string) => (
+    const renderMoreMenu = (iconColor?: string) => {
+        if (menuItems.length === 0) return null;
+        return (
         <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} trigger={['click']} placement="bottomRight">
             <button
                 type="button"
@@ -110,7 +112,8 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 <MoreOutlined style={{ fontSize: '24px' }} />
             </button>
         </Dropdown>
-    );
+        );
+    };
 
     const renameModal = (
         <Modal
