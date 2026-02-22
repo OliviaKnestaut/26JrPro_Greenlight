@@ -100,7 +100,13 @@ const cardProps = { ...(rest as any), className: combinedClassName };
 
     const renderMoreMenu = (iconColor?: string) => (
         <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} trigger={['click']} placement="bottomRight">
-            <button type="button" className={styles.moreButton} aria-label="More actions" style={iconColor ? { color: iconColor } : undefined}>
+            <button
+                type="button"
+                className={styles.moreButton}
+                aria-label="More actions"
+                style={iconColor ? { color: iconColor } : undefined}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <MoreOutlined style={{ fontSize: '24px' }} />
             </button>
         </Dropdown>
