@@ -87,13 +87,13 @@ export default function OnCampusSection({ control, setValue }: Props) {
         } finally {
             isFetchingRef.current = false;
         }
-    };
+    }, [hasMoreData, buildingsLoading, currentOffset, fetchMore]);
     
     useEffect(() => {
         if (hasMoreData && allLocations.length > 0 && allLocations.length < 2000) {
             loadMoreLocations();
         }
-    }, [allLocations.length, hasMoreData]);
+    }, [allLocations.length, hasMoreData, loadMoreLocations]);
     const selectedLocation = useWatch({ control, name: "form_data.location.selected" });
     const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
     const attendeeCountRaw = useWatch({ control, name: "attendees" });
