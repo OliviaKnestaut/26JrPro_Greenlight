@@ -11,7 +11,8 @@ export default [
         route("resources", "routes/resources.tsx"),
         route("calendar", "routes/calendar.tsx"),
         route("org-members", "routes/org-members.tsx"),
-        route("event-form", "routes/event-form.tsx"),
+        route("event-form/:id?", "routes/event-form.tsx"),
+        route("event-review/:id?", "routes/event-review.tsx"),
         route("event-overview/:id", "routes/event-overview.tsx"),
         route("brainstorm", "routes/brainstorm.tsx", [
             route("docs", "routes/brainstorm/docs.tsx"),

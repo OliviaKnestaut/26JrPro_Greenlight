@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
 			<div className={styles.logoSection}>
 				<img src={logoIcon} alt="Greenlight Logo" className={styles.logo} />
 				<div>
-					<span className={styles.logoText}>Greenlight</span>
+					<span className={styles.logoText}>GreenLight</span>
 					<span className={styles.orgName}>{user?.organization?.orgName ? String(user.organization.orgName).toUpperCase() : ''}</span>
 				</div>
 			</div>

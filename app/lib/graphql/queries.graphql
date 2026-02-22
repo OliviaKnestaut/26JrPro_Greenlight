@@ -149,8 +149,8 @@ query GetDbDump($limit: Int = 25, $offset: Int = 0) {
     }
 }
 
-query GetUsers($limit: Int = 25, $offset: Int = 0) {
-    users(limit: $limit, offset: $offset) {
+query GetUsers($limit: Int = 25, $offset: Int = 0, $username: String) {
+    users(limit: $limit, offset: $offset, username: $username) {
         id
         firstName
         lastName
@@ -176,6 +176,18 @@ query GetUser($id: ID!) {
         organization { id orgName username bio orgImg }
         createdAt
         updatedAt
+    }
+}
+
+query GetUserByUsername($username: String!) {
+    users(limit: 1, offset: 0, username: $username) {
+        id
+        firstName
+        lastName
+        username
+        profileImg
+        role
+        organization { id orgName username bio orgImg }
     }
 }
 

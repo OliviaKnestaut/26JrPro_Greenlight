@@ -538,6 +538,7 @@ export type GetDbDumpQuery = { __typename?: 'Query', events: Array<{ __typename?
 export type GetUsersQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
+  username?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1426,8 +1427,8 @@ export type GetDbDumpLazyQueryHookResult = ReturnType<typeof useGetDbDumpLazyQue
 export type GetDbDumpSuspenseQueryHookResult = ReturnType<typeof useGetDbDumpSuspenseQuery>;
 export type GetDbDumpQueryResult = ApolloReactCommon.QueryResult<GetDbDumpQuery, GetDbDumpQueryVariables>;
 export const GetUsersDocument = gql`
-    query GetUsers($limit: Int = 25, $offset: Int = 0) {
-  users(limit: $limit, offset: $offset) {
+    query GetUsers($limit: Int = 25, $offset: Int = 0, $username: String) {
+  users(limit: $limit, offset: $offset, username: $username) {
     id
     firstName
     lastName

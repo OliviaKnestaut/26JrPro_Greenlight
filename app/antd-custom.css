@@ -236,6 +236,13 @@ p.ant-typography {
 	line-height: 22px;
 }
 
+.ant-typography-ellipsis {
+	font-family: var(--font-body);
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 22px;
+}
+
 /* Semantic Fallback Typography */
 
 h1 {
@@ -291,6 +298,14 @@ p {
 
 .ant-card li a{
 	text-decoration: underline;
+}
+
+.ant-list-item-meta-title {
+	font-family: var(--font-body);
+}
+
+.ant-btn {
+	font-family: var(--font-body);
 }
 
 .regular {
@@ -362,6 +377,7 @@ p {
 /* TAGS */
 
 .eventDetailTag {
+	font-family: var(--font-body);
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
@@ -383,6 +399,7 @@ p {
 }
 
 .statusTag {
+	font-family: var(--font-body);
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
@@ -497,6 +514,18 @@ p {
 
 /* TABLE STYLING */
 
+.ant-table {
+	font-family: var(--font-body);
+}
+
+.ant-table-thead > tr > th {
+	font-family: var(--font-body);
+}
+
+.ant-table-tbody > tr > td {
+	font-family: var(--font-body);
+}
+
 .ant-table-tbody > tr:nth-child(odd) > td {
 	background: var(--background);
 }
@@ -506,6 +535,10 @@ p {
 }
 .ant-table-cell {
     padding: 8px 16px !important;
+}
+
+.ant-tag {
+	font-family: var(--font-body);
 }
 
 /* BRAINSTORM */

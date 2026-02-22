@@ -1,3 +1,4 @@
+
 .header {
 	z-index: 1010;
 	display: flex;
@@ -18,7 +19,6 @@
 	width: 208px;
 	padding: 16px;
 	background: var(--primary);
-	border-bottom: 1px solid var(--accent-gray-light);
 	gap: 4px;
 }
 
@@ -33,6 +33,7 @@
 }
 
 .logoText{
+	font-family: var(--font-heading);
 	font-weight: 700;
 	color: var(--background-2);
 	line-height: 22px;
@@ -40,6 +41,7 @@
 }
 
 .orgName{
+	font-family: var(--font-body);
 	color: var(--background-2);
 	font-weight: 400;
 	font-size: 12px;

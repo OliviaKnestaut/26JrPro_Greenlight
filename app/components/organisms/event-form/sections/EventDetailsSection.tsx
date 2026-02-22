@@ -48,6 +48,7 @@ export default function EventDetailsSection({ control, watch }: Props) {
                 <UploadOutlined /> Click to Upload
               </div>
             </Upload>
+            {field.value && <Text type="success">✓ Image selected: {field.value.name}</Text>}
           </div>
         )}
       />
