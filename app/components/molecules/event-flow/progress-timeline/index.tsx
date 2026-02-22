@@ -70,7 +70,16 @@ export default function ProgressTimeline({
 	isSectionComplete = defaultIsSectionComplete,
 	currentEditingSection
 }: ProgressTimelineProps) {
-	const values = getValues();
+	const rawValues = getValues();
+	const values: Record<string, any> =
+		rawValues !== null && typeof rawValues === "object"
+			? (rawValues as Record<string, any>)
+			: (() => {
+					console.warn(
+						"ProgressTimeline: getValues() did not return a valid object. Falling back to an empty object."
+					);
+					return {};
+				})();
 	
 	// If currentEditingSection is provided, use it to determine the active step
 	let activeStep: number;
