@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
@@ -47,6 +47,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
     const [allLocations, setAllLocations] = useState<any[]>([]);
     const [currentOffset, setCurrentOffset] = useState(0);
     const [hasMoreData, setHasMoreData] = useState(true);
+    const isFetchingRef = useRef(false);
     
     const { data: onCampusData, loading: buildingsLoading, fetchMore } = useGetOnCampusQuery({
         variables: { limit: INITIAL_LIMIT, offset: 0 },
@@ -62,8 +63,9 @@ export default function OnCampusSection({ control, setValue }: Props) {
     }, [onCampusData]);
     
     const loadMoreLocations = async () => {
-        if (!hasMoreData || buildingsLoading) return;
+        if (!hasMoreData || buildingsLoading || isFetchingRef.current) return;
         
+        isFetchingRef.current = true;
         const nextOffset = currentOffset + PAGE_SIZE;
         try {
             const result = await fetchMore({
@@ -82,6 +84,8 @@ export default function OnCampusSection({ control, setValue }: Props) {
         } catch (error) {
             console.error("Error loading more locations:", error);
             setHasMoreData(false);
+        } finally {
+            isFetchingRef.current = false;
         }
     };
     
