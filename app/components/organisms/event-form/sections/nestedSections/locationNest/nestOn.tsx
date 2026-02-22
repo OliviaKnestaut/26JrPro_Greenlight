@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
@@ -61,7 +61,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
         }
     }, [onCampusData]);
     
-    const loadMoreLocations = async () => {
+    const loadMoreLocations = useCallback(async () => {
         if (!hasMoreData || buildingsLoading) return;
         
         const nextOffset = currentOffset + PAGE_SIZE;
@@ -83,13 +83,13 @@ export default function OnCampusSection({ control, setValue }: Props) {
             console.error("Error loading more locations:", error);
             setHasMoreData(false);
         }
-    };
+    }, [hasMoreData, buildingsLoading, currentOffset, fetchMore]);
     
     useEffect(() => {
         if (hasMoreData && allLocations.length > 0 && allLocations.length < 2000) {
             loadMoreLocations();
         }
-    }, [allLocations.length, hasMoreData]);
+    }, [allLocations.length, hasMoreData, loadMoreLocations]);
     const selectedLocation = useWatch({ control, name: "form_data.location.selected" });
     const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
     const attendeeCountRaw = useWatch({ control, name: "attendees" });
