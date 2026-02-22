@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
@@ -48,11 +48,11 @@ export default function OnCampusSection({ control, setValue }: Props) {
     const [currentOffset, setCurrentOffset] = useState(0);
     const [hasMoreData, setHasMoreData] = useState(true);
     const isFetchingRef = useRef(false);
-    
+
     const { data: onCampusData, loading: buildingsLoading, fetchMore } = useGetOnCampusQuery({
         variables: { limit: INITIAL_LIMIT, offset: 0 },
     });
-    
+
     useEffect(() => {
         if (onCampusData?.locations) {
             setAllLocations(onCampusData.locations);
@@ -61,22 +61,22 @@ export default function OnCampusSection({ control, setValue }: Props) {
             }
         }
     }, [onCampusData]);
-    
-    const loadMoreLocations = async () => {
+
+    const loadMoreLocations = useCallback(async () => {
         if (!hasMoreData || buildingsLoading || isFetchingRef.current) return;
-        
+
         isFetchingRef.current = true;
         const nextOffset = currentOffset + PAGE_SIZE;
         try {
             const result = await fetchMore({
                 variables: { limit: PAGE_SIZE, offset: nextOffset },
             });
-            
+
             if (result.data?.locations) {
                 const newLocations = result.data.locations;
-                setAllLocations(prev => [...prev, ...newLocations]);
+                setAllLocations((prev) => [...prev, ...newLocations]);
                 setCurrentOffset(nextOffset);
-                
+
                 if (newLocations.length < PAGE_SIZE) {
                     setHasMoreData(false);
                 }
@@ -88,12 +88,13 @@ export default function OnCampusSection({ control, setValue }: Props) {
             isFetchingRef.current = false;
         }
     }, [hasMoreData, buildingsLoading, currentOffset, fetchMore]);
-    
+
     useEffect(() => {
         if (hasMoreData && allLocations.length > 0) {
             loadMoreLocations();
         }
     }, [allLocations.length, hasMoreData, loadMoreLocations]);
+
     const selectedLocation = useWatch({ control, name: "form_data.location.selected" });
     const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
     const attendeeCountRaw = useWatch({ control, name: "attendees" });
@@ -143,12 +144,14 @@ export default function OnCampusSection({ control, setValue }: Props) {
             return maxCapacity >= attendeeCount;
         });
     }, [attendeeCount, allLocations]);
+
     const buildingOptions = useMemo(() => {
         const names = capacityFilteredLocations
             .map((loc) => loc?.buildingDisplayName)
             .filter((name): name is string => Boolean(name));
         return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
     }, [capacityFilteredLocations]);
+
     const filteredLocations = useMemo(() => {
         if (!selectedLocation) {
             return [];
@@ -176,7 +179,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
     }, [filteredLocations, selectedRoomType]);
 
     const isSpecialSpace = specialSpacesList.includes(selectedLocation);
-    const isOutdoor = selectedLocation?.toLowerCase().includes("outdoor"); // simple example
+    const isOutdoor = selectedLocation?.toLowerCase().includes("outdoor");
     const isIndoor = !isOutdoor;
 
     return (
@@ -335,58 +338,45 @@ export default function OnCampusSection({ control, setValue }: Props) {
                             <Controller
                                 name={`form_data.location.furniture.${index}.quantity`}
                                 control={control}
-                                render={({ field }) => <InputNumber {...field} placeholder="Quantity" min={1} />}
+                                render={({ field }) => (
+                                    <InputNumber
+                                        {...field}
+                                        min={1}
+                                        placeholder="Qty"
+                                        style={{ width: 90 }}
+                                    />
+                                )}
                             />
-                            <Button danger onClick={() => remove(index)}>Remove</Button>
+                            <Button type="link" onClick={() => remove(index)}>
+                                Remove
+                            </Button>
                         </div>
                     ))}
-                    <Button type="dashed" onClick={() => append({ type: "", quantity: 1 })} style={{ marginTop: 8 }}>
+                    <Button
+                        type="dashed"
+                        onClick={() => append({ type: undefined, quantity: 1 })}
+                        style={{ marginTop: 8, width: "fit-content" }}
+                    >
                         Add Furniture
                     </Button>
                 </div>
             )}
 
-            {/* Q15: AV Equipment */}
-            <Controller
-                name="form_data.av"
-                control={control}
-                render={({ field }) => (
-                    <div style={{ marginBottom: 16 }}>
-                        <Text>Will your event require any A/V equipment?</Text>
-                        <Checkbox.Group {...field} options={avOptions} />
-                    </div>
-                )}
-            />
-
-            {/* Q16: Power */}
-            <Controller
-                name="form_data.utilities.power_required"
-                control={control}
-                render={({ field }) => (
-                    <div style={{ marginBottom: 16 }}>
-                        <Checkbox {...field} checked={field.value}>Will you need electrical power beyond standard outlets?</Checkbox>
-                    </div>
-                )}
-            />
-
-            {/* Q16a: Power Details */}
-            {useWatch({ control, name: "form_data.utilities.power_required" }) && (
+            {/* Q15: A/V Needs */}
+            {isIndoor && (
                 <Controller
-                    name="form_data.utilities.power_details"
+                    name="form_data.location.av_needs"
                     control={control}
                     render={({ field }) => (
-                        <Input {...field} placeholder="Specify amperage or wattage requirements" />
-                    )}
-                />
-            )}
-
-            {/* Q17: Outdoor Water */}
-            {isOutdoor && (
-                <Controller
-                    name="form_data.utilities.water_required"
-                    control={control}
-                    render={({ field }) => (
-                        <Checkbox {...field} checked={field.value}>Will you need outdoor water access?</Checkbox>
+                        <div style={{ marginBottom: 16 }}>
+                            <Text>What A/V equipment will you need?</Text>
+                            <Checkbox.Group
+                                options={avOptions}
+                                value={field.value}
+                                onChange={(value) => field.onChange(value)}
+                                style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
+                            />
+                        </div>
                     )}
                 />
             )}
