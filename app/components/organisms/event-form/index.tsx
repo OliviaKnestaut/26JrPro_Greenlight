@@ -327,8 +327,14 @@ export function EventForm() {
     const handleDiscard = async () => {
         if (draftId) {
             console.log("🗑️ Deleting saved draft from DB:", draftId);
-            await deleteEvent({ variables: { id: draftId } });
-            console.log("✅ Draft deleted from DB");
+            try {
+                await deleteEvent({ variables: { id: draftId } });
+                console.log("✅ Draft deleted from DB");
+            } catch (err) {
+                console.error("❌ Error deleting draft from DB:", err);
+                message.error("Failed to discard draft. Please try again.");
+                return;
+            }
         } else {
             console.log("📝 Discarding unsaved localStorage draft");
         }
