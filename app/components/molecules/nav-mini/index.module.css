@@ -19,3 +19,17 @@
     background: rgba(0,0,0,0.03); 
     border-radius:4px;
 }
+
+.wrapper :global(.ant-anchor-link) a {
+    color: #000000 !important;
+    font-weight: 400;
+}
+
+.wrapper :global(.ant-anchor-link) a:hover {
+    color: var(--sea-green-9) !important;
+}
+
+.wrapper :global(.ant-anchor-link-active) a {
+    color: var(--sea-green-9) !important;
+    font-weight: 600;
+}

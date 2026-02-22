@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Card, Button, message } from "antd";
+import { Typography, Card, Button, message, Alert } from "antd";
 import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetEventByIdQuery, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useGetOnCampusQuery } from '~/lib/graphql/generated';
@@ -19,14 +19,19 @@ export function EventReview() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
     const [createdEventId, setCreatedEventId] = useState<string | null>(null);
+    const [draftAlertMessage, setDraftAlertMessage] = useState<'created' | 'updated' | ''>('');
     const [createEvent, { loading: isSubmitting }] = useCreateEventMutation();
     const [updateEvent] = useUpdateEventMutation();
     const [deleteEvent] = useDeleteEventMutation();
-    const { data: locationsData } = useGetOnCampusQuery({ variables: { limit: 100000, offset: 0 } });
+    const { data: locationsData } = useGetOnCampusQuery({ variables: { limit: 5000, offset: 0 } });
 
     useEffect(() => {
-        const reviewData = localStorage.getItem("eventFormReview");
-        if (reviewData) setFormData(JSON.parse(reviewData));
+        try {
+            const reviewData = localStorage.getItem("eventFormReview");
+            if (reviewData) setFormData(JSON.parse(reviewData));
+        } catch (err) {
+            console.error("❌ Error loading review data from localStorage:", err);
+        }
     }, []);
 
     const formatDate = (dateStr?: string) => {
@@ -34,7 +39,7 @@ export function EventReview() {
         const date = new Date(dateStr);
         if (isNaN(date.getTime())) return dateStr;
         const month = date.getMonth() + 1;
-        const day = date.getDate() + 1;
+        const day = date.getDate();
         const year = date.getFullYear();
         return `${month}/${day}/${year}`;
     };
@@ -42,16 +47,36 @@ export function EventReview() {
     const getValues = () => formData || {};
 
     const handleEditSection = (sectionKey: string) => {
-        if (formData) localStorage.setItem("eventFormData", JSON.stringify(formData));
-        localStorage.setItem("editingSection", sectionKey);
-        navigate(`/event-form${id ? `/${id}` : ''}`);
+        try {
+            if (formData) localStorage.setItem("eventFormData", JSON.stringify(formData));
+            localStorage.setItem("editingSection", sectionKey);
+            navigate(`/event-form${id ? `/${id}` : ''}`);
+        } catch (err) {
+            console.error("❌ Error saving edit section to localStorage:", err);
+            message.error("Failed to save section state");
+        }
     };
 
-    const buildMutationInput = (data: any, eventStatus: string = "REVIEW") => {
+    const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
+        if (!user) {
+            throw new Error("User must be authenticated to build mutation input");
+        }
+        
         const convert12to24Hour = (time12h: any): string => {
             if (!time12h || typeof time12h !== 'string') return '';
             const trimmed = time12h.trim();
             if (!trimmed) return '';
+            
+            // Check if already in 24-hour format (HH:mm:ss or HH:mm)
+            const time24Match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+            if (time24Match && !trimmed.match(/AM|PM/i)) {
+                const hours = String(parseInt(time24Match[1])).padStart(2, '0');
+                const minutes = time24Match[2];
+                const seconds = time24Match[3] || '00';
+                return `${hours}:${minutes}:${seconds}`;
+            }
+            
+            // Parse 12-hour format (HH:mm AM/PM)
             const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
             if (!match) return trimmed;
             let hours = parseInt(match[1]);
@@ -88,6 +113,10 @@ export function EventReview() {
                     mappedLocationString = `${matchedLocation.buildingCode} ${matchedLocation.roomTitle}`;
                 }
             }
+        } else if (data.location_type === "Virtual") {
+            mappedLocationString = "Virtual";
+        } else if (data.location_type === "Off-Campus") {
+            mappedLocationString = "Off Campus";
         }
 
         const determinedLevel = calculateEventLevel(data);
@@ -110,9 +139,13 @@ export function EventReview() {
                     profileImg: user.profileImg,
                 },
             }),
-            organizationUsername: orgUsername,
-            createdBy: user.username,
         };
+
+        // Only include these fields for CREATE operations, not UPDATE
+        if (!isUpdate) {
+            mutationInput.organizationUsername = orgUsername;
+            mutationInput.createdBy = user.username;
+        }
 
         if (data.event_img) mutationInput.eventImg = data.event_img;
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
@@ -126,15 +159,17 @@ export function EventReview() {
 
     const handleSaveDraft = async () => {
         if (!user || !formData) return;
-        const mutationInput = buildMutationInput(formData, "DRAFT");
+        const mutationInput = buildMutationInput(formData, "DRAFT", !!id);
 
         if (id) {
             await updateEvent({ variables: { id, input: mutationInput } });
-            message.success("Draft updated!");
+            setDraftAlertMessage('updated');
+            setTimeout(() => setDraftAlertMessage(''), 3000);
         } else {
             const { data: result } = await createEvent({ variables: { input: mutationInput } });
             if (result?.createEvent?.id) {
-                message.success("Draft saved!");
+                setDraftAlertMessage('created');
+                setTimeout(() => setDraftAlertMessage(''), 3000);
                 navigate(`/event-review/${result.createEvent.id}`);
             }
         }
@@ -142,8 +177,14 @@ export function EventReview() {
 
     const handleDiscard = async () => {
         if (id) await deleteEvent({ variables: { id } });
-        localStorage.removeItem("eventFormReview");
-        localStorage.removeItem("eventFormData");
+        
+        try {
+            localStorage.removeItem("eventFormReview");
+            localStorage.removeItem("eventFormData");
+        } catch (err) {
+            console.error("❌ Error clearing localStorage:", err);
+        }
+        
         setIsDiscardModalOpen(false);
         message.success("Draft discarded");
         navigate("/");
@@ -154,21 +195,29 @@ export function EventReview() {
             message.error("Missing user or form data");
             return;
         }
-        const mutationInput = buildMutationInput(formData, "REVIEW");
+        const mutationInput = buildMutationInput(formData, "REVIEW", !!id);
 
         if (id) {
             const { data: result } = await updateEvent({ variables: { id, input: mutationInput } });
             if (result?.updateEvent?.id) {
-                localStorage.removeItem("eventFormReview");
-                localStorage.removeItem("eventFormData");
+                try {
+                    localStorage.removeItem("eventFormReview");
+                    localStorage.removeItem("eventFormData");
+                } catch (err) {
+                    console.error("❌ Error clearing localStorage:", err);
+                }
                 setCreatedEventId(result.updateEvent.id);
                 setIsModalOpen(true);
             }
         } else {
             const { data: result } = await createEvent({ variables: { input: mutationInput } });
             if (result?.createEvent?.id) {
-                localStorage.removeItem("eventFormReview");
-                localStorage.removeItem("eventFormData");
+                try {
+                    localStorage.removeItem("eventFormReview");
+                    localStorage.removeItem("eventFormData");
+                } catch (err) {
+                    console.error("❌ Error clearing localStorage:", err);
+                }
                 setCreatedEventId(result.createEvent.id);
                 setIsModalOpen(true);
             }
@@ -332,6 +381,18 @@ export function EventReview() {
                 <Button type="default" danger onClick={() => setIsDiscardModalOpen(true)}>
                     Discard
                 </Button>
+            {draftAlertMessage && (
+                <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, maxWidth: 400 }}>
+                    <Alert
+                        message={draftAlertMessage === 'created' ? "Draft Saved!" : "Draft Updated!"}
+                        description={draftAlertMessage === 'created' ? "Your event draft has been saved successfully." : "Your event draft has been updated successfully."}
+                        type="success"
+                        showIcon
+                        closable
+                        onClose={() => setDraftAlertMessage('')}
+                    />
+                </div>
+            )}
             </div>
 
             <SuccessModal 
@@ -351,7 +412,11 @@ export function EventReview() {
                 }} 
             />
             <DiscardModal 
-                open={isDiscardModalOpen} 
+                open={isDiscardModalOpen}
+                title="Discard Event Form?"
+                message={id 
+                    ? "Are you sure you want to discard this saved draft? This action cannot be undone."
+                    : "Are you sure you want to discard this event form? All changes will be lost."}
                 onDiscardClick={handleDiscard} 
                 onCancelClick={() => setIsDiscardModalOpen(false)} 
             />

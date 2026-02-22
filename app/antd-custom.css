@@ -243,6 +243,13 @@ p.ant-typography {
 	line-height: 22px;
 }
 
+.ant-typography {
+	font-family: var(--font-body);
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 22px;
+}
+
 /* Semantic Fallback Typography */
 
 h1 {
@@ -632,4 +639,27 @@ p {
     color: var(--sea-green-8) !important;
     border-color: var(--sea-green-8) !important;
     background-color: var(--sea-green-1) !important;
+}
+
+.ant-dropdown-menu {
+	border-radius: 0 !important;
+	padding: 0;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ant-dropdown-menu-item,
+.ant-dropdown-menu-submenu-title {
+	border-radius: 0 !important;
+	margin: 0 !important;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+}
+
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-submenu-title:hover {
+	border-radius: 0 !important;
+}
+
+.eventDetailTag {
+  background: var(--gray-1) !important;
 }

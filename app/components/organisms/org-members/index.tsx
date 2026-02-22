@@ -1,14 +1,17 @@
-import { Typography, Card } from "antd";
+import { Typography, Card, Pagination } from "antd";
 const { Title, Paragraph, Link } = Typography;
 import { useNavigate } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { CardMember, CardOrg } from "../../molecules/card";
 import { useGetUsersQuery } from "~/lib/graphql/generated";
 import { useAuth } from '~/auth/AuthProvider';
+import { useState } from "react";
 
 
 export function OrgMembersContent() {
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const { data, loading, error } = useGetUsersQuery({
         variables: { limit: 200, offset: 0 },
@@ -105,7 +108,7 @@ export function OrgMembersContent() {
                             gap: "0.5rem",
                             marginTop: "1rem",
                         }}>
-                            {sortedUsers.map((u) => {
+                            {sortedUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((u) => {
                                 const base = (import.meta as any).env?.BASE_URL ?? "/";
                                 const avatar = u.profileImg
                                     ? `${base}uploads/profile_img/${u.profileImg}`.replace(/\\/g, "/")
@@ -121,6 +124,14 @@ export function OrgMembersContent() {
                                     />
                                 );
                             })}
+                        </div>
+                        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "flex-end" }}>
+                            <Pagination 
+                                current={currentPage}
+                                pageSize={itemsPerPage}
+                                total={sortedUsers.length}
+                                onChange={(page) => setCurrentPage(page)}
+                            />
                         </div>
                     </Card>
                 </div>

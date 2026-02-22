@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Form, Button, Collapse, Typography, message } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Alert, Form, Button, Collapse, Typography, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams, useBlocker } from "react-router";
@@ -60,12 +60,13 @@ export function EventForm() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-    const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+    const [isExplicitDiscard, setIsExplicitDiscard] = useState(false);
+    const [draftAlertMessage, setDraftAlertMessage] = useState<'created' | 'updated' | ''>('');
     const [draftId, setDraftId] = useState<string | null>(id || null);
     const [createEvent] = useCreateEventMutation();
     const [updateEvent, { loading: isUpdatingDraft }] = useUpdateEventMutation();
     const [deleteEvent] = useDeleteEventMutation();
-    const { data: locationsData } = useGetOnCampusQuery({ variables: { limit: 100000, offset: 0 } });
+    const { data: locationsData } = useGetOnCampusQuery({ variables: { limit: 5000, offset: 0 } });
     const { data: existingEventData, loading: loadingEvent } = useGetEventByIdQuery({
         variables: { id: id ?? '' },
         skip: !id,
@@ -74,39 +75,46 @@ export function EventForm() {
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>();
-    const [allowNavigation, setAllowNavigation] = useState(false);
+    const allowNavigationRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-        if (allowNavigation) return false;
+        if (allowNavigationRef.current) return false;
         return currentLocation.pathname !== nextLocation.pathname;
     });
 
     useEffect(() => {
         if (blocker.state === "blocked") {
             setPendingNavigation(blocker.location.pathname);
+            setIsExplicitDiscard(false); // Navigation attempt, not explicit discard
             setIsDiscardModalOpen(true);
         }
     }, [blocker]);
 
     useEffect(() => {
         const loadDraft = async () => {
-            const editingSection = localStorage.getItem("editingSection");
-            if (editingSection) {
-                setActiveCollapseKey([editingSection]);
-                setCurrentEditingSection(editingSection);
-                localStorage.removeItem("editingSection");
+            try {
+                const editingSection = localStorage.getItem("editingSection");
+                if (editingSection) {
+                    setActiveCollapseKey([editingSection]);
+                    setCurrentEditingSection(editingSection);
+                    localStorage.removeItem("editingSection");
+                }
+            } catch (err) {
+                console.error("❌ Error accessing editingSection from localStorage:", err);
             }
+            
             if (id) return;
-            const savedFormData = localStorage.getItem("eventFormData");
-            if (savedFormData) {
-                try {
+            
+            try {
+                const savedFormData = localStorage.getItem("eventFormData");
+                if (savedFormData) {
                     const formData = JSON.parse(savedFormData);
                     console.log("📥 Restoring form from localStorage:", formData);
                     Object.keys(formData).forEach((key) => setValue(key, formData[key]));
-                } catch (err) {
-                    console.error("❌ Error parsing saved form data:", err);
                 }
+            } catch (err) {
+                console.error("❌ Error loading saved form data:", err);
             }
         };
         loadDraft();
@@ -114,14 +122,14 @@ export function EventForm() {
 
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (!allowNavigation) {
+            if (!allowNavigationRef.current) {
                 e.preventDefault();
                 e.returnValue = '';
             }
         };
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [allowNavigation]);
+    }, []);
 
     useEffect(() => {
         if (existingEventData?.event && !loadingEvent) {
@@ -159,22 +167,41 @@ export function EventForm() {
     useEffect(() => {
         const subscription = watch((data) => {
             if (!draftId) {
-                const dataToSave = { ...data };
-                Object.keys(dataToSave).forEach((key) => {
-                    if (dataToSave[key] instanceof File) delete dataToSave[key];
-                });
-                localStorage.setItem("eventFormData", JSON.stringify(dataToSave));
-                console.log("💾 Auto-saved to localStorage");
+                try {
+                    const dataToSave = { ...data };
+                    Object.keys(dataToSave).forEach((key) => {
+                        if (dataToSave[key] instanceof File) delete dataToSave[key];
+                    });
+                    localStorage.setItem("eventFormData", JSON.stringify(dataToSave));
+                    console.log("💾 Auto-saved to localStorage");
+                } catch (err) {
+                    console.error("❌ Error auto-saving to localStorage:", err);
+                }
             }
         });
         return () => subscription.unsubscribe();
     }, [watch, draftId]);
 
-    const buildMutationInput = (data: any, eventStatus: string = "REVIEW") => {
+    const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
+        if (!user) {
+            throw new Error("User must be authenticated to build mutation input");
+        }
+        
         const convert12to24Hour = (time12h: any): string => {
             if (!time12h || typeof time12h !== 'string') return '';
             const trimmed = time12h.trim();
             if (!trimmed) return '';
+            
+            // Check if already in 24-hour format (HH:mm:ss or HH:mm)
+            const time24Match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+            if (time24Match && !trimmed.match(/AM|PM/i)) {
+                const hours = String(parseInt(time24Match[1])).padStart(2, '0');
+                const minutes = time24Match[2];
+                const seconds = time24Match[3] || '00';
+                return `${hours}:${minutes}:${seconds}`;
+            }
+            
+            // Parse 12-hour format (HH:mm AM/PM)
             const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
             if (!match) {
                 console.warn(`⚠️  Could not parse time format: "${time12h}"`);
@@ -214,6 +241,10 @@ export function EventForm() {
                     mappedLocationString = `${matchedLocation.buildingCode} ${matchedLocation.roomTitle}`;
                 }
             }
+        } else if (data.location_type === "Virtual") {
+            mappedLocationString = "Virtual";
+        } else if (data.location_type === "Off-Campus") {
+            mappedLocationString = "Off Campus";
         }
 
         const determinedLevel = calculateEventLevel(data);
@@ -236,9 +267,13 @@ export function EventForm() {
                     profileImg: user.profileImg,
                 },
             }),
-            organizationUsername: orgUsername,
-            createdBy: user.username,
         };
+
+        // Only include these fields for CREATE operations, not UPDATE
+        if (!isUpdate) {
+            mutationInput.organizationUsername = orgUsername;
+            mutationInput.createdBy = user.username;
+        }
 
         if (data.event_img) mutationInput.eventImg = data.event_img;
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
@@ -251,8 +286,8 @@ export function EventForm() {
     };
 
     const navigateSafely = (path: string) => {
-        setAllowNavigation(true);
-        setTimeout(() => navigate(path), 0);
+        allowNavigationRef.current = true;
+        navigate(path);
     };
 
     const handleSaveDraft = async () => {
@@ -261,7 +296,7 @@ export function EventForm() {
             return;
         }
         const data = getValues();
-        const mutationInput = buildMutationInput(data, "DRAFT");
+        const mutationInput = buildMutationInput(data, "DRAFT", !!draftId);
         console.log("💾 SAVING DRAFT:", mutationInput);
 
         if (draftId) {
@@ -269,9 +304,8 @@ export function EventForm() {
             const { data: result } = await updateEvent({ variables: { id: draftId, input: mutationInput } });
             if (result?.updateEvent?.id) {
                 console.log("✅ Draft updated successfully");
-                message.success("Draft updated!");
-                setIsDraftModalOpen(true);
-                setTimeout(() => setIsDraftModalOpen(false), 3000);
+                setDraftAlertMessage('updated');
+                setTimeout(() => setDraftAlertMessage(''), 3000);
             }
         } else {
             console.log("✨ Creating new draft");
@@ -279,9 +313,8 @@ export function EventForm() {
             if (result?.createEvent?.id) {
                 console.log("✅ Draft created successfully:", result.createEvent.id);
                 setDraftId(result.createEvent.id);
-                message.success("Draft saved!");
-                setIsDraftModalOpen(true);
-                setTimeout(() => setIsDraftModalOpen(false), 3000);
+                setDraftAlertMessage('created');
+                setTimeout(() => setDraftAlertMessage(''), 3000);
             }
         }
     };
@@ -295,29 +328,61 @@ export function EventForm() {
             console.log("📝 Discarding unsaved localStorage draft");
         }
         reset();
-        localStorage.removeItem("eventFormData");
-        localStorage.removeItem("eventFormReview");
+        
+        try {
+            localStorage.removeItem("eventFormData");
+            localStorage.removeItem("eventFormReview");
+        } catch (err) {
+            console.error("❌ Error clearing localStorage:", err);
+        }
+        
         setDraftId(null);
         setIsDiscardModalOpen(false);
         message.success("Draft discarded");
-        setAllowNavigation(true);
-
+        
+        allowNavigationRef.current = true;
+        
         if (blocker.state === "blocked") {
             blocker.proceed();
         } else if (pendingNavigation) {
-            setTimeout(() => {
-                navigate(pendingNavigation);
-                setPendingNavigation(null);
-            }, 0);
+            navigate(pendingNavigation);
+            setPendingNavigation(null);
         } else {
-            setTimeout(() => navigate("/"), 0);
+            navigate("/");
+        }
+    };
+
+    const handleLeaveWithoutDiscarding = () => {
+        // Keep the draft saved in DB, just clear localStorage and navigate
+        console.log("✅ Leaving without discarding saved draft");
+        
+        try {
+            localStorage.removeItem("eventFormData");
+            localStorage.removeItem("eventFormReview");
+        } catch (err) {
+            console.error("❌ Error clearing localStorage:", err);
+        }
+        
+        setIsDiscardModalOpen(false);
+        allowNavigationRef.current = true;
+        
+        if (blocker.state === "blocked") {
+            blocker.proceed();
+        } else if (pendingNavigation) {
+            navigate(pendingNavigation);
+            setPendingNavigation(null);
+        } else {
+            navigate("/");
         }
     };
 
     return (
         <div className="container mx-auto p-8">
             <Title level={5}>
-                <Link onClick={() => setIsDiscardModalOpen(true)}><ArrowLeftOutlined /> Back </Link>
+                <Link onClick={() => {
+                    setIsExplicitDiscard(false); // Navigating back, not explicit discard
+                    setIsDiscardModalOpen(true);
+                }}><ArrowLeftOutlined /> Back </Link>
             </Title>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: 24 }}>
                 <h2 style={{ margin: 0 }}>Event Form</h2>
@@ -356,10 +421,15 @@ export function EventForm() {
                     <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", gap: 12 }}>
                             <Button type="primary" onClick={() => {
-                                const data = getValues();
-                                localStorage.setItem("eventFormReview", JSON.stringify(data));
-                                setCurrentEditingSection(undefined);
-                                navigateSafely(`/event-review${draftId ? `/${draftId}` : ''}`);
+                                try {
+                                    const data = getValues();
+                                    localStorage.setItem("eventFormReview", JSON.stringify(data));
+                                    setCurrentEditingSection(undefined);
+                                    navigateSafely(`/event-review${draftId ? `/${draftId}` : ''}`);
+                                } catch (err) {
+                                    console.error("❌ Error saving review data to localStorage:", err);
+                                    message.error("Failed to save form data");
+                                }
                             }} block>
                                 Review Form
                             </Button>
@@ -367,15 +437,38 @@ export function EventForm() {
                                 Save as Draft
                             </Button>
                         </div>
-                        <Button type="default" danger onClick={() => setIsDiscardModalOpen(true)}>
+                        <Button type="default" danger onClick={() => {
+                            setIsExplicitDiscard(true); // Explicit discard action
+                            setIsDiscardModalOpen(true);
+                        }}>
                             Discard
                         </Button>
                     </div>
                 </Form>
             </div>
+            {draftAlertMessage && (
+                <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, maxWidth: 400 }}>
+                    <Alert
+                        message={draftAlertMessage === 'created' ? "Draft Saved!" : "Draft Updated!"}
+                        description={draftAlertMessage === 'created' ? "Your event draft has been saved successfully." : "Your event draft has been updated successfully."}
+                        type="success"
+                        showIcon
+                        closable
+                        onClose={() => setDraftAlertMessage('')}
+                    />
+                </div>
+            )}
             <DiscardModal 
-                open={isDiscardModalOpen} 
-                onDiscardClick={handleDiscard} 
+                open={isDiscardModalOpen}
+                title={!isExplicitDiscard && draftId ? "Leave Event Form?" : "Discard Event Form?"}
+                message={!isExplicitDiscard && draftId 
+                    ? "Your draft has been saved. Do you want to leave this page?" 
+                    : draftId
+                        ? "Are you sure you want to discard this saved draft? This action cannot be undone."
+                        : "Are you sure you want to discard this event form? All unsaved changes will be lost."}
+                cancelButtonText={!isExplicitDiscard && draftId ? "Stay" : "Cancel"}
+                discardButtonText={!isExplicitDiscard && draftId ? "Leave" : "Discard"}
+                onDiscardClick={!isExplicitDiscard && draftId ? handleLeaveWithoutDiscarding : handleDiscard} 
                 onCancelClick={() => {
                     setIsDiscardModalOpen(false);
                     setPendingNavigation(null);

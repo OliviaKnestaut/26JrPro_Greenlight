@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
@@ -40,12 +40,56 @@ const fallbackBuildings = [
     "Graduate Student Lounge",
     "Outdoor Quad",
 ];
-const BIG_LIMIT = 100000;
+const INITIAL_LIMIT = 500;
+const PAGE_SIZE = 500;
 
 export default function OnCampusSection({ control, setValue }: Props) {
-    const { data: onCampusData, loading: buildingsLoading } = useGetOnCampusQuery({
-        variables: { limit: BIG_LIMIT, offset: 0 },
+    const [allLocations, setAllLocations] = useState<any[]>([]);
+    const [currentOffset, setCurrentOffset] = useState(0);
+    const [hasMoreData, setHasMoreData] = useState(true);
+    
+    const { data: onCampusData, loading: buildingsLoading, fetchMore } = useGetOnCampusQuery({
+        variables: { limit: INITIAL_LIMIT, offset: 0 },
     });
+    
+    useEffect(() => {
+        if (onCampusData?.locations) {
+            setAllLocations(onCampusData.locations);
+            if (onCampusData.locations.length < INITIAL_LIMIT) {
+                setHasMoreData(false);
+            }
+        }
+    }, [onCampusData]);
+    
+    const loadMoreLocations = async () => {
+        if (!hasMoreData || buildingsLoading) return;
+        
+        const nextOffset = currentOffset + PAGE_SIZE;
+        try {
+            const result = await fetchMore({
+                variables: { limit: PAGE_SIZE, offset: nextOffset },
+            });
+            
+            if (result.data?.locations) {
+                const newLocations = result.data.locations;
+                setAllLocations(prev => [...prev, ...newLocations]);
+                setCurrentOffset(nextOffset);
+                
+                if (newLocations.length < PAGE_SIZE) {
+                    setHasMoreData(false);
+                }
+            }
+        } catch (error) {
+            console.error("Error loading more locations:", error);
+            setHasMoreData(false);
+        }
+    };
+    
+    useEffect(() => {
+        if (hasMoreData && allLocations.length > 0 && allLocations.length < 2000) {
+            loadMoreLocations();
+        }
+    }, [allLocations.length, hasMoreData]);
     const selectedLocation = useWatch({ control, name: "form_data.location.selected" });
     const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
     const attendeeCountRaw = useWatch({ control, name: "attendees" });
@@ -63,7 +107,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
 
     const specialSpacesList = useMemo(() => {
         const spaces = new Set<string>();
-        (onCampusData?.locations ?? []).forEach((loc) => {
+        allLocations.forEach((loc) => {
             const buildingCode = loc?.buildingCode?.toUpperCase();
             const roomTitle = loc?.roomTitle?.toLowerCase();
             const buildingDisplayName = loc?.buildingDisplayName;
@@ -80,41 +124,13 @@ export default function OnCampusSection({ control, setValue }: Props) {
             }
         });
         return Array.from(spaces);
-    }, [onCampusData]);
+    }, [allLocations]);
 
-    const buildingOptions = useMemo(() => {
-        const locations = onCampusData?.locations ?? [];
-        const capacityFiltered = attendeeCount
-            ? locations.filter((loc) => {
-                const capacityValue = loc?.maxCapacity?.match(/\d+/g)?.map(Number) ?? [];
-                if (capacityValue.length === 0) {
-                    return true;
-                }
-                const maxCapacity = Math.max(...capacityValue);
-                return maxCapacity >= attendeeCount;
-            })
-            : locations;
-
-        const names = capacityFiltered
-            .map((loc) => loc?.buildingDisplayName)
-            .filter((name): name is string => Boolean(name));
-        return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
-    }, [attendeeCount, onCampusData]);
-
-    const filteredLocations = useMemo(() => {
-        if (!selectedLocation) {
-            return [];
-        }
-
-        const matchingLocations = (onCampusData?.locations ?? []).filter(
-            (loc) => loc?.buildingDisplayName === selectedLocation
-        );
-
+    const capacityFilteredLocations = useMemo(() => {
         if (!attendeeCount) {
-            return matchingLocations;
+            return allLocations;
         }
-
-        return matchingLocations.filter((loc) => {
+        return allLocations.filter((loc) => {
             const capacityValue = loc?.maxCapacity?.match(/\d+/g)?.map(Number) ?? [];
             if (capacityValue.length === 0) {
                 return true;
@@ -122,7 +138,21 @@ export default function OnCampusSection({ control, setValue }: Props) {
             const maxCapacity = Math.max(...capacityValue);
             return maxCapacity >= attendeeCount;
         });
-    }, [attendeeCount, onCampusData, selectedLocation]);
+    }, [attendeeCount, allLocations]);
+    const buildingOptions = useMemo(() => {
+        const names = capacityFilteredLocations
+            .map((loc) => loc?.buildingDisplayName)
+            .filter((name): name is string => Boolean(name));
+        return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
+    }, [capacityFilteredLocations]);
+    const filteredLocations = useMemo(() => {
+        if (!selectedLocation) {
+            return [];
+        }
+        return capacityFilteredLocations.filter(
+            (loc) => loc?.buildingDisplayName === selectedLocation
+        );
+    }, [capacityFilteredLocations, selectedLocation]);
 
     const roomTypeOptions = useMemo(() => {
         const types = filteredLocations
@@ -157,6 +187,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                         <Text>Which campus space will your event be held in?</Text>
                         <Select
                             {...field}
+                            value={field.value}
                             placeholder="Select building and room"
                             style={{ width: 300 }}
                             loading={buildingsLoading}
@@ -191,6 +222,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 <Text>What kind of room do you want to use?</Text>
                                 <Select
                                     {...field}
+                                    value={field.value}
                                     placeholder="Select room type"
                                     style={{ width: 300 }}
                                     loading={buildingsLoading}
@@ -217,6 +249,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 <Text>What is the room number or title?</Text>
                                 <Select
                                     {...field}
+                                    value={field.value}
                                     placeholder="Select room"
                                     style={{ width: 300 }}
                                     loading={buildingsLoading}
@@ -268,7 +301,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     render={({ field }) => (
                         <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                             <Text>Will your room need any additional setup?</Text>
-                            <Select {...field} placeholder="Select room setup" style={{ width: 300 }}>
+                            <Select {...field} value={field.value} placeholder="Select room setup" style={{ width: 300 }}>
                                 {indoorRoomOptions.map((opt) => (
                                     <Option key={opt} value={opt}>{opt}</Option>
                                 ))}
@@ -288,7 +321,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 name={`form_data.location.furniture.${index}.type`}
                                 control={control}
                                 render={({ field }) => (
-                                    <Select {...field} placeholder="Furniture Type" style={{ width: 180 }}>
+                                    <Select {...field} value={field.value} placeholder="Furniture Type" style={{ width: 180 }}>
                                         {furnitureOptions.map((opt) => (
                                             <Option key={opt} value={opt}>{opt}</Option>
                                         ))}

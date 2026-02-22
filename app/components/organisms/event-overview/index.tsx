@@ -211,8 +211,8 @@ export function EventOverviewContent() {
                         </Button>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.5rem" }}>
-                        <Paragraph style={{ margin: 0 }}>Created By:</Paragraph>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem"}}>
+                        <Paragraph style={{ margin: 0}}>Created By:</Paragraph>
                         {(() => {
                             const base = (import.meta as any).env?.BASE_URL ?? '/';
                             
@@ -244,7 +244,7 @@ export function EventOverviewContent() {
                                 <Tooltip title={tooltipText} placement="right">
                                     <Avatar 
                                         src={avatarSrc} 
-                                        style={{ backgroundColor: '#1890ff', cursor: 'pointer' }}
+                                        style={{ backgroundColor: 'var(--gray-1)', cursor: 'pointer', height: '1.75rem', width: '1.75rem'}}
                                     >
                                         {!avatarSrc && initials}
                                     </Avatar>
@@ -253,13 +253,13 @@ export function EventOverviewContent() {
                         })()}
                     </div>
 
-                    <div className='flex flex-wrap' style={{ gap: "0.5rem", marginTop: "0.5rem", marginBottom: "1.5rem" }}>
-                        {formData?.event?.dateRange?.[0] ? <Tag className="eventDetailTag" style={{ background: 'var(--background)' }} icon={<CalendarOutlined />}>{formatDate(formData.event.dateRange[0])}</Tag> : null}
+                    <div className='flex flex-wrap' style={{ gap: "0.25rem", marginTop: "1rem", marginBottom: "1.5rem" }}>
+                        {formData?.event?.dateRange?.[0] ? <Tag className="eventDetailTag" icon={<CalendarOutlined />}>{formatDate(formData.event.dateRange[0])}</Tag> : null}
                         {formData?.startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(formData.startTime)}</Tag> : null}
-                        {formData?.location?.type ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{formData.location.type}</Tag> : null}
+                        {formData?.location.name? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{formData.location.name}</Tag> : null}
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem", marginTop: "2rem"}}>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem",}}>
                         <Statistic className="stat-card-gray-border" title="Event Level" value={formData?.eventLevel || "N/A"} />
                         <Statistic className="stat-card-gray-border" title="Estimated Cost" value={formData?.budget ? `$${formData.budget}` : "N/A"} />
                         <Statistic className="stat-card-gray-border" title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
@@ -267,7 +267,7 @@ export function EventOverviewContent() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "1rem"}}>
                         {/* EVENT DETAILS SECTION */}
-                        <Card ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", marginTop: "1rem", scrollMarginTop: "2rem" }}>
+                        <Card id="section-0" ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", marginTop: "1rem", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Event Details</Title>
                             <div style={{ marginBottom: 16 }}>
                                 <Title level={5}>Event Name</Title>
@@ -290,7 +290,7 @@ export function EventOverviewContent() {
                         </Card>
 
                         {/* DATE & LOCATION SECTION */}
-                        <Card ref={dateLocationRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-1" ref={dateLocationRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Date & Location</Title>
                             <div style={{ marginBottom: 16 }}>
                                 <Title level={5}>Location Type</Title>
@@ -446,7 +446,7 @@ export function EventOverviewContent() {
                         </Card>
 
                         {/* EVENT ELEMENTS SECTION */}
-                        <Card ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-2" ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Event Elements</Title>
                             
                             {/* Food Element */}
@@ -663,7 +663,7 @@ export function EventOverviewContent() {
                         </Card>
 
                         {/* BUDGET & PURCHASE SECTION */}
-                        <Card ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-3" ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Budget & Purchase</Title>
                             
                             {/* Budget Overview */}
