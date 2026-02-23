@@ -13,6 +13,7 @@ import EventElementsSection from "../event-form/sections/EventElementsSection";
 import BudgetPurchaseSection from "../event-form/sections/BudgetPurchasesSection";
 import DiscardModal from "../../molecules/event-flow/discard-modal";
 import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
+import ScrollToTop from "../../atoms/ScrollToTop";
 import NestFoodSection from "./sections/nestedSections/elementNest/nestFood";
 import OnCampusSection from "./sections/nestedSections/locationNest/nestOn";
 import OffCampusSection from "./sections/nestedSections/locationNest/nestOff";
@@ -71,7 +72,7 @@ export function EventForm() {
         variables: { id: id ?? '' },
         skip: !id,
     });
-    const { control, handleSubmit, getValues, reset, watch, setValue } = useForm();
+    const { control, handleSubmit, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm();
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>();
@@ -183,6 +184,47 @@ export function EventForm() {
         });
         return () => subscription.unsubscribe();
     }, [watch, draftId]);
+
+    // Auto-open nested panels when conditions are met
+    useEffect(() => {
+        const data = isSelected;
+        const panelsToOpen: string[] = [];
+        const parentPanelsToOpen: string[] = [];
+
+        // Check each formBranching rule to see if its condition is met
+        formBranching.forEach((panel) => {
+            const fieldPath = panel.when.split('.');
+            let currentValue: any = data;
+            for (const key of fieldPath) {
+                currentValue = currentValue?.[key];
+            }
+            const shouldDisplay = Array.isArray(currentValue) 
+                ? currentValue.includes(panel.is) 
+                : currentValue === panel.is;
+            
+            if (shouldDisplay) {
+                panelsToOpen.push(panel.key);
+                // Also ensure parent panel is open
+                if (panel.parent && !parentPanelsToOpen.includes(panel.parent)) {
+                    parentPanelsToOpen.push(panel.parent);
+                }
+            }
+        });
+
+        // Add nested panel keys and their parent keys to active keys
+        const allPanelsToOpen = [...parentPanelsToOpen, ...panelsToOpen];
+        if (allPanelsToOpen.length > 0) {
+            setActiveCollapseKey((prevKeys) => {
+                const newKeys = [...prevKeys];
+                allPanelsToOpen.forEach((key) => {
+                    if (!newKeys.includes(key)) {
+                        newKeys.push(key);
+                    }
+                });
+                return newKeys;
+            });
+        }
+    }, [isSelected]);
 
     const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
         if (!user) {
@@ -389,6 +431,95 @@ export function EventForm() {
         }
     };
 
+    const handleReviewForm = async () => {
+        // Trigger validation on all fields
+        const isValid = await trigger();
+        
+        if (!isValid) {
+            // Find the first error field
+            const errorFields = Object.keys(errors);
+            
+            if (errorFields.length > 0) {
+                const firstErrorField = errorFields[0];
+                
+                // Map field names to their corresponding panel keys
+                const fieldToPanelMap: Record<string, string> = {
+                    'title': 'eventDetails',
+                    'description': 'eventDetails',
+                    'attendees': 'eventDetails',
+                    'organization_id': 'eventDetails',
+                    'event_date': 'dateLocation',
+                    'start_time': 'dateLocation',
+                    'end_time': 'dateLocation',
+                    'setup_time': 'dateLocation',
+                    'location_type': 'dateLocation',
+                };
+                
+                // Map form_data sub-keys to their corresponding panel keys
+                const formDataFieldToPanelMap: Record<string, string> = {
+                    // eventElements panel
+                    'elements': 'eventElements',
+                    'level0_confirmed': 'eventElements',
+                    'food': 'eventElements',
+                    'alcohol': 'eventElements',
+                    'minors': 'eventElements',
+                    'movies': 'eventElements',
+                    'raffles': 'eventElements',
+                    'fire': 'eventElements',
+                    'sorc_games': 'eventElements',
+                    // dateLocation panel
+                    'location': 'dateLocation',
+                    'travel': 'dateLocation',
+                    // budgetPurchase panel
+                    'budget': 'budgetPurchase',
+                    'vendors': 'budgetPurchase',
+                    'vendors_notice_acknowledged': 'budgetPurchase',
+                    'non_vendor_services': 'budgetPurchase',
+                    'non_vendor_services_notes': 'budgetPurchase',
+                    'non_vendor_services_acknowledged': 'budgetPurchase',
+                };
+
+                // Check if error is in form_data (nested fields)
+                let panelToOpen = 'eventDetails'; // default
+                
+                if (firstErrorField === 'form_data') {
+                    const formDataErrors = errors.form_data as any;
+                    const firstFormDataErrorKey = Object.keys(formDataErrors || {})[0];
+                    if (firstFormDataErrorKey) {
+                        panelToOpen = formDataFieldToPanelMap[firstFormDataErrorKey] || 'eventDetails';
+                    }
+                } else {
+                    panelToOpen = fieldToPanelMap[firstErrorField] || 'eventDetails';
+                }
+                
+                // Open the panel with the error
+                setActiveCollapseKey([panelToOpen]);
+                setCurrentEditingSection(panelToOpen);
+                
+                // Show error message
+                message.error('Please complete all required fields before proceeding to review.');
+                
+                // Scroll to top after a brief delay to allow panel to open
+                setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+            }
+            
+            return;
+        }
+
+        // If validation passes, proceed to review
+        try {
+            const data = getValues();
+            localStorage.setItem("eventFormReview", JSON.stringify(data));
+            setCurrentEditingSection(undefined);
+            navigateSafely(`/event-review${draftId ? `/${draftId}` : ''}`);
+        } catch (err) {
+            console.error("❌ Error saving review data to localStorage:", err);
+            message.error("Failed to save form data");
+        }
+    };
+
     return (
         <div className="container mx-auto p-8">
             <Title level={5}>
@@ -410,11 +541,45 @@ export function EventForm() {
                         activeKey={activeCollapseKey}
                         onChange={(keys) => {
                             const keyArray = Array.isArray(keys) ? keys : [keys];
-                            setActiveCollapseKey(keyArray);
-                            if (keyArray.length > 0) setCurrentEditingSection(keyArray[0]);
+                            const majorSectionKeys = ["eventDetails", "dateLocation", "eventElements", "budgetPurchase"];
+
+                            // Determine which major sections have just been opened or closed
+                            const newlyOpenedMajors = majorSectionKeys.filter(
+                                (key) => keyArray.includes(key) && !activeCollapseKey.includes(key)
+                            );
+                            const justClosedMajors = majorSectionKeys.filter(
+                                (key) => activeCollapseKey.includes(key) && !keyArray.includes(key)
+                            );
+
+                            // When a major section is closed, also close its nested children
+                            const nestedKeysToClose: string[] = [];
+                            justClosedMajors.forEach((closedKey) => {
+                                formBranching.forEach((branch) => {
+                                    if (branch.parent === closedKey) {
+                                        nestedKeysToClose.push(branch.key);
+                                    }
+                                });
+                            });
+
+                            const finalKeys = keyArray.filter((k) => !nestedKeysToClose.includes(k));
+
+                            setActiveCollapseKey(finalKeys);
+
+                            // Update the current editing section based on open majors
+                            let nextEditingSection = currentEditingSection;
+
+                            if (newlyOpenedMajors.length > 0) {
+                                // Prefer the most recently opened major section
+                                nextEditingSection = newlyOpenedMajors[newlyOpenedMajors.length - 1];
+                            } else if (!nextEditingSection || !finalKeys.includes(nextEditingSection)) {
+                                // Fall back to any open major section, if current is no longer valid
+                                const openMajorSection = majorSectionKeys.find((key) => finalKeys.includes(key));
+                                nextEditingSection = openMajorSection;
+                            }
+
+                            setCurrentEditingSection(nextEditingSection || undefined);
                         }}
                         expandIconPosition="end"
-                        accordion
                     >
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
                             <EventDetailsSection control={control} watch={watch} />
@@ -424,33 +589,23 @@ export function EventForm() {
                         </Panel>
                         {formNesting("dateLocation", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Elements</h4>} key="eventElements">
-                            <EventElementsSection control={control} />
+                            <EventElementsSection control={control} setValue={setValue} />
                         </Panel>
                         {formNesting("eventElements", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Budget & Purchases</h4>} key="budgetPurchase">
-                            <BudgetPurchaseSection control={control} />
+                            <BudgetPurchaseSection control={control} setValue={setValue} />
                         </Panel>
                     </Collapse>
                     <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", gap: 12 }}>
-                            <Button type="primary" onClick={() => {
-                                try {
-                                    const data = getValues();
-                                    localStorage.setItem("eventFormReview", JSON.stringify(data));
-                                    setCurrentEditingSection(undefined);
-                                    navigateSafely(`/event-review${draftId ? `/${draftId}` : ''}`);
-                                } catch (err) {
-                                    console.error("❌ Error saving review data to localStorage:", err);
-                                    message.error("Failed to save form data");
-                                }
-                            }} block>
+                            <Button type="primary" onClick={handleReviewForm} block>
                                 Review Form
                             </Button>
                             <Button type="default" onClick={handleSaveDraft} block>
                                 Save as Draft
                             </Button>
                         </div>
-                        <Button type="default" danger onClick={() => {
+                        <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)"  }} onClick={() => {
                             setIsExplicitDiscard(true); // Explicit discard action
                             setIsDiscardModalOpen(true);
                         }}>
@@ -488,6 +643,7 @@ export function EventForm() {
                     if (blocker.state === "blocked") blocker.reset();
                 }} 
             />
+            <ScrollToTop />
         </div>
     );
 }

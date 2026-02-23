@@ -1,5 +1,6 @@
 import { Controller } from "react-hook-form";
 import { Radio, Input, Typography, Checkbox } from "antd";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -19,14 +20,15 @@ export default function AlcoholSection({ control }: Props) {
                 rules={{ required: "Company name is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Name of company providing alcohol</Text>
+                        <FieldLabel required>Name of company providing alcohol</FieldLabel>
                         <Input
                             {...field}
                             placeholder="Enter approved vendor name"
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -36,10 +38,10 @@ export default function AlcoholSection({ control }: Props) {
             <Controller
                 name="form_data.alcohol.event_type"
                 control={control}
-                rules={{ required: "Select event type" }}
+                rules={{ required: "Event type is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Type of Event</Text>
+                        <FieldLabel required>Type of Event</FieldLabel>
                         <Radio.Group
                             {...field}
                             style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
@@ -50,7 +52,7 @@ export default function AlcoholSection({ control }: Props) {
                             <Radio value="alumni" style={{ marginTop: 4 }}>Alumni Event - Event hosted in conjunction with or by alumni</Radio>
                         </Radio.Group>
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -58,7 +60,7 @@ export default function AlcoholSection({ control }: Props) {
 
             {/* A4 - Faculty/Staff Present */}
             <div style={{ marginBottom: 16 }}>
-                <Text>Full-time faculty or staff member who will be present for the duration of your event</Text>
+                <FieldLabel required>Full-time faculty or staff member who will be present for the duration of your event</FieldLabel>
 
                 <Controller
                     name="form_data.alcohol.faculty_staff.name"
@@ -66,9 +68,9 @@ export default function AlcoholSection({ control }: Props) {
                     rules={{ required: "Name is required" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Full Name" />
+                            <Input {...field} placeholder="Full Name" status={fieldState.error ? "error" : ""} />
                             {fieldState.error && (
-                                <Text type="danger">{fieldState.error.message}</Text>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                             )}
                         </div>
                     )}
@@ -80,9 +82,9 @@ export default function AlcoholSection({ control }: Props) {
                     rules={{ required: "Title is required" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Title" />
+                            <Input {...field} placeholder="Title" status={fieldState.error ? "error" : ""} />
                             {fieldState.error && (
-                                <Text type="danger">{fieldState.error.message}</Text>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                             )}
                         </div>
                     )}
@@ -100,9 +102,9 @@ export default function AlcoholSection({ control }: Props) {
                     }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Email Address" />
+                            <Input {...field} placeholder="Email Address" status={fieldState.error ? "error" : ""} />
                             {fieldState.error && (
-                                <Text type="danger">{fieldState.error.message}</Text>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                             )}
                         </div>
                     )}
@@ -114,9 +116,9 @@ export default function AlcoholSection({ control }: Props) {
                     rules={{ required: "Phone number is required" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Phone Number" />
+                            <Input {...field} placeholder="Phone Number" status={fieldState.error ? "error" : ""} />
                             {fieldState.error && (
-                                <Text type="danger">{fieldState.error.message}</Text>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                             )}
                         </div>
                     )}
@@ -127,10 +129,10 @@ export default function AlcoholSection({ control }: Props) {
             <Controller
                 name="form_data.alcohol.guests_under_21"
                 control={control}
-                rules={{ required: "Select Yes or No" }}
+                rules={{ required: "Please select Yes or No" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Will any guests be under 21 years of age?</Text>
+                        <FieldLabel required>Will any guests be under 21 years of age?</FieldLabel>
                         <Radio.Group
                             {...field}
                             style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
@@ -139,7 +141,7 @@ export default function AlcoholSection({ control }: Props) {
                             <Radio value="no">No</Radio>
                         </Radio.Group>
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -149,18 +151,19 @@ export default function AlcoholSection({ control }: Props) {
             <Controller
                 name="form_data.alcohol.id_procedure"
                 control={control}
-                rules={{ required: "Describe ID checking procedures" }}
+                rules={{ required: "ID checking procedures description is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>What procedure will be in place to ensure compliance with University policies and state law, particularly carding procedure? (be descriptive)</Text>
+                        <FieldLabel required>What procedure will be in place to ensure compliance with University policies and state law, particularly carding procedure? (be descriptive)</FieldLabel>
                         <TextArea
                             {...field}
                             rows={4}
                             placeholder="Describe ID verification and compliance procedures"
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -170,18 +173,19 @@ export default function AlcoholSection({ control }: Props) {
             <Controller
                 name="form_data.alcohol.food_description"
                 control={control}
-                rules={{ required: "Describe the food that will be served" }}
+                rules={{ required: "Food description is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Describe the type of food that will be served/available at event</Text>
+                        <FieldLabel required>Describe the type of food that will be served/available at event</FieldLabel>
                         <TextArea
                             {...field}
                             rows={3}
                             placeholder="e.g., shrimp cocktail, chicken wings, sliders, etc."
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -206,10 +210,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    A procedure has been defined to check IDs for those of legal drinking age.
+                                    A procedure has been defined to check IDs for those of legal drinking age. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -225,10 +229,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    An approved vendor will provide bar-tending services for this event.
+                                    An approved vendor will provide bar-tending services for this event. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -244,10 +248,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    3rd Party vendors serving hard liquor must not charge to Drexel; these drinks must be charged to the individual requesting those drinks.
+                                    3rd Party vendors serving hard liquor must not charge to Drexel; these drinks must be charged to the individual requesting those drinks. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -263,10 +267,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    Drinking games will not be permitted. This includes but is not limited to, beer pong, flip cup, etc.
+                                    Drinking games will not be permitted. This includes but is not limited to, beer pong, flip cup, etc. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -282,10 +286,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    University funds, GSA funds, if allowed, may be used for beer and wine; no liquor is allowed to be paid for by GSA or the University.
+                                    University funds, GSA funds, if allowed, may be used for beer and wine; no liquor is allowed to be paid for by GSA or the University. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -301,10 +305,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    Food items must be available throughout the event
+                                    Food items must be available throughout the event <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -320,10 +324,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    There must be non-salty options available
+                                    There must be non-salty options available <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -339,10 +343,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    Food must be, at minimum, heavy appetizers. For instance, shrimp cocktail, chicken wings, sliders.
+                                    Food must be, at minimum, heavy appetizers. For instance, shrimp cocktail, chicken wings, sliders. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -358,10 +362,10 @@ export default function AlcoholSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Checkbox {...field} checked={field.value}>
-                                    No alcoholic beverages shall be served within a half-hour of the termination of the event or after 1:30am, whichever is earlier. A formal cut-off announcement will be made to that effect.
+                                    No alcoholic beverages shall be served within a half-hour of the termination of the event or after 1:30am, whichever is earlier. A formal cut-off announcement will be made to that effect. <span style={{ color: "var(--red-5)" }}>*</span>
                                 </Checkbox>
                                 {fieldState.error && (
-                                    <div><Text type="danger" style={{ fontSize: 12 }}>{fieldState.error.message}</Text></div>
+                                    <div><Text type="danger" style={{ fontSize: 12, color: "var(--red-6)" }}>{fieldState.error.message}</Text></div>
                                 )}
                             </div>
                         )}
@@ -379,16 +383,17 @@ export default function AlcoholSection({ control }: Props) {
                         <Text strong>Signature</Text>
                         <div style={{ marginTop: 4, marginBottom: 8 }}>
                             <Text type="secondary">
-                                By entering your name below, you are electronically signing this agreement and confirming all information is accurate.
+                                By entering your name below, you are electronically signing this agreement and confirming all information is accurate. <span style={{ color: "var(--red-5)" }}>*</span>
                             </Text>
                         </div>
                         <Input
                             {...field}
                             placeholder="Enter your full name"
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -397,3 +402,4 @@ export default function AlcoholSection({ control }: Props) {
         </div>
     );
 }
+

@@ -7,6 +7,7 @@ import { useGetEventByIdQuery, useGetUsersQuery } from '~/lib/graphql/generated'
 import NavMini from "../../molecules/nav-mini";
 import OptimizedImage from '../../atoms/OptimizedImage';
 import CommentInput from '../../molecules/comment-input';
+import ScrollToTop from '../../atoms/ScrollToTop';
 import { formatTime } from '~/lib/formatters';
 
 export function EventOverviewContent() {
@@ -32,6 +33,51 @@ export function EventOverviewContent() {
         const year = date.getFullYear();
         return `${month}/${day}/${year}`;
     };
+    
+    const calculateEstimatedCost = (formData: any): string => {
+        let total = 0;
+        let hasCosts = false;
+        
+        // Add vendor costs
+        if (formData?.vendors && Array.isArray(formData.vendors)) {
+            formData.vendors.forEach((vendor: any) => {
+                if (vendor.estimatedCost) {
+                    const cost = parseFloat(vendor.estimatedCost);
+                    if (!isNaN(cost)) {
+                        total += cost;
+                        hasCosts = true;
+                    }
+                }
+            });
+        }
+        
+        // Add food cost
+        if (formData?.food?.estimated_cost) {
+            const cost = parseFloat(formData.food.estimated_cost);
+            if (!isNaN(cost)) {
+                total += cost;
+                hasCosts = true;
+            }
+        }
+        
+        // Add raffle prize value
+        if (formData?.raffles?.total_value) {
+            const cost = parseFloat(formData.raffles.total_value);
+            if (!isNaN(cost)) {
+                total += cost;
+                hasCosts = true;
+            }
+        }
+        
+        // Add budget total purchase (if not already counted in vendors)
+        if (formData?.budget && typeof formData.budget === 'number') {
+            total += formData.budget;
+            hasCosts = true;
+        }
+        
+        return hasCosts ? total.toFixed(2) : 'N/A';
+    };
+    
     const getStatusDisplay = (status?: string, eventDate?: string) => {
         if (!status) return null;
         const statusUpper = status.toUpperCase();
@@ -261,7 +307,14 @@ export function EventOverviewContent() {
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem",}}>
                         <Statistic className="stat-card-gray-border" title="Event Level" value={formData?.eventLevel || "N/A"} />
-                        <Statistic className="stat-card-gray-border" title="Estimated Cost" value={formData?.budget ? `$${formData.budget}` : "N/A"} />
+                        <Statistic 
+                            className="stat-card-gray-border" 
+                            title="Estimated Cost" 
+                            value={(() => {
+                                const cost = calculateEstimatedCost(formData);
+                                return cost === 'N/A' ? 'N/A' : `$${cost}`;
+                            })()} 
+                        />
                         <Statistic className="stat-card-gray-border" title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
                         <Statistic className="stat-card-gray-border" title="Location Type" value={formData?.location?.type || "N/A"} />
                     </div>
@@ -669,12 +722,15 @@ export function EventOverviewContent() {
                             {/* Budget Overview */}
                             <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
                                 <Title level={4}>Budget Overview</Title>
-                                {formData?.budget && (
-                                    <div style={{ marginBottom: 12 }}>
-                                        <Text strong>Total Budget:</Text>
-                                        <Paragraph>${formData.budget}</Paragraph>
-                                    </div>
-                                )}
+                                <div style={{ marginBottom: 12 }}>
+                                    <Text strong>Total Estimated Cost:</Text>
+                                    <Paragraph>
+                                        {(() => {
+                                            const cost = calculateEstimatedCost(formData);
+                                            return cost === 'N/A' ? 'N/A' : `$${cost}`;
+                                        })()}
+                                    </Paragraph>
+                                </div>
                                 {formData?.account && (
                                     <div style={{ marginBottom: 12 }}>
                                         <Text strong>Account Code:</Text>
@@ -712,6 +768,7 @@ export function EventOverviewContent() {
                     <CommentInput />
                 </section>
             </section>
+            <ScrollToTop />
         </div>
 
     );

@@ -1,5 +1,6 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Radio, Input, Typography, InputNumber } from "antd";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 
@@ -51,7 +52,7 @@ export default function FoodSection({ control }: Props) {
         rules={{ required: "Please select a food option" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 16 }}>
-            <Text>How will you provide food for this event?</Text>
+            <FieldLabel required>How will you provide food for this event?</FieldLabel>
             <Radio.Group
               {...field}
               onChange={(e) => field.onChange(e.target.value)}
@@ -65,7 +66,7 @@ export default function FoodSection({ control }: Props) {
             </Radio.Group>
 
             {fieldState.error && (
-              <Text type="danger">{fieldState.error.message}</Text>
+              <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
             )}
           </div>
         )}
@@ -82,7 +83,7 @@ export default function FoodSection({ control }: Props) {
           }}
           render={({ field, fieldState }) => (
             <div style={{ marginBottom: 16 }}>
-              <Text>Estimated food cost</Text>
+              <FieldLabel required>Estimated food cost</FieldLabel>
               <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
                 Note: You must submit a separate purchase request through DragonLink
               </Text>
@@ -90,16 +91,17 @@ export default function FoodSection({ control }: Props) {
                 {...field}
                 min={0}
                 step={1}
-                style={{ display: "block", marginTop: 8 }}
+                style={{ display: "block" }}
                 formatter={(value) =>
                   value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
                 }
                 parser={(value) =>
                   value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
                 }
+                status={fieldState.error ? "error" : ""}
               />
               {fieldState.error && (
-                <Text type="danger">{fieldState.error.message}</Text>
+                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
               )}
             </div>
           )}
@@ -117,7 +119,7 @@ export default function FoodSection({ control }: Props) {
           }}
           render={({ field, fieldState }) => (
             <div style={{ marginBottom: 16 }}>
-              <Text>Estimated cost of Chestnut Street Catering</Text>
+              <FieldLabel required>Estimated cost of Chestnut Street Catering</FieldLabel>
               <InputNumber
                 {...field}
                 min={0}
@@ -129,9 +131,10 @@ export default function FoodSection({ control }: Props) {
                 parser={(value) =>
                   value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
                 }
+                status={fieldState.error ? "error" : ""}
               />
               {fieldState.error && (
-                <Text type="danger">{fieldState.error.message}</Text>
+                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
               )}
             </div>
           )}
@@ -147,14 +150,15 @@ export default function FoodSection({ control }: Props) {
             rules={{ required: "Vendor or restaurant name is required" }}
             render={({ field, fieldState }) => (
               <div style={{ marginBottom: 16 }}>
-                <Text>Vendor or restaurant name</Text>
+                <FieldLabel required>Vendor or restaurant name</FieldLabel>
                 <Input
                   {...field}
                   placeholder="Enter vendor name"
                   style={{ marginTop: 8 }}
+                  status={fieldState.error ? "error" : ""}
                 />
                 {fieldState.error && (
-                  <Text type="danger">{fieldState.error.message}</Text>
+                  <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                 )}
               </div>
             )}
@@ -169,7 +173,7 @@ export default function FoodSection({ control }: Props) {
             }}
             render={({ field, fieldState }) => (
               <div style={{ marginBottom: 16 }}>
-                <Text>Estimated food cost</Text>
+                <FieldLabel required>Estimated food cost</FieldLabel>
                 <InputNumber
                   {...field}
                   min={0}
@@ -181,9 +185,10 @@ export default function FoodSection({ control }: Props) {
                   parser={(value) =>
                     value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
                   }
+                  status={fieldState.error ? "error" : ""}
                 />
                 {fieldState.error && (
-                  <Text type="danger">{fieldState.error.message}</Text>
+                  <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                 )}
               </div>
             )}
@@ -193,3 +198,4 @@ export default function FoodSection({ control }: Props) {
     </div>
   );
 }
+
