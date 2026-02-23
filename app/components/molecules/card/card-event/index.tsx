@@ -1,10 +1,12 @@
-import React from 'react';
-import { Card, Tag, Typography, Image, Skeleton } from 'antd';
+import React, { useState } from 'react';
+import { Button, Card, Dropdown, Input, Modal, Space, Tag, Typography, Image, Skeleton } from 'antd';
+import { useNavigate } from 'react-router';
 const { Title, Paragraph } = Typography;
 
 import {
     CalendarOutlined,
     ClockCircleOutlined,
+    EditOutlined,
     PushpinOutlined,
     MoreOutlined,
 } from '@ant-design/icons';
@@ -12,6 +14,7 @@ import {
 import styles from './index.module.css';
 import OptimizedImage from '../../../atoms/OptimizedImage';
 import { formatTime } from '~/lib/formatters';
+import DiscardModal from '~/components/molecules/event-flow/discard-modal';
 
 export type CardEventProps = React.ComponentProps<typeof Card> & {
     date?: string;
@@ -26,9 +29,13 @@ export type CardEventProps = React.ComponentProps<typeof Card> & {
     skeletonImage?: boolean;
     skeletonVariant?: 'compact' | 'visual';
     disableHover?: boolean;
+    onRename?: (nextName: string) => void;
+    onDiscard?: () => void;
+    eventId?: string;
 };
 
-const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime, location, description, submissionDate, status, isPast, eventImg, loading, skeletonImage, skeletonVariant, disableHover, ...rest }) => {
+const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime, location, description, submissionDate, status, isPast, eventImg, loading, skeletonImage, skeletonVariant, disableHover, onRename, onDiscard, eventId, ...rest }) => {
+    const navigate = useNavigate();
     // detect visual-card via `className` prop
     const classNameProp = (rest as any)?.className ?? '';
     const isVisual = classNameProp.split(/\s+/).includes('visual-card');
@@ -36,6 +43,16 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     const base = (import.meta as any).env?.BASE_URL ?? '/';
     const imagePath = eventImg ? `${base}uploads/event_img/${eventImg}`.replace(/\\/g, '/') : undefined;
     //const combinedClassName = [styles.card, (rest as any)?.className].filter(Boolean).join(' ');
+
+    const [renameOpen, setRenameOpen] = useState(false);
+    const [renameValue, setRenameValue] = useState('');
+    const [discardOpen, setDiscardOpen] = useState(false);
+
+    const handleCardClick = () => {
+        if (status === 'draft' && eventId) {
+            navigate(`/event-form/${eventId}`);
+        }
+    };
 
 
     // Compute whether the event is in the past. Prefer the explicit `isPast`
@@ -61,6 +78,99 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
     (rest as any)?.className,
 ].filter(Boolean).join(' ');
 const cardProps = { ...(rest as any), className: combinedClassName };
+
+    const menuItems = [
+        ...(onRename ? [{ key: 'rename', label: 'Rename' }] : []),
+        ...(onDiscard ? [{ key: 'discard', label: 'Discard', danger: true }] : []),
+    ];
+
+    const openRename = () => {
+        setRenameValue(typeof title === 'string' ? title : '');
+        setRenameOpen(true);
+    };
+
+    const openDiscardConfirm = () => {
+        setDiscardOpen(true);
+    };
+
+    const handleMenuClick = ({ key }: { key: string }) => {
+        if (key === 'rename') openRename();
+        if (key === 'discard') openDiscardConfirm();
+    };
+
+    const renderMoreMenu = (iconColor?: string) => {
+        if (menuItems.length === 0) return null;
+        return (
+        <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} trigger={['click']} placement="bottomRight">
+            <button
+                type="button"
+                className={styles.moreButton}
+                aria-label="More actions"
+                style={iconColor ? { color: iconColor } : undefined}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <MoreOutlined style={{ fontSize: '24px' }} />
+            </button>
+        </Dropdown>
+        );
+    };
+
+    const renameModal = (
+        <Modal
+            open={renameOpen}
+            footer={null}
+            centered
+            closable={false}
+            maskClosable={false}
+            classNames={{ content: styles.modalContent }}
+        >
+            <div className={styles.modalContainer}>
+                <EditOutlined style={{ color: 'var(--sea-green-6)', fontSize: '1.375rem' }} className={styles.modalIcon} />
+                <div className={styles.modalBody}>
+                    <div className={styles.modalHeader}>
+                        <h5>Rename Event</h5>
+                        <p className={styles.modalMessage}>Update the event name shown on this card.</p>
+                    </div>
+                    <Input
+                        value={renameValue}
+                        onChange={(event) => setRenameValue(event.target.value)}
+                        placeholder="Event name"
+                    />
+                    <Space className={styles.modalButtonGroup} size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
+                        <Button type="default" size="large" onClick={() => setRenameOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            type="primary"
+                            size="large"
+                            disabled={!renameValue.trim()}
+                            onClick={() => {
+                                const nextName = renameValue.trim();
+                                if (!nextName) return;
+                                onRename?.(nextName);
+                                setRenameOpen(false);
+                            }}
+                        >
+                            Rename
+                        </Button>
+                    </Space>
+                </div>
+            </div>
+        </Modal>
+    );
+
+    const discardModal = (
+        <DiscardModal
+            open={discardOpen}
+            title="Discard event?"
+            message="Are you sure you want to discard this event? This action cannot be undone."
+            onDiscardClick={() => {
+                onDiscard?.();
+                setDiscardOpen(false);
+            }}
+            onCancelClick={() => setDiscardOpen(false)}
+        />
+    );
     if (loading) {
         const variant = skeletonVariant || (isVisual ? 'visual' : 'compact');
         if (variant === 'visual') {
@@ -108,13 +218,14 @@ const cardProps = { ...(rest as any), className: combinedClassName };
 
     const draftCard = (
         <Card {...cardProps}
+            onClick={handleCardClick}
             hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
-            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)' }}>
+            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', cursor: status === 'draft' ? 'pointer' : undefined }}>
             <div className='flex flex-col gap-1'>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }} />
+                    {renderMoreMenu()}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -144,7 +255,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }} />
+                    {renderMoreMenu()}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -174,7 +285,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }} />
+                    {renderMoreMenu()}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -189,9 +300,10 @@ const cardProps = { ...(rest as any), className: combinedClassName };
 
     const draftCardVisual = (
         <Card {...cardProps}
+            onClick={handleCardClick}
             hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
-            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)' }}>
+            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)', cursor: status === 'draft' ? 'pointer' : undefined }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <OptimizedImage
@@ -204,7 +316,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }} />
+                    {renderMoreMenu()}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -221,7 +333,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
         <Card {...cardProps}
             hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
-            style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)' }}>
+            style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <OptimizedImage
@@ -234,7 +346,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title} style={{ color: 'var(--accent-gray-dark-2)' }}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px", color: 'var(--accent-gray-dark-2)' }} />
+                    {renderMoreMenu('var(--accent-gray-dark-2)')}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }} style={{ color: 'var(--accent-gray-dark-2)' }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -264,7 +376,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
                 </div>
                 <div className="flex justify-between items-center">
                     <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
-                    <MoreOutlined style={{ fontSize: "24px" }} />
+                    {(onRename || onDiscard) && renderMoreMenu()}
                 </div>
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
                 <div className='flex flex-wrap'>
@@ -278,14 +390,14 @@ const cardProps = { ...(rest as any), className: combinedClassName };
     );
 
     if (isVisual) {
-        if (status === "approved" && isPastEvent) return pastCardVisual;
-        if (status === "in-review") return reviewCardVisual;
-        if (status === "draft") return draftCardVisual;
-        if (status === "approved") return approvedCardVisual;
-        if (status === "cancelled") return cancelledCardVisual;
+        if (status === "approved" && isPastEvent) return <>{pastCardVisual}{renameModal}{discardModal}</>;
+        if (status === "in-review") return <>{reviewCardVisual}{renameModal}{discardModal}</>;
+        if (status === "draft") return <>{draftCardVisual}{renameModal}{discardModal}</>;
+        if (status === "approved") return <>{approvedCardVisual}{renameModal}{discardModal}</>;
+        if (status === "cancelled") return <>{cancelledCardVisual}{renameModal}{discardModal}</>;
     }
-    if (status === "in-review") return inReviewCard;
-    if (status === "draft") return draftCard;
+    if (status === "in-review") return <>{inReviewCard}{renameModal}{discardModal}</>;
+    if (status === "draft") return <>{draftCard}{renameModal}{discardModal}</>;
 }
 
 export default CardEvent;

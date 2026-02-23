@@ -207,3 +207,40 @@ export function calculateScrollOffset(container: HTMLDivElement, row: HTMLDivEle
   const rowTop = row.getBoundingClientRect().top;
   return rowTop - containerTop  // Adjust to scroll just enough to show the row
 }
+
+// This function calculates the event level based on the provided data, which includes various criteria such as travel type, elements involved, number of attendees, and budget details. The function returns an integer (0-3) representing the event level, which can be used to determine the required notice period for the event.
+export const calculateEventLevel = (data: any) => {
+  // Level 3 Criteria (Most Restrictive) - Requires 8 Weeks notice
+  if (
+    data.form_data?.travel?.type === "international" || 
+    data.form_data?.travel?.type === "out_of_region" ||
+    data.form_data?.elements?.minors === true ||
+    data.form_data?.elements?.alcohol === true ||
+    (data.attendees && data.attendees >= 150) ||
+    (data.form_data?.budget?.total_purchase > 4999.99)
+  ) {
+    return 3;
+  }
+
+  // Level 2 Criteria - Requires 5 Weeks notice
+  if (
+    data.form_data?.travel?.type === "regional_overnight" ||
+    data.form_data?.budget?.source === "SAFAC" || 
+    data.form_data?.budget?.source === "TGIF" ||
+    (data.attendees && data.attendees >= 150)
+  ) {
+    return 2;
+  }
+
+  // Level 1 Criteria - Requires 3 Weeks notice
+  if (
+    data.form_data?.elements?.movies === true ||
+    data.form_data?.elements?.fire === true ||
+    data.location_type === "Off-Campus"
+  ) {
+    return 1;
+  }
+
+  // Default to Level 0 - Requires 12 Business Days
+  return 0;
+};

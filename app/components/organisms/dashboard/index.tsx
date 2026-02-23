@@ -2,11 +2,11 @@ import CardWelcome from "~/components/molecules/card/card-welcome";
 import CardAnnouncements from "~/components/molecules/card/card-announcements";
 import { useAuth } from "~/auth/AuthProvider";
 import { apolloClient } from "~/lib/apollo-client";
-import { EventsByOrganizationDocument } from "~/lib/graphql/generated";
+import { EventsByOrganizationDocument, useDeleteEventMutation, useUpdateEventMutation } from "~/lib/graphql/generated";
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Card, Badge, Divider } from "antd";
+import { Typography, Card, Badge, Divider, message } from "antd";
 import ProgressCircle from '../../molecules/progress-circle';
 
 const { Link, Title } = Typography;
@@ -20,6 +20,8 @@ export function DashboardContent() {
     const navigate = useNavigate();
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deleteEvent] = useDeleteEventMutation();
+    const [updateEvent] = useUpdateEventMutation();
 
     useEffect(() => {
         const fetchOrgEvents = async () => {
@@ -57,6 +59,30 @@ export function DashboardContent() {
 
     const drafts = events.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
     const inReview = events.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
+
+    const handleDiscardDraft = async (id: string) => {
+        try {
+            await deleteEvent({ variables: { id } });
+            setEvents((prev) => prev.filter((e: any) => e.id !== id));
+            message.success('Draft discarded');
+        } catch (err) {
+            console.error('Failed to discard draft', err);
+            message.error('Failed to discard draft');
+        }
+    };
+
+    const handleRenameEvent = async (id: string, nextName: string) => {
+        try {
+            const { data } = await updateEvent({ variables: { id, input: { title: nextName } } });
+            if (data?.updateEvent?.id) {
+                setEvents((prev) => prev.map((e: any) => (e.id === id ? { ...e, title: nextName } : e)));
+                message.success('Event renamed');
+            }
+        } catch (err) {
+            console.error('Failed to rename event', err);
+            message.error('Failed to rename event');
+        }
+    };
 
     // Prepare calendar items (next 30 days) for CardCalendarUpcoming
     const calendarItems = (() => {
@@ -145,7 +171,6 @@ export function DashboardContent() {
                                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                                         return (
                                         <CardEvent
-                                        disableHover 
                                         key={e.id}
                                         isPast={isPast}
                                         eventImg={e.eventImg}
@@ -271,6 +296,9 @@ export function DashboardContent() {
                                                         startTime={e.startTime ?? ''}
                                                         description={e.description ?? ''}
                                                         status={serverToUi(e.eventStatus)}
+                                                        onDiscard={() => handleDiscardDraft(e.id)}
+                                                        onRename={(nextName) => handleRenameEvent(e.id, nextName)}
+                                                        eventId={e.id}
                                                     />
                                                 );
                                             })}

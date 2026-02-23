@@ -1,6 +1,36 @@
 <?php
 
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// CORS headers for cross-origin requests from dev server
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (strpos($origin, 'localhost') !== false || strpos($origin, '127.0.0.1') !== false || $origin === 'http://localhost:5173') {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    header('Access-Control-Allow-Origin: *');
+}
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Credentials: true');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Log ALL POST requests for debugging
+@mkdir(__DIR__ . '/tmp', 0755, true);
+
+// Read input stream ONCE - can only be read one time
+$raw_input = file_get_contents('php://input');
+
+// Parse JSON payload for GraphQL
+$json_payload = json_decode($raw_input, true) ?: [];
+
 require_once __DIR__ . '/vendor/autoload.php';
+
 
 use GraphQL\GraphQL;
 use GraphQL\Utils\BuildSchema;
@@ -395,9 +425,12 @@ $rootValue = [
             $dbCol = $COL_MAP['Event'][$k];
             $cols[] = $dbCol;
             $placeholders[] = ":$k";
-            // translate GraphQL enum input for locationType into DB value
+            // Special handling for specific field types
             if ($k === 'locationType') {
                 $params[":$k"] = locationEnumToDb($v);
+            } elseif ($k === 'eventLevel') {
+                // Ensure eventLevel is an integer for the database
+                $params[":$k"] = $v !== null ? (int)$v : null;
             } else {
                 $params[":$k"] = $v;
             }
@@ -423,9 +456,12 @@ $rootValue = [
             if (!isset($COL_MAP['Event'][$k])) continue;
             $dbCol = $COL_MAP['Event'][$k];
             $set[] = "`$dbCol` = :$k";
-            // translate locationType enum to DB value for storage
+            // Special handling for specific field types
             if ($k === 'locationType') {
                 $params[":$k"] = locationEnumToDb($v);
+            } elseif ($k === 'eventLevel') {
+                // Ensure eventLevel is an integer for the database
+                $params[":$k"] = $v !== null ? (int)$v : null;
             } else {
                 $params[":$k"] = $v;
             }
@@ -707,7 +743,8 @@ $rootValue = [
 ];
 
 // Read incoming request (GraphQL JSON)
-$raw = file_get_contents('php://input');
+// $raw_input was already read at the top of the file (can only read php://input once)
+$raw = $raw_input;
 $payload = json_decode($raw, true) ?: [];
 $query = $payload['query'] ?? ($_GET['query'] ?? null);
 $rawTrim = is_string($raw) ? trim($raw) : '';

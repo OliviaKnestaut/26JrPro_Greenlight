@@ -1,11 +1,11 @@
 
 import { useAuth } from "~/auth/AuthProvider";
 import { apolloClient } from "~/lib/apollo-client";
-import { EventsByOrganizationDocument } from "~/lib/graphql/generated";
+import { EventsByOrganizationDocument, useDeleteEventMutation, useUpdateEventMutation } from "~/lib/graphql/generated";
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Badge, Input, Button, Space, Popover, Checkbox, Tag, Collapse, Skeleton, Card, Tabs } from "antd";
+import { Typography, Badge, Input, Button, Space, Popover, Checkbox, Tag, Collapse, Skeleton, Card, Tabs, message } from "antd";
 import { useSearchParams, useNavigate } from 'react-router';
 const { Title, Paragraph, Link } = Typography;
 import { FilterOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
@@ -18,6 +18,8 @@ export function EventSubmissionsContent() {
 
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deleteEvent] = useDeleteEventMutation();
+    const [updateEvent] = useUpdateEventMutation();
 
     useEffect(() => {
         const fetchOrgEvents = async () => {
@@ -59,6 +61,30 @@ export function EventSubmissionsContent() {
     const navigate = useNavigate();
 
     const collapseDefaultActive = searchParams.get('open') ? [searchParams.get('open') as string] : [];
+
+    const handleDiscardDraft = async (id: string) => {
+        try {
+            await deleteEvent({ variables: { id } });
+            setEvents((prev) => prev.filter((e: any) => e.id !== id));
+            message.success('Draft discarded');
+        } catch (err) {
+            console.error('Failed to discard draft', err);
+            message.error('Failed to discard draft');
+        }
+    };
+
+    const handleRenameEvent = async (id: string, nextName: string) => {
+        try {
+            const { data } = await updateEvent({ variables: { id, input: { title: nextName } } });
+            if (data?.updateEvent?.id) {
+                setEvents((prev) => prev.map((e: any) => (e.id === id ? { ...e, title: nextName } : e)));
+                message.success('Event renamed');
+            }
+        } catch (err) {
+            console.error('Failed to rename event', err);
+            message.error('Failed to rename event');
+        }
+    };
 
     const toggleStatus = (val: string) => {
         setPendingStatuses(prev => prev.includes(val) ? prev.filter(s => s !== val) : [...prev, val]);
@@ -240,7 +266,6 @@ export function EventSubmissionsContent() {
                                         const statusUi = serverToUi(e.eventStatus);
                                         return (
                                         <CardEvent
-                                            disableHover
                                             key={e.id}
                                             isPast={isPast}
                                             eventImg={e.eventImg}
@@ -361,6 +386,9 @@ export function EventSubmissionsContent() {
                             startTime={e.startTime ?? ''}
                             description={e.description ?? ''}
                             status={serverToUi(e.eventStatus)}
+                            onDiscard={statusUi === 'draft' ? () => handleDiscardDraft(e.id) : undefined}
+                            onRename={(nextName) => handleRenameEvent(e.id, nextName)}
+                            eventId={e.id}
                         />);
                     });
                 })()}
