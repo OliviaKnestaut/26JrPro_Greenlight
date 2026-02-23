@@ -486,9 +486,67 @@ p {
 }
 
 .ant-picker-cell-inner {
-	height: 1.5rem;
-	width: 2.5rem;
+	height: 2.5rem;
+	width: 90%;
 	border-radius: 0;
+}
+
+/* Make room for custom event-highlighting and keep contents above the highlight */
+.styled-calendar-wrapper .ant-picker-cell-inner {
+	position: relative;
+}
+
+.styled-calendar-wrapper .ant-picker-cell-inner:has(.gc-event-date)::before {
+	content: '';
+	position: absolute;
+	inset: 0px;
+	border-radius: 0.375rem;
+	background: linear-gradient(180deg, rgba(57,187,191,0.12), rgba(57,187,191,0.06));
+	border: 1px solid var(--sea-green-8, #045966);
+	z-index: 0;
+	pointer-events: none;
+}
+
+/* Approved events: green highlight */
+.styled-calendar-wrapper .ant-picker-cell-inner:has(.gc-event-approved)::before {
+	content: '';
+	position: absolute;
+	inset: 0px;
+	border-radius: 0.375rem;
+	background: linear-gradient(180deg, rgba(149,222,100,0.12), rgba(149,222,100,0.06));
+	border: 1px solid var(--green-4, #95DE64);
+	z-index: 0;
+	pointer-events: none;
+}
+
+/* In-review events: yellow highlight */
+.styled-calendar-wrapper .ant-picker-cell-inner:has(.gc-event-in-review)::before {
+	content: '';
+	position: absolute;
+	inset: 0px;
+	border-radius: 0.375rem;
+	background: linear-gradient(180deg, rgba(255,214,102,0.12), rgba(255,214,102,0.06));
+	border: 1px solid var(--gold-4, #FFD666);
+	z-index: 0;
+	pointer-events: none;
+}
+
+.styled-calendar-wrapper .ant-picker-cell-inner > * {
+	position: relative;
+	z-index: 1;
+}
+
+.styled-calendar-wrapper .ant-picker-cell.ant-picker-cell-selected .ant-picker-cell-inner:not(:has(.gc-today)) {
+	background: transparent !important;
+	box-shadow: none !important;
+	border: none !important;
+	color: var(--color-text-primary);
+}
+
+/* Restyle the "today" date marker inside our calendar wrapper */
+.styled-calendar-wrapper .ant-picker-calendar-date-today {
+	font-weight: 700;
+	color: var(--sea-green-9, #003540);
 }
 
 /* STATISTICS CARD (EVENT FORM AND BUDGET) */

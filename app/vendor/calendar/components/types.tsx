@@ -1,12 +1,16 @@
 export interface GenericEvent {
-  eventId: string
-  startTime: Date
-  endTime: Date
-  title?: string | undefined | null
+  // calendarItems may provide `id` or `eventId`
+  eventId?: string
+  id?: string
+  startTime: Date | string
+  endTime: Date | string
+  title?: string | React.ReactNode | null
   location?: string | undefined | null
   allDay?: boolean
   textColor?: string | undefined
   backgroundColor?: string | undefined
+  status?: string
+  date?: string
 }
 
 export interface BaseCalendarProps<T extends GenericEvent = GenericEvent> {

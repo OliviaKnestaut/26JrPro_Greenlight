@@ -53,7 +53,7 @@ export function BudgetContent() {
                             Manage and track the status of all your events, from draft to approval and more.
                         </Paragraph>
                     </div>
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex justify-between mb-2 flex-col sm:flex-row gap-2 ">
                         <div className="flex items-center gap-2">
                             <Title level={5} style={{ paddingTop: "0.5rem", fontWeight: 500, margin: 0 }}>Account:</Title>
                             <div className="flex items-center gap-0">
@@ -79,21 +79,30 @@ export function BudgetContent() {
                             New Purchase Request
                         </Button>
                     </div>
-                    <div className="flex gap-4 w-full my-4">
-                        <Statistic title="Total Year-Round Budget" value={`$${totalAllocated.toLocaleString()}`} />
-                        <Statistic title="Total Budget Per Term" value={`$${totalPerTerm.toLocaleString()}`} />
-                        <Statistic title="Remaining" value={`$${totalRemaining.toLocaleString()}`} />
-                        <Statistic title="Budget Utilization" value={`${utilization}%`} />
+                    {/* Use negative margins + inner padding for gutters so 4x 25% fits without wrapping */}
+                    <div className="flex flex-wrap -mx-2 w-full gap-y-4">
+                        <div className="px-2 w-1/2 lg:w-1/4">
+                            <Statistic title="Total Year-Round Budget" value={`$${totalAllocated.toLocaleString()}`} />
+                        </div>
+                        <div className="px-2 w-1/2 lg:w-1/4">
+                            <Statistic title="Total Budget Per Term" value={`$${totalPerTerm.toLocaleString()}`} />
+                        </div>
+                        <div className="px-2 w-1/2 lg:w-1/4">
+                            <Statistic title="Remaining" value={`$${totalRemaining.toLocaleString()}`} />
+                        </div>
+                        <div className="px-2 w-1/2 lg:w-1/4">
+                            <Statistic title="Budget Utilization" value={`${utilization}%`} />
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 16, width: '100%', margin: '1rem 0' }}>
-                        <div style={{ flex: 1 }}>
-                            <Card style={{ width: '100%' }}>
+                    <div className="flex flex-col lg:flex-row -mx-2 w-full mt-4 gap-y-4">
+                        <div className="px-2 w-full lg:w-1/2">
+                            <Card>
                                 <Title level={4}>Total Spent</Title>
                                 <img src={spentGraph} alt="Total Spent Graph" style={{ width: '100%' }} />
                             </Card>
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <Card style={{ width: '100%' }}>
+                        <div className="px-2 w-full lg:w-1/2">
+                            <Card>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Title level={4} style={{ margin: 0 }}>Money Spent</Title>
                                     <Button type="link" style={{ padding: 0 }}>Fall 2025 ▾</Button>
@@ -104,7 +113,7 @@ export function BudgetContent() {
                     </div>
                 </div>
 
-                <Card>
+                <Card className="mt-4">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                         <Title level={4} style={{ margin: 0 }}>Purchase Requests</Title>
                         <Button icon={<FilterOutlined />}>Filter</Button>
@@ -131,12 +140,12 @@ export function BudgetContent() {
                                 cost: p.itemCost,
                             }));
                             const columns: ColumnsType<any> = [
-                                { title: 'Date', dataIndex: 'date', key: 'date', render: (d: string) => formatDateMDY(d) },
-                                { title: 'Title', dataIndex: 'title', key: 'title' },
-                                { title: 'Categories', dataIndex: 'categories', key: 'categories' },
-                                { title: 'Event', dataIndex: 'eventTitle', key: 'event', render: (t: any, row: any) => t ? t : row.eventId ? `#${row.eventId}` : '-' },
+                                { title: 'Date', dataIndex: 'date', key: 'date', width: 120, ellipsis: true, render: (d: string) => formatDateMDY(d) },
+                                { title: 'Title', dataIndex: 'title', key: 'title', width: 300, ellipsis: true },
+                                { title: 'Categories', dataIndex: 'categories', key: 'categories', width: 160, ellipsis: true },
+                                { title: 'Event', dataIndex: 'eventTitle', key: 'event', width: 180, ellipsis: true, render: (t: any, row: any) => t ? t : row.eventId ? `#${row.eventId}` : '-' },
                                 {
-                                    title: 'Status', dataIndex: 'status', key: 'status',
+                                    title: 'Status', dataIndex: 'status', key: 'status', width: 140, ellipsis: true,
                                     render: (s: string) => {
                                         const styles: Record<string, React.CSSProperties> = {
                                             approved:    { backgroundColor: 'var(--green-2)', color: 'var(--green-9)' },
@@ -152,15 +161,17 @@ export function BudgetContent() {
                                         );
                                     }
                                 },
-                                { title: 'Cost', dataIndex: 'cost', key: 'cost', render: (c: number) => c == null ? '-' : `$${Number(c).toFixed(2)}` },
+                                { title: 'Cost', dataIndex: 'cost', key: 'cost', width: 120, ellipsis: true, render: (c: number) => c == null ? '-' : `$${Number(c).toFixed(2)}` },
                             ];
                             return (
-                                <div style={{ minHeight: 280 }}>
+                                    <div style={{ maxHeight: 360, overflow: 'auto' }}>
                                     <Table 
                                         columns={columns} 
                                         dataSource={rows} 
                                         loading={purchasesLoading} 
                                         pagination={viewAll ? false : { pageSize: 5 }} 
+                                        tableLayout="fixed"
+                                        scroll={{ x: 900 }}
                                     />
                                 </div>
                             );

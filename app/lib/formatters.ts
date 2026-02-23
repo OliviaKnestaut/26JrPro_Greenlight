@@ -28,7 +28,9 @@ export const formatTime = (s?: string) => {
     const asDate = new Date(s);
     if (!isNaN(asDate.getTime())) {
         try {
-            return asDate.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            // use locale formatting but ensure AM/PM stays attached to the time using a non-breaking space
+            const localized = asDate.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            return localized.replace(/\s?(AM|PM|am|pm)$/, '\u00A0$1');
         } catch (e) {
             // fall through to manual formatting
         }
@@ -39,7 +41,7 @@ export const formatTime = (s?: string) => {
         const mm = m[2];
         const ampm = hh >= 12 ? 'PM' : 'AM';
         hh = hh % 12 || 12;
-        return `${hh}:${mm} ${ampm}`;
+        return `${hh}:${mm}\u00A0${ampm}`;
     }
     return s;
 };
