@@ -5,7 +5,7 @@ import { EventsByOrganizationDocument, useDeleteEventMutation, useUpdateEventMut
 import { useEffect, useState } from 'react';
 import { serverToUi } from '~/lib/eventStatusMap';
 import { formatDateMDY } from '~/lib/formatters';
-import { Typography, Badge, Input, Button, Space, Popover, Checkbox, Tag, Collapse, Skeleton, Card, Tabs, message } from "antd";
+import { Typography, Badge, Input, Button, Space, Popover, Checkbox, Tag, Collapse, Skeleton, Card, Tabs, message, Pagination } from "antd";
 import { useSearchParams, useNavigate } from 'react-router';
 const { Title, Paragraph, Link } = Typography;
 import { FilterOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
@@ -57,6 +57,7 @@ export function EventSubmissionsContent() {
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [pendingStatuses, setPendingStatuses] = useState<string[]>([]);
     const [mainTab, setMainTab] = useState<'upcoming'|'past'>('upcoming');
+    const [currentPage, setCurrentPage] = useState(1);
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -120,6 +121,11 @@ export function EventSubmissionsContent() {
         if (mainTab === 'past') params.set('past', '1');
         setSearchParams(params, { replace: true });
     }, [query, selectedStatuses, mainTab, setSearchParams]);
+
+    // reset pagination when filters/query/tab or events change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [query, selectedStatuses, mainTab, events]);
 
     const toMinutes = (t?: string) => {
         if (!t) return 0;
@@ -269,7 +275,7 @@ export function EventSubmissionsContent() {
                                             key={e.id}
                                             isPast={isPast}
                                             eventImg={e.eventImg}
-                                            onClick={statusUi !== 'draft' ? () => navigate(`/event-overview/${e.id}`) : undefined}
+                                            onClick={statusUi !== 'draft' ? () => navigate(`/event-overview?id=${encodeURIComponent(e.id)}`) : undefined}
                                             className="event-card"
                                             style={{ cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
                                             title={e.title}
@@ -371,7 +377,15 @@ export function EventSubmissionsContent() {
                         : filtered;
 
                     if (statusFiltered.length === 0) return <div>No events</div>;
-                        return statusFiltered.map((e: any) => {
+
+                    // paginate results (9 per page)
+                    const pageSize = 9;
+                    const start = (currentPage - 1) * pageSize;
+                    const paginated = statusFiltered.slice(start, start + pageSize);
+
+                    return (
+                        <>
+                            {paginated.map((e: any) => {
                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                         const statusUi = serverToUi(e.eventStatus);
                         return (
@@ -379,7 +393,7 @@ export function EventSubmissionsContent() {
                             key={e.id}
                             isPast={isPast}
                             eventImg={e.eventImg}
-                            onClick={statusUi !== 'draft' ? () => navigate(`/event-overview/${e.id}`) : undefined}
+                            onClick={statusUi !== 'draft' ? () => navigate(`/event-overview?id=${encodeURIComponent(e.id)}`) : undefined}
                             style={{ cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
                             title={e.title}
                             date={formatDateMDY(e.eventDate)}
@@ -391,7 +405,14 @@ export function EventSubmissionsContent() {
                             onRename={(nextName) => handleRenameEvent(e.id, nextName)}
                             eventId={e.id}
                         />);
-                    });
+                            })}
+                            {statusFiltered.length > pageSize && (
+                                <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                    <Pagination current={currentPage} pageSize={pageSize} total={statusFiltered.length} onChange={(p) => setCurrentPage(p)} />
+                                </div>
+                            )}
+                        </>
+                    );
                 })()}
             </div>
         </div >

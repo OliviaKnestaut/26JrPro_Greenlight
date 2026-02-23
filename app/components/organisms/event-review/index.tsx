@@ -453,7 +453,7 @@ export function EventReview() {
                 onDashboardClick={() => navigate("/")} 
                 onEventOverviewClick={() => {
                     if (createdEventId) {
-                        navigate(`/event-overview/${createdEventId}`);
+                        navigate(`/event-overview?id=${encodeURIComponent(createdEventId)}`);
                     } else {
                         navigate("/event-overview");
                     }
