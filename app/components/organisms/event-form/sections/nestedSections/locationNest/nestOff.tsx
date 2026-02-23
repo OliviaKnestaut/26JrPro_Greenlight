@@ -2,6 +2,7 @@ import { Controller, useWatch } from "react-hook-form";
 import { Radio, Checkbox, Typography, Input, Upload, Alert, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useGetUsersQuery } from "~/lib/graphql/generated";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -49,17 +50,18 @@ export default function OffCampusSection({ control, setValue }: Props) {
             <Controller
                 name="form_data.location.off_campus_address"
                 control={control}
-                rules={{ required: "Please provide the off campus location" }}
+                rules={{ required: "Off-campus location is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Where is this event being held off campus?</Text>
+                        <FieldLabel required>Where is this event being held off campus?</FieldLabel>
                         <Input
                             {...field}
                             placeholder="Enter street address or location name"
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -71,14 +73,14 @@ export default function OffCampusSection({ control, setValue }: Props) {
                 control={control}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Google Maps Link (Optional)</Text>
+                        <FieldLabel>Google Maps Link</FieldLabel>
+                        <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Provide a link to help locate the venue</Text>
                         <Input
                             {...field}
                             placeholder="https://maps.google.com/..."
-                            style={{ marginTop: 8 }}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -88,10 +90,10 @@ export default function OffCampusSection({ control, setValue }: Props) {
             <Controller
                 name="form_data.travel.type"
                 control={control}
-                rules={{ required: "Please select a travel type" }}
+                rules={{ required: "Travel type is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>What type of travel does this event involve?</Text>
+                        <FieldLabel required>What type of travel does this event involve?</FieldLabel>
                         <Radio.Group
                             {...field}
                             onChange={(e) => field.onChange(e.target.value)}
@@ -105,7 +107,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
                         </Radio.Group>
 
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -128,10 +130,10 @@ export default function OffCampusSection({ control, setValue }: Props) {
                     <Controller
                         name="form_data.travel.transportation"
                         control={control}
-                        rules={{ required: "Please select a transportation method" }}
+                        rules={{ required: "Transportation method is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>How will participants be transported?</Text>
+                                <FieldLabel required>How will participants be transported?</FieldLabel>
                                 <Radio.Group
                                     {...field}
                                     onChange={(e) => field.onChange(e.target.value)}
@@ -144,7 +146,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
                                     ))}
                                 </Radio.Group>
                                 {fieldState.error && (
-                                    <Text type="danger">{fieldState.error.message}</Text>
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                                 )}
                             </div>
                         )}
@@ -163,16 +165,17 @@ export default function OffCampusSection({ control, setValue }: Props) {
                         <Controller
                             name="form_data.travel.trip_leader_id"
                             control={control}
-                            rules={{ required: "Please select a trip leader" }}
+                            rules={{ required: "Trip leader is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ marginBottom: 16 }}>
-                                    <Text>Select Trip Leader</Text>
+                                    <FieldLabel required>Select Trip Leader</FieldLabel>
                                     <Select
                                         {...field}
                                         showSearch
                                         placeholder="Search and select a member"
                                         style={{ display: "block", marginTop: 8 }}
                                         loading={usersLoading}
+                                        status={fieldState.error ? "error" : ""}
                                         filterOption={(input, option) =>
                                             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                         }
@@ -182,7 +185,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
                                         }))}
                                     />
                                     {fieldState.error && (
-                                        <Text type="danger">{fieldState.error.message}</Text>
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                                     )}
                                 </div>
                             )}
@@ -200,14 +203,15 @@ export default function OffCampusSection({ control, setValue }: Props) {
                                 rules={{ required: "Emergency contact name is required" }}
                                 render={({ field, fieldState }) => (
                                     <div style={{ flex: 1 }}>
-                                        <Text>Emergency Contact Name</Text>
+                                        <FieldLabel required>Emergency Contact Name</FieldLabel>
                                         <Input
                                             {...field}
                                             placeholder="Full name"
                                             style={{ marginTop: 8 }}
+                                            status={fieldState.error ? "error" : ""}
                                         />
                                         {fieldState.error && (
-                                            <Text type="danger">{fieldState.error.message}</Text>
+                                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                                         )}
                                     </div>
                                 )}
@@ -219,14 +223,15 @@ export default function OffCampusSection({ control, setValue }: Props) {
                                 rules={{ required: "Emergency contact phone is required" }}
                                 render={({ field, fieldState }) => (
                                     <div style={{ flex: 1 }}>
-                                        <Text>Emergency Contact Phone</Text>
+                                        <FieldLabel required>Emergency Contact Phone</FieldLabel>
                                         <Input
                                             {...field}
                                             placeholder="(555) 123-4567"
                                             style={{ marginTop: 8 }}
+                                            status={fieldState.error ? "error" : ""}
                                         />
                                         {fieldState.error && (
-                                            <Text type="danger">{fieldState.error.message}</Text>
+                                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                                         )}
                                     </div>
                                 )}
@@ -244,15 +249,16 @@ export default function OffCampusSection({ control, setValue }: Props) {
                     rules={{ required: "Lodging details are required for overnight travel" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>Where will participants be staying overnight?</Text>
+                            <FieldLabel required>Where will participants be staying overnight?</FieldLabel>
                             <TextArea
                                 {...field}
                                 rows={4}
                                 placeholder="Hotel name, address, number of rooms, supervision plan, etc."
                                 style={{ marginTop: 8 }}
+                                status={fieldState.error ? "error" : ""}
                             />
                             {fieldState.error && (
-                                <Text type="danger">{fieldState.error.message}</Text>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                             )}
                         </div>
                     )}
@@ -264,13 +270,10 @@ export default function OffCampusSection({ control, setValue }: Props) {
                 <Controller
                     name="form_data.travel.eap_file"
                     control={control}
-                    rules={{ required: "Emergency Action Plan upload is required for travel events" }}
+                    rules={{ required: "Emergency Action Plan is required for travel events" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>
-                                Upload an Emergency Action Plan (Required for Travel Events)
-                            </Text>
-                            <br />
+                            <FieldLabel required>Upload an Emergency Action Plan (Required for Travel Events)</FieldLabel>
                             <Upload
                                 beforeUpload={() => false}
                                 maxCount={1}
@@ -278,13 +281,14 @@ export default function OffCampusSection({ control, setValue }: Props) {
                                     const file = info.fileList[0]?.originFileObj;
                                     field.onChange(file);
                                 }}
+                                style={{ marginTop: 8 }}
                             >
                                 <div>
                                     <UploadOutlined /> Click to Upload
                                 </div>
                             </Upload>
                             {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                     {fieldState.error.message}
                                 </Text>
                             )}
@@ -295,3 +299,4 @@ export default function OffCampusSection({ control, setValue }: Props) {
         </div>
     );
 }
+

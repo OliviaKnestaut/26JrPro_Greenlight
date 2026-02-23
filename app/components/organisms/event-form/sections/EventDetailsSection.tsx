@@ -3,6 +3,7 @@ import { Input, Upload, Typography, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useAuth } from "../../../../auth/AuthProvider";
 import { useGetOrganizationsQuery } from "../../../../lib/graphql/generated";
+import FieldLabel from "../components/FieldLabel";
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -32,10 +33,9 @@ export default function EventDetailsSection({ control, watch }: Props) {
         name="event_img"
         control={control}
         rules={{ required: "Event image is required" }}
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <Text>Upload a high-resolution cover photo for your event (1300px × 780px) under 5MB</Text>
-            <br />
+            <FieldLabel required>Upload a high-resolution cover photo for your event (1300px × 780px) under 5MB</FieldLabel>
             <Upload
               beforeUpload={() => false} // prevent auto-upload
               maxCount={1}
@@ -43,12 +43,14 @@ export default function EventDetailsSection({ control, watch }: Props) {
                 const file = info.fileList[0]?.originFileObj;
                 field.onChange(file);
               }}
+              style={{ marginTop: 8 }}
             >
               <div>
                 <UploadOutlined /> Click to Upload
               </div>
             </Upload>
-            {field.value && <Text type="success">✓ Image selected: {field.value.name}</Text>}
+            {field.value && <Text type="success" style={{ display: "block", marginTop: 4 }}>✓ Image selected: {field.value.name}</Text>}
+            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
           </div>
         )}
       />
@@ -60,13 +62,14 @@ export default function EventDetailsSection({ control, watch }: Props) {
         rules={{ required: "Event title is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <Text>What is the name of your event?</Text>
+            <FieldLabel required>What is the name of your event?</FieldLabel>
             <Input
               {...field}
               placeholder="Enter the event name"
               status={fieldState.error ? "error" : ""}
+              style={{ marginTop: 8 }}
             />
-            {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
           </div>
         )}
       />
@@ -78,8 +81,8 @@ export default function EventDetailsSection({ control, watch }: Props) {
         rules={{ required: "Event description is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <Text>Please provide a detailed operational description of the event activities</Text>
-            <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>
+            <FieldLabel required>Please provide a detailed operational description of the event activities</FieldLabel>
+            <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
               Include logistics, programming details, and flow of the event
             </Text>
             <TextArea
@@ -88,7 +91,7 @@ export default function EventDetailsSection({ control, watch }: Props) {
               placeholder="Enter the event operational details here"
               status={fieldState.error ? "error" : ""}
             />
-            {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
           </div>
         )}
       />
@@ -99,7 +102,10 @@ export default function EventDetailsSection({ control, watch }: Props) {
         control={control}
         render={({ field }) => (
           <div style={{ marginBottom: 24 }}>
-            <Text>Are you co-hosting with another organization? (Optional)</Text>
+            <FieldLabel>Are you co-hosting with another organization?</FieldLabel>
+            <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
+              Optional - Leave blank if not applicable
+            </Text>
             <Select
               {...field}
               mode="multiple"
@@ -110,7 +116,7 @@ export default function EventDetailsSection({ control, watch }: Props) {
               filterOption={(input, option) =>
                 (option?.children?.toString().toLowerCase() ?? "").includes(input.toLowerCase())
               }
-              style={{ width: "100%", marginTop: 8 }}
+              style={{ width: "100%" }}
               onChange={(val) => field.onChange(val)}
             >
               {availableOrgs.map((org: any) => (
@@ -133,19 +139,21 @@ export default function EventDetailsSection({ control, watch }: Props) {
         }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <Text>What is the expected number of attendees?</Text>
+            <FieldLabel required>What is the expected number of attendees?</FieldLabel>
             <Input
               {...field}
               type="number"
               placeholder="Ex: 50"
               min={1}
               status={fieldState.error ? "error" : ""}
+              style={{ marginTop: 8, width: 200 }}
             />
-            {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
           </div>
         )}
       />
     </>
   );
 }
+
 

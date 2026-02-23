@@ -1,6 +1,8 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Input, DatePicker, TimePicker, InputNumber, Radio, Typography } from "antd";
 import dayjs from "dayjs";
+import FieldLabel from "../components/FieldLabel";
+
 const { TextArea } = Input;
 const { Text } = Typography;
 
@@ -25,20 +27,21 @@ export default function DateLocationSection({ control }: Props) {
                 rules={{ required: "Event date is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 24 }}>
-                        <Text>What is the date of your event?</Text>
+                        <FieldLabel required>What is the date of your event?</FieldLabel>
                         <DatePicker
                             value={field.value ? dayjs(field.value) : null}
                             onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : null)}
-                            style={{ display: "block", marginTop: 8 }}
+                            style={{ display: "block", marginTop: 8, width: 240 }}
+                            status={fieldState.error ? "error" : ""}
                         />
-                        {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                        {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                     </div>
                 )}
             />
 
             {/* Q7: Start and End Time */}
             <div style={{ marginBottom: 24 }}>
-                <Text>What is the start and end time of your event?</Text>
+                <FieldLabel required>What is the start and end time of your event?</FieldLabel>
                 <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
                     <Controller
                         name="start_time"
@@ -46,16 +49,17 @@ export default function DateLocationSection({ control }: Props) {
                         rules={{ required: "Start time is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ flex: 1 }}>
-                                <Text type="secondary">Start Time</Text>
+                                <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>Start Time</Text>
                                 <TimePicker
                                     value={field.value ? dayjs(field.value, "h:mm A") : null}
                                     format="h:mm A"
                                     use12Hours
                                     minuteStep={5}
                                     onChange={(time) => field.onChange(time ? time.format("h:mm A") : null)}
-                                    style={{ display: "block", width: "100%", marginTop: 4 }}
+                                    style={{ display: "block", width: "100%" }}
+                                    status={fieldState.error ? "error" : ""}
                                 />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -66,16 +70,17 @@ export default function DateLocationSection({ control }: Props) {
                         rules={{ required: "End time is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ flex: 1 }}>
-                                <Text type="secondary">End Time</Text>
+                                <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>End Time</Text>
                                 <TimePicker
                                     value={field.value ? dayjs(field.value, "h:mm A") : null}
                                     format="h:mm A"
                                     use12Hours
                                     minuteStep={5}
                                     onChange={(time) => field.onChange(time ? time.format("h:mm A") : null)}
-                                    style={{ display: "block", width: "100%", marginTop: 4 }}
+                                    style={{ display: "block", width: "100%" }}
+                                    status={fieldState.error ? "error" : ""}
                                 />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -88,13 +93,13 @@ export default function DateLocationSection({ control }: Props) {
                 control={control}
                 render={({ field }) => (
                     <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
-                        <Text>Does your event require additional setup or takedown time?</Text>
-                        <Text type="secondary">If so, please provide the number of minutes. If not, you can leave this blank or enter 0.</Text>
+                        <FieldLabel>Does your event require additional setup or takedown time?</FieldLabel>
+                        <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Enter the number of minutes needed, or leave blank if not applicable</Text>
                         <InputNumber
                             {...field}
                             min={0}
                             placeholder="Ex: 30"
-                            style={{ display: "block", marginTop: 8 }}
+                            style={{ display: "block", width: 200 }}
                         />
                     </div>
                 )}
@@ -107,7 +112,7 @@ export default function DateLocationSection({ control }: Props) {
                 rules={{ required: "Please select a location type" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 24 }}>
-                        <Text>Where will this event take place?</Text>
+                        <FieldLabel required>Where will this event take place?</FieldLabel>
                         <Radio.Group
                             {...field}
                             onChange={(e) => field.onChange(e.target.value)}
@@ -117,7 +122,7 @@ export default function DateLocationSection({ control }: Props) {
                             <Radio value="On-Campus">On-Campus</Radio>
                             <Radio value="Off-Campus">Off-Campus</Radio>
                         </Radio.Group>
-                        {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                        {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                     </div>
                 )}
             />
@@ -130,13 +135,14 @@ export default function DateLocationSection({ control }: Props) {
                     rules={{ required: "Virtual event link is required" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 24 }}>
-                            <Text>Please provide the virtual event link</Text>
+                            <FieldLabel required>Please provide the virtual event link</FieldLabel>
                             <Input
                                 {...field}
                                 placeholder="https://zoom.us/meeting/..."
                                 style={{ display: "block", marginTop: 8 }}
+                                status={fieldState.error ? "error" : ""}
                             />
-                            {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                         </div>
                     )}
                 />
@@ -144,4 +150,5 @@ export default function DateLocationSection({ control }: Props) {
         </>
     );
 }
+
 

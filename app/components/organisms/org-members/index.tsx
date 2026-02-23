@@ -12,6 +12,7 @@ export function OrgMembersContent() {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const { user } = useAuth();
 
     const { data, loading, error } = useGetUsersQuery({
         variables: { limit: 200, offset: 0 },
@@ -20,9 +21,6 @@ export function OrgMembersContent() {
 
     if (loading) return <p>Loading members...</p>;
     if (error) return <p>Failed to load roster</p>;
-
-
-    const { user } = useAuth();
     const org = (user as any)?.organization ?? null;
     const orgName = org?.orgName ?? 'Organization';
     const description = org?.bio ?? 'Organization description';

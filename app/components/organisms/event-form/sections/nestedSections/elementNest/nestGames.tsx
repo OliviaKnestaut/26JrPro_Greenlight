@@ -1,5 +1,6 @@
 import { Controller } from "react-hook-form";
 import { Checkbox, Input, Radio, Typography } from "antd";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 
@@ -11,7 +12,7 @@ export default function SORCGamesSection({ control }: Props) {
     return (
         <div style={{ marginTop: 24 }}>
 
-            {/* SG1 — Multi-Select Games */}
+            {/* SG1 - Multi-Select Games */}
             <Controller
                 name="form_data.sorc_games.selected"
                 control={control}
@@ -20,9 +21,9 @@ export default function SORCGamesSection({ control }: Props) {
                 }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>
+                        <FieldLabel required>
                             Which SORC games or inflatables will be used?
-                        </Text>
+                        </FieldLabel>
 
                         <Checkbox.Group
                             {...field}
@@ -100,7 +101,7 @@ export default function SORCGamesSection({ control }: Props) {
                         </Checkbox.Group>
 
                         {fieldState.error && (
-                            <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                 {fieldState.error.message}
                             </Text>
                         )}
@@ -108,36 +109,37 @@ export default function SORCGamesSection({ control }: Props) {
                 )}
             />
 
-            {/* SG2 — Location */}
+            {/* SG2 - Location */}
             <Controller
                 name="form_data.sorc_games.location"
                 control={control}
                 rules={{ required: "Setup location is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Where in your event location will the SORC games be set up?</Text>
+                        <FieldLabel required>Where in your event location will the SORC games be set up?</FieldLabel>
                         <Input
                             {...field}
                             placeholder="Enter setup location"
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
             />
 
-            {/* SG3 — Staff Present */}
+            {/* SG3 - Staff Present */}
             <Controller
                 name="form_data.sorc_games.staff_present"
                 control={control}
                 rules={{ required: "Select yes or no" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>
+                        <FieldLabel required>
                             Will SORC staff need to be present for setup and supervision?
-                        </Text>
+                        </FieldLabel>
 
                         <Radio.Group
                             {...field}
@@ -148,7 +150,7 @@ export default function SORCGamesSection({ control }: Props) {
                         </Radio.Group>
 
                         {fieldState.error && (
-                            <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                 {fieldState.error.message}
                             </Text>
                         )}
@@ -159,4 +161,5 @@ export default function SORCGamesSection({ control }: Props) {
         </div>
     );
 }
+
 

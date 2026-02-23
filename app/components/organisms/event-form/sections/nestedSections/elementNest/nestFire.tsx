@@ -1,5 +1,6 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Radio, Input, Typography } from "antd";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 
@@ -23,7 +24,7 @@ export default function FireSafetySection({ control }: Props) {
                 rules={{ required: "Select a fire source type" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>What type of fire source will be used?</Text>
+                        <FieldLabel required>What type of fire source will be used?</FieldLabel>
 
                         <Radio.Group
                             {...field}
@@ -53,7 +54,7 @@ export default function FireSafetySection({ control }: Props) {
                         </Radio.Group>
 
                         {fieldState.error && (
-                            <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                 {fieldState.error.message}
                             </Text>
                         )}
@@ -69,9 +70,9 @@ export default function FireSafetySection({ control }: Props) {
                     rules={{ required: "You must agree to the additional charge to use the SORC fire pit" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>
-                                If you select SORC fire pit, there will be an additional charge added to your organization&apos;s account. Do you agree to this if the event is approved?
-                            </Text>
+                            <FieldLabel required>
+                                If you select SORC fire pit, there will be an additional charge added to your organization's account. Do you agree to this if the event is approved?
+                            </FieldLabel>
 
                             <Radio.Group
                                 {...field}
@@ -82,7 +83,7 @@ export default function FireSafetySection({ control }: Props) {
                             </Radio.Group>
 
                             {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                     {fieldState.error.message}
                                 </Text>
                             )}
@@ -100,20 +101,20 @@ export default function FireSafetySection({ control }: Props) {
                 }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Describe your fire safety plan</Text>
-                        <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
-                            Include supervision, extinguisher access, and shutdown plan
-                        </Text>
+                        <FieldLabel required subtitle="Include supervision, extinguisher access, and shutdown plan">
+                            Describe your fire safety plan
+                        </FieldLabel>
 
                         <Input.TextArea
                             {...field}
                             rows={4}
                             placeholder="Provide detailed fire safety procedures"
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
 
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -122,3 +123,4 @@ export default function FireSafetySection({ control }: Props) {
         </div>
     );
 }
+

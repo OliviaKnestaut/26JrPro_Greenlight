@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -188,16 +189,17 @@ export default function OnCampusSection({ control, setValue }: Props) {
             <Controller
                 name="form_data.location.selected"
                 control={control}
-                rules={{ required: "Select a campus space" }}
-                render={({ field }) => (
+                rules={{ required: "Campus space selection is required" }}
+                render={({ field, fieldState }) => (
                     <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                        <Text>Which campus space will your event be held in?</Text>
+                        <FieldLabel required>Which campus space will your event be held in?</FieldLabel>
                         <Select
                             {...field}
                             value={field.value}
                             placeholder="Select building and room"
-                            style={{ width: 300 }}
+                            style={{ width: 300, marginTop: 8 }}
                             loading={buildingsLoading}
+                            status={fieldState.error ? "error" : ""}
                             onChange={(value) => {
                                 field.onChange(value);
                                 setValue?.("form_data.location.room_type", undefined, {
@@ -214,6 +216,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 <Option key={opt} value={opt}>{opt}</Option>
                             ))}
                         </Select>
+                        {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                     </div>
                 )}
             />
@@ -224,13 +227,14 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     <Controller
                         name="form_data.location.room_type"
                         control={control}
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                             <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                                <Text>What kind of room do you want to use?</Text>
+                                <FieldLabel>What kind of room do you want to use?</FieldLabel>
+                                <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Helps narrow down room options</Text>
                                 <Select
                                     {...field}
                                     value={field.value}
-                                    placeholder="Select room type"
+                                    placeholder="Select room type (optional)"
                                     style={{ width: 300 }}
                                     loading={buildingsLoading}
                                     options={roomTypeOptions.map((type) => ({ value: type, label: type }))}
@@ -242,6 +246,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                         });
                                     }}
                                 />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -251,17 +256,20 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     <Controller
                         name="form_data.location.room_title"
                         control={control}
-                        render={({ field }) => (
+                        rules={{ required: "Room number or title is required" }}
+                        render={({ field, fieldState }) => (
                             <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                                <Text>What is the room number or title?</Text>
+                                <FieldLabel required>What is the room number or title?</FieldLabel>
                                 <Select
                                     {...field}
                                     value={field.value}
                                     placeholder="Select room"
-                                    style={{ width: 300 }}
+                                    style={{ width: 300, marginTop: 8 }}
                                     loading={buildingsLoading}
+                                    status={fieldState.error ? "error" : ""}
                                     options={roomTitleOptions.map((title) => ({ value: title, label: title }))}
                                 />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -275,11 +283,12 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     control={control}
                     render={({ field }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>You have selected a special space. Please explain how your event aligns with the values of the space.</Text>
+                            <FieldLabel>You have selected a special space. Please explain how your event aligns with the values of the space.</FieldLabel>
                             <TextArea
                                 {...field}
                                 rows={3}
                                 placeholder="Explain how your event aligns with the values of the space."
+                                style={{ marginTop: 8 }}
                             />
                         </div>
                     )}
@@ -293,8 +302,8 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     control={control}
                     render={({ field }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>You have selected an outdoor space. Please provide a backup plan/location in case of rain.</Text>
-                            <Input {...field} placeholder="What is your backup plan?" />
+                            <FieldLabel>You have selected an outdoor space. Please provide a backup plan/location in case of rain.</FieldLabel>
+                            <Input {...field} placeholder="What is your backup plan?" style={{ marginTop: 8 }} />
                         </div>
                     )}
                 />
@@ -307,8 +316,8 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     control={control}
                     render={({ field }) => (
                         <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                            <Text>Will your room need any additional setup?</Text>
-                            <Select {...field} value={field.value} placeholder="Select room setup" style={{ width: 300 }}>
+                            <FieldLabel>Will your room need any additional setup?</FieldLabel>
+                            <Select {...field} value={field.value} placeholder="Select room setup" style={{ width: 300, marginTop: 8 }}>
                                 {indoorRoomOptions.map((opt) => (
                                     <Option key={opt} value={opt}>{opt}</Option>
                                 ))}
@@ -321,7 +330,8 @@ export default function OnCampusSection({ control, setValue }: Props) {
             {/* Q14: Furniture Repeater */}
             {isIndoor && (
                 <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                    <Text>Will your event require any additional furniture?</Text>
+                    <FieldLabel>Will your event require any additional furniture?</FieldLabel>
+                    <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Add furniture items if needed</Text>
                     {furnitureFields.map((f, index) => (
                         <div key={f.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
                             <Controller
@@ -369,12 +379,13 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     control={control}
                     render={({ field }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>What A/V equipment will you need?</Text>
+                            <FieldLabel>What A/V equipment will you need?</FieldLabel>
+                            <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Select all that apply</Text>
                             <Checkbox.Group
                                 options={avOptions}
                                 value={field.value}
                                 onChange={(value) => field.onChange(value)}
-                                style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
+                                style={{ display: "flex", flexDirection: "column" }}
                             />
                         </div>
                     )}
@@ -383,3 +394,4 @@ export default function OnCampusSection({ control, setValue }: Props) {
         </div>
     );
 }
+

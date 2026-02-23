@@ -663,3 +663,9 @@ p {
 .eventDetailTag {
   background: var(--gray-1) !important;
 }
+
+.ant-alert-warning {
+  background-color: var(--gold-1) !important;
+  border-color: var(--gold-5) !important;
+  color: var(--gold-9) !important;
+}

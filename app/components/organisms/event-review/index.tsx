@@ -6,6 +6,7 @@ import { useGetEventByIdQuery, useCreateEventMutation, useUpdateEventMutation, u
 import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
 import SuccessModal from "../../molecules/event-flow/success-modal";
 import DiscardModal from "../../molecules/event-flow/discard-modal";
+import ScrollToTop from "../../atoms/ScrollToTop";
 import { useAuth } from "~/auth/AuthProvider";
 import { calculateEventLevel } from "~/vendor/calendar/components/utils";
 
@@ -42,6 +43,44 @@ export function EventReview() {
         const day = date.getDate();
         const year = date.getFullYear();
         return `${month}/${day}/${year}`;
+    };
+    
+    const calculateEstimatedCost = (formData: any): string => {
+        let total = 0;
+        let hasCosts = false;
+        
+        // Add vendor costs
+        if (formData?.form_data?.vendors && Array.isArray(formData.form_data.vendors)) {
+            formData.form_data.vendors.forEach((vendor: any) => {
+                if (vendor.estimatedCost) {
+                    const cost = parseFloat(vendor.estimatedCost);
+                    if (!isNaN(cost)) {
+                        total += cost;
+                        hasCosts = true;
+                    }
+                }
+            });
+        }
+        
+        // Add food cost
+        if (formData?.form_data?.food?.estimated_cost) {
+            const cost = parseFloat(formData.form_data.food.estimated_cost);
+            if (!isNaN(cost)) {
+                total += cost;
+                hasCosts = true;
+            }
+        }
+        
+        // Add raffle prize value
+        if (formData?.form_data?.raffles?.total_value) {
+            const cost = parseFloat(formData.form_data.raffles.total_value);
+            if (!isNaN(cost)) {
+                total += cost;
+                hasCosts = true;
+            }
+        }
+        
+        return hasCosts ? total.toFixed(2) : 'N/A';
     };
 
     const getValues = () => formData || {};
@@ -338,8 +377,17 @@ export function EventReview() {
                         <Title level={3}>Budget & Purchase</Title>
                         <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('budgetPurchase')} />
                     </div>
+                    <div style={{ marginBottom: 16 }}>
+                        <Text strong>Total Estimated Cost:</Text>
+                        <Paragraph>
+                            {(() => {
+                                const cost = calculateEstimatedCost(formData);
+                                return cost === 'N/A' ? 'N/A' : `$${cost}`;
+                            })()}
+                        </Paragraph>
+                    </div>
                     {formData.form_data?.vendors && Array.isArray(formData.form_data.vendors) && formData.form_data.vendors.length > 0 ? (
-                        <div>
+                        <div style={{ marginTop: 16 }}>
                             <Title level={4}>Vendors/Contracts</Title>
                             {formData.form_data.vendors.map((vendor: any, index: number) => (
                                 <div key={index} style={{ marginBottom: 16, paddingLeft: 16, borderLeft: '3px solid #1890ff' }}>
@@ -347,7 +395,7 @@ export function EventReview() {
                                     {vendor.type && <Paragraph><Text strong>Type:</Text> {vendor.type}</Paragraph>}
                                     {vendor.companyName && <Paragraph><Text strong>Company:</Text> {vendor.companyName}</Paragraph>}
                                     {vendor.contactPersonName && <Paragraph><Text strong>Contact Person:</Text> {vendor.contactPersonName}</Paragraph>}
-                                    {vendor.amount && <Paragraph><Text strong>Amount:</Text> ${vendor.amount}</Paragraph>}
+                                    {vendor.estimatedCost && <Paragraph><Text strong>Estimated Cost:</Text> ${vendor.estimatedCost}</Paragraph>}
                                 </div>
                             ))}
                         </div>
@@ -378,7 +426,7 @@ export function EventReview() {
                         Save as Draft
                     </Button>
                 </div>
-                <Button type="default" danger onClick={() => setIsDiscardModalOpen(true)}>
+                <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)"  }} type="default" danger onClick={() => setIsDiscardModalOpen(true)}>
                     Discard
                 </Button>
             {draftAlertMessage && (
@@ -420,6 +468,7 @@ export function EventReview() {
                 onDiscardClick={handleDiscard} 
                 onCancelClick={() => setIsDiscardModalOpen(false)} 
             />
+            <ScrollToTop />
         </div>
     );
 }

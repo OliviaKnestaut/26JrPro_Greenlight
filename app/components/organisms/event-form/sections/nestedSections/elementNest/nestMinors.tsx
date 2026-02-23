@@ -2,6 +2,7 @@ import { Controller, useWatch } from "react-hook-form";
 import { InputNumber, Input, Upload, Typography, Select, Radio } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useGetUsersQuery } from "~/lib/graphql/generated";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -21,9 +22,6 @@ export default function MinorsSection({ control }: Props) {
 
     return (
         <div style={{ marginTop: 24 }}>
-
-            {/* Student Contact (from roster) */}
-            <div style={{ marginBottom: 24 }}>
                 <Text strong style={{ display: "block", marginBottom: 8 }}>
                     Student Point of Contact 
                 </Text>
@@ -31,19 +29,24 @@ export default function MinorsSection({ control }: Props) {
                     Select a student to be included on emails to HR regarding this event
                 </Text>
 
+            {/* Student Contact (from roster) */}
+            <div style={{ marginBottom: 24 }}>
                 <Controller
                     name="form_data.minors.student_contact_id"
                     control={control}
                     rules={{ required: "Please select a student contact" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <Text>Select Student Contact</Text>
+                            <FieldLabel required subtitle="Select a student to be included on emails to HR regarding this event">
+                                Student Point of Contact
+                            </FieldLabel>
                             <Select
                                 {...field}
                                 showSearch
                                 placeholder="Search and select a member"
                                 style={{ display: "block", marginTop: 8 }}
                                 loading={usersLoading}
+                                status={fieldState.error ? "error" : ""}
                                 filterOption={(input, option) =>
                                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                                 }
@@ -53,7 +56,7 @@ export default function MinorsSection({ control }: Props) {
                                 }))}
                             />
                             {fieldState.error && (
-                                <Text type="danger">{fieldState.error.message}</Text>
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                             )}
                         </div>
                     )}
@@ -66,10 +69,9 @@ export default function MinorsSection({ control }: Props) {
                 control={control}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>External Organizations or Individuals Partnering (if applicable)</Text>
-                        <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
-                            List the specific role of any external partners
-                        </Text>
+                        <FieldLabel subtitle="List the specific role of any external partners (if applicable)">
+                            Are you partnering with any external organization or individuals?
+                        </FieldLabel>
                         <TextArea
                             {...field}
                             rows={3}
@@ -77,7 +79,7 @@ export default function MinorsSection({ control }: Props) {
                             style={{ marginTop: 8 }}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -90,18 +92,18 @@ export default function MinorsSection({ control }: Props) {
                 rules={{ required: "Please describe the intended audience and recruitment method" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Intended Audience and Recruitment Method</Text>
-                        <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
-                            Who is the intended audience? How are minors being recruited to participate?
-                        </Text>
+                        <FieldLabel required subtitle="Who is the intended audience? How are minors being recruited to participate?">
+                            Who is your intended audience and how are you recruiting this audience?
+                        </FieldLabel>
                         <TextArea
                             {...field}
                             rows={3}
                             placeholder="Describe the target audience and how you plan to recruit minors..."
                             style={{ marginTop: 8 }}
+                            status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -175,7 +177,7 @@ export default function MinorsSection({ control }: Props) {
                 rules={{ required: "Please select Yes or No" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Does the activity require overnight housing?</Text>
+                        <FieldLabel required>Does the activity require overnight housing?</FieldLabel>
                         <Radio.Group
                             {...field}
                             onChange={(e) => field.onChange(e.target.value)}
@@ -185,7 +187,7 @@ export default function MinorsSection({ control }: Props) {
                             <Radio value={false}>No</Radio>
                         </Radio.Group>
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -198,7 +200,7 @@ export default function MinorsSection({ control }: Props) {
                 rules={{ required: "Please select Yes or No" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Does the activity require Drexel Transportation?</Text>
+                        <FieldLabel required>Does the activity require Drexel Transportation?</FieldLabel>
                         <Radio.Group
                             {...field}
                             onChange={(e) => field.onChange(e.target.value)}
@@ -208,7 +210,7 @@ export default function MinorsSection({ control }: Props) {
                             <Radio value={false}>No</Radio>
                         </Radio.Group>
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -221,7 +223,7 @@ export default function MinorsSection({ control }: Props) {
                 rules={{ required: "Please select Yes or No" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Will the activity require each minor's parent or guardian to attend the whole time?</Text>
+                        <FieldLabel required>Will the activity require each minor's parent or guardian to attend the whole time?</FieldLabel>
                         <Radio.Group
                             {...field}
                             onChange={(e) => field.onChange(e.target.value)}
@@ -231,7 +233,7 @@ export default function MinorsSection({ control }: Props) {
                             <Radio value={false}>No</Radio>
                         </Radio.Group>
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -244,8 +246,7 @@ export default function MinorsSection({ control }: Props) {
                 rules={{ required: "Minors documentation is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>Upload Required Minors Documentation</Text>
-                        <br />
+                        <FieldLabel required>Upload Required Minors Documentation</FieldLabel>
                         <Upload
                             beforeUpload={() => false}
                             maxCount={1}
@@ -253,13 +254,14 @@ export default function MinorsSection({ control }: Props) {
                                 const file = info.fileList[0]?.originFileObj;
                                 field.onChange(file);
                             }}
+                            style={{ marginTop: 8 }}
                         >
                             <div>
                                 <UploadOutlined /> Click to Upload
                             </div>
                         </Upload>
                         {fieldState.error && (
-                            <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                 {fieldState.error.message}
                             </Text>
                         )}
@@ -270,3 +272,4 @@ export default function MinorsSection({ control }: Props) {
         </div>
     );
 }
+

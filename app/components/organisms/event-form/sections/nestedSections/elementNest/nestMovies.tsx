@@ -1,6 +1,7 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Radio, Upload, Typography, Input } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import FieldLabel from "../../../components/FieldLabel";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -32,7 +33,7 @@ export default function MoviesSection({ control }: Props) {
                 rules={{ required: "Please select an option" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <Text>How do you have permission to show this movie?</Text>
+                        <FieldLabel required>How do you have permission to show this movie?</FieldLabel>
                         <Radio.Group
                             {...field}
                             onChange={(e) => field.onChange(e.target.value)}
@@ -45,7 +46,7 @@ export default function MoviesSection({ control }: Props) {
                             ))}
                         </Radio.Group>
                         {fieldState.error && (
-                            <Text type="danger">{fieldState.error.message}</Text>
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
                         )}
                     </div>
                 )}
@@ -64,9 +65,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Movie name is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Name of Movie</Text>
-                                <Input {...field} placeholder="Enter movie name" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Name of Movie</FieldLabel>
+                                <Input {...field} placeholder="Enter movie name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -77,9 +78,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Company/Individual name is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Company/Individual Name</Text>
-                                <Input {...field} placeholder="Enter name" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Company/Individual Name</FieldLabel>
+                                <Input {...field} placeholder="Enter name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -91,9 +92,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "First name is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Contact Person's First Name</Text>
-                                    <Input {...field} placeholder="First name" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Contact Person's First Name</FieldLabel>
+                                    <Input {...field} placeholder="First name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -104,9 +105,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "Last name is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Contact Person's Last Name</Text>
-                                    <Input {...field} placeholder="Last name" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Contact Person's Last Name</FieldLabel>
+                                    <Input {...field} placeholder="Last name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -125,9 +126,9 @@ export default function MoviesSection({ control }: Props) {
                             }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Email Address</Text>
-                                    <Input {...field} type="email" placeholder="email@example.com" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Email Address</FieldLabel>
+                                    <Input {...field} type="email" placeholder="email@example.com" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -138,9 +139,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "Phone number is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Phone Number</Text>
-                                    <Input {...field} placeholder="(555) 123-4567" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Phone Number</FieldLabel>
+                                    <Input {...field} placeholder="(555) 123-4567" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -152,9 +153,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Mailing address is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Mailing Address (Street, City, State, Zip)</Text>
-                                <Input {...field} placeholder="123 Main St, City, State 12345" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Mailing Address (Street, City, State, Zip)</FieldLabel>
+                                <Input {...field} placeholder="123 Main St, City, State 12345" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -165,8 +166,7 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Written permission documentation is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Upload Written Permission Documentation</Text>
-                                <br />
+                                <FieldLabel required>Upload Written Permission Documentation</FieldLabel>
                                 <Upload
                                     beforeUpload={() => false}
                                     maxCount={1}
@@ -174,13 +174,14 @@ export default function MoviesSection({ control }: Props) {
                                         const file = info.fileList[0]?.originFileObj;
                                         field.onChange(file);
                                     }}
+                                    style={{ marginTop: 8 }}
                                 >
                                     <div>
                                         <UploadOutlined /> Click to Upload
                                     </div>
                                 </Upload>
                                 {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                         {fieldState.error.message}
                                     </Text>
                                 )}
@@ -203,9 +204,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Company/Individual name is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Company/Individual Name</Text>
-                                <Input {...field} placeholder="Enter name" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Company/Individual Name</FieldLabel>
+                                <Input {...field} placeholder="Enter name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -217,9 +218,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "First name is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Contact Person's First Name</Text>
-                                    <Input {...field} placeholder="First name" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Contact Person's First Name</FieldLabel>
+                                    <Input {...field} placeholder="First name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -230,9 +231,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "Last name is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Contact Person's Last Name</Text>
-                                    <Input {...field} placeholder="Last name" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Contact Person's Last Name</FieldLabel>
+                                    <Input {...field} placeholder="Last name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -251,9 +252,9 @@ export default function MoviesSection({ control }: Props) {
                             }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Email Address</Text>
-                                    <Input {...field} type="email" placeholder="email@example.com" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Email Address</FieldLabel>
+                                    <Input {...field} type="email" placeholder="email@example.com" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -264,9 +265,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "Phone number is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Phone Number</Text>
-                                    <Input {...field} placeholder="(555) 123-4567" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Phone Number</FieldLabel>
+                                    <Input {...field} placeholder="(555) 123-4567" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -278,8 +279,7 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Purchase documentation is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Upload Purchase Documentation</Text>
-                                <br />
+                                <FieldLabel required>Upload Purchase Documentation</FieldLabel>
                                 <Upload
                                     beforeUpload={() => false}
                                     maxCount={1}
@@ -287,13 +287,14 @@ export default function MoviesSection({ control }: Props) {
                                         const file = info.fileList[0]?.originFileObj;
                                         field.onChange(file);
                                     }}
+                                    style={{ marginTop: 8 }}
                                 >
                                     <div>
                                         <UploadOutlined /> Click to Upload
                                     </div>
                                 </Upload>
                                 {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                                         {fieldState.error.message}
                                     </Text>
                                 )}
@@ -316,9 +317,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Movie name is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Name of Movie</Text>
-                                <Input {...field} placeholder="Enter movie name" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Name of Movie</FieldLabel>
+                                <Input {...field} placeholder="Enter movie name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -329,9 +330,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Facilitator name is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Facilitator's Name</Text>
-                                <Input {...field} placeholder="Full name" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Facilitator's Name</FieldLabel>
+                                <Input {...field} placeholder="Full name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -348,9 +349,9 @@ export default function MoviesSection({ control }: Props) {
                         }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Facilitator's Drexel Email Address</Text>
-                                <Input {...field} type="email" placeholder="abc123@drexel.edu" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Facilitator's Drexel Email Address</FieldLabel>
+                                <Input {...field} type="email" placeholder="abc123@drexel.edu" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -362,9 +363,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "Job title is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Facilitator's Job Title at Drexel</Text>
-                                    <Input {...field} placeholder="e.g., Associate Professor" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Facilitator's Job Title at Drexel</FieldLabel>
+                                    <Input {...field} placeholder="e.g., Associate Professor" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -375,9 +376,9 @@ export default function MoviesSection({ control }: Props) {
                             rules={{ required: "College/Department is required" }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
-                                    <Text>Facilitator's College/Department</Text>
-                                    <Input {...field} placeholder="e.g., College of Computing" style={{ marginTop: 8 }} />
-                                    {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                    <FieldLabel required>Facilitator's College/Department</FieldLabel>
+                                    <Input {...field} placeholder="e.g., College of Computing" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
                         />
@@ -389,14 +390,15 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Discussion questions are required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Discussion Questions Planned with Facilitator</Text>
+                                <FieldLabel required>Discussion Questions Planned with Facilitator</FieldLabel>
                                 <TextArea
                                     {...field}
                                     rows={4}
                                     placeholder="List the discussion questions..."
                                     style={{ marginTop: 8 }}
+                                    status={fieldState.error ? "error" : ""}
                                 />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -407,17 +409,15 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "This explanation is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>How does this film relate to organization activities/goals/mission?</Text>
-                                <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
-                                    Explain how it will contribute to the educational growth and knowledge of members
-                                </Text>
+                                <FieldLabel required subtitle="Explain how it will contribute to the educational growth and knowledge of members">How does this film relate to organization activities/goals/mission?</FieldLabel>
                                 <TextArea
                                     {...field}
                                     rows={4}
                                     placeholder="Explain the educational value..."
                                     style={{ marginTop: 8 }}
+                                    status={fieldState.error ? "error" : ""}
                                 />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -437,9 +437,9 @@ export default function MoviesSection({ control }: Props) {
                         rules={{ required: "Movie name is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <Text>Name of Movie</Text>
-                                <Input {...field} placeholder="Enter movie name" style={{ marginTop: 8 }} />
-                                {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
+                                <FieldLabel required>Name of Movie</FieldLabel>
+                                <Input {...field} placeholder="Enter movie name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
                     />
@@ -449,3 +449,4 @@ export default function MoviesSection({ control }: Props) {
         </div>
     );
 }
+
