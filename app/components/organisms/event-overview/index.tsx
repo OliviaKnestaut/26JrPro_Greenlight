@@ -41,8 +41,8 @@ export function EventOverviewContent() {
         // Add vendor costs
         if (formData?.vendors && Array.isArray(formData.vendors)) {
             formData.vendors.forEach((vendor: any) => {
-                if (vendor.estimatedCost) {
-                    const cost = parseFloat(vendor.estimatedCost);
+                if (vendor.amount) {
+                    const cost = parseFloat(vendor.amount);
                     if (!isNaN(cost)) {
                         total += cost;
                         hasCosts = true;
@@ -757,7 +757,7 @@ export function EventOverviewContent() {
                                             {vendor.contactPersonName && <Paragraph><Text strong>Contact Person:</Text> {vendor.contactPersonName}</Paragraph>}
                                             {vendor.contactEmail && <Paragraph><Text strong>Email:</Text> {vendor.contactEmail}</Paragraph>}
                                             {vendor.phone && <Paragraph><Text strong>Phone:</Text> {vendor.phone}</Paragraph>}
-                                            {vendor.estimatedCost && <Paragraph><Text strong>Estimated Cost:</Text> ${vendor.estimatedCost}</Paragraph>}
+                                            {vendor.amount && <Paragraph><Text strong>Estimated Cost:</Text> ${vendor.amount}</Paragraph>}
                                             {vendor.contractType && <Paragraph><Text strong>Contract Type:</Text> {vendor.contractType}</Paragraph>}
                                         </div>
                                     ))}
