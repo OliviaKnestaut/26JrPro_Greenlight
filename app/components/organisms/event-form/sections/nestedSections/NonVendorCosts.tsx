@@ -97,33 +97,44 @@ export default function NonVendorCosts({ control, setValue }: Props) {
 
     const hasSelectedServices = selectedServices && Object.values(selectedServices).some(Boolean);
 
-    // Helper to check if a service was auto-selected
-    const isAutoSelected = (serviceValue: string): boolean => {
+    const shouldAutoSelectService = (
+        serviceValue: string,
+        elements: any,
+        attendees: any,
+        locationType: any,
+        locationData: any
+    ): boolean => {
         if (serviceValue === "sorc_equipment_rental" && elements?.sorc_games) return true;
         if (serviceValue === "minor_clearances" && elements?.minors) return true;
         if (serviceValue === "av_support" && elements?.movies) return true;
-        
+
         if (serviceValue === "custodial_safety") {
-            return elements?.alcohol || 
-                   (attendees && parseInt(attendees) >= 100) ||
-                   elements?.minors;
+            return (
+                elements?.alcohol ||
+                (attendees && parseInt(attendees) >= 100) ||
+                elements?.minors
+            );
         }
-        
+
         if (serviceValue === "rec_athletics_staff" && locationType === "On-Campus") {
             const requiresAthleticsStaff = ["Vidas", "DAC", "Daskalakis Athletic Center"].some(
-                venue => locationData?.selected?.includes(venue)
+                (venue) => locationData?.selected?.includes(venue)
             );
             return requiresAthleticsStaff;
         }
-        
+
         if (serviceValue === "athletics_space" && locationType === "On-Campus") {
             const athleticsBuildings = ["DAC", "Daskalakis Athletic Center", "Vidas", "Recreation Center"];
-            return athleticsBuildings.some(building => locationData?.selected?.includes(building));
+            return athleticsBuildings.some((building) => locationData?.selected?.includes(building));
         }
-        
+
         return false;
     };
 
+    // Helper to check if a service was auto-selected
+    const isAutoSelected = (serviceValue: string): boolean => {
+        return shouldAutoSelectService(serviceValue, elements, attendees, locationType, locationData);
+    };
     // Service categories with detailed descriptions
     const serviceCategories = [
         {

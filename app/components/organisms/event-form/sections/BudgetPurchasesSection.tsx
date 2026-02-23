@@ -270,7 +270,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
 
                     {/* Payment Amount */}
                     <Controller
-                        name={`form_data.vendors.${index}.amount`}
+                        name={`form_data.vendors.${index}.estimatedCost`}
                         control={control}
                         rules={hasVendors ? { required: "Payment amount is required" } : {}}
                         render={({ field, fieldState }) => (
@@ -514,7 +514,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         rules={{ 
                             required: "Account number is required",
                             pattern: {
-                                value: /^(17|19)-\d{6}$/,
+                                value: /^\d{2}-\d{6}$/,
                                 message: "Account number must be in format XX-XXXXXX (e.g., 17-123456 or 19-123456)"
                             }
                         }}

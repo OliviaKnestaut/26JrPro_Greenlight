@@ -455,17 +455,38 @@ export function EventForm() {
                     'location_type': 'dateLocation',
                 };
                 
+                // Map form_data sub-keys to their corresponding panel keys
+                const formDataFieldToPanelMap: Record<string, string> = {
+                    // eventElements panel
+                    'elements': 'eventElements',
+                    'level0_confirmed': 'eventElements',
+                    'food': 'eventElements',
+                    'alcohol': 'eventElements',
+                    'minors': 'eventElements',
+                    'movies': 'eventElements',
+                    'raffles': 'eventElements',
+                    'fire': 'eventElements',
+                    'sorc_games': 'eventElements',
+                    // dateLocation panel
+                    'location': 'dateLocation',
+                    'travel': 'dateLocation',
+                    // budgetPurchase panel
+                    'budget': 'budgetPurchase',
+                    'vendors': 'budgetPurchase',
+                    'vendors_notice_acknowledged': 'budgetPurchase',
+                    'non_vendor_services': 'budgetPurchase',
+                    'non_vendor_services_notes': 'budgetPurchase',
+                    'non_vendor_services_acknowledged': 'budgetPurchase',
+                };
+
                 // Check if error is in form_data (nested fields)
                 let panelToOpen = 'eventDetails'; // default
                 
                 if (firstErrorField === 'form_data') {
                     const formDataErrors = errors.form_data as any;
-                    if (formDataErrors?.elements) {
-                        panelToOpen = 'eventElements';
-                    } else if (formDataErrors?.location) {
-                        panelToOpen = 'dateLocation';
-                    } else if (formDataErrors?.budget) {
-                        panelToOpen = 'budgetPurchase';
+                    const firstFormDataErrorKey = Object.keys(formDataErrors || {})[0];
+                    if (firstFormDataErrorKey) {
+                        panelToOpen = formDataFieldToPanelMap[firstFormDataErrorKey] || 'eventDetails';
                     }
                 } else {
                     panelToOpen = fieldToPanelMap[firstErrorField] || 'eventDetails';
@@ -521,50 +542,42 @@ export function EventForm() {
                         onChange={(keys) => {
                             const keyArray = Array.isArray(keys) ? keys : [keys];
                             const majorSectionKeys = ["eventDetails", "dateLocation", "eventElements", "budgetPurchase"];
-                            
-                            // Find which major section is being opened/closed
-                            const newlyOpenedMajor = majorSectionKeys.find(key => 
-                                keyArray.includes(key) && !activeCollapseKey.includes(key)
+
+                            // Determine which major sections have just been opened or closed
+                            const newlyOpenedMajors = majorSectionKeys.filter(
+                                (key) => keyArray.includes(key) && !activeCollapseKey.includes(key)
                             );
-                            
-                            let finalKeys = keyArray;
-                            
-                            // If a major section is being opened, close all other major sections but keep the nested panels of the new one
-                            if (newlyOpenedMajor) {
-                                finalKeys = keyArray.filter(key => {
-                                    // Keep the newly opened major section
-                                    if (key === newlyOpenedMajor) return true;
-                                    // Keep nested panels that belong to the newly opened major section
-                                    const nestingRule = formBranching.find(branch => branch.parent === newlyOpenedMajor);
-                                    if (nestingRule && keyArray.includes(key)) {
-                                        // Check if this key is a nested panel of the new major section
-                                        return formBranching.some(branch => branch.parent === newlyOpenedMajor && branch.key === key);
+                            const justClosedMajors = majorSectionKeys.filter(
+                                (key) => activeCollapseKey.includes(key) && !keyArray.includes(key)
+                            );
+
+                            // When a major section is closed, also close its nested children
+                            const nestedKeysToClose: string[] = [];
+                            justClosedMajors.forEach((closedKey) => {
+                                formBranching.forEach((branch) => {
+                                    if (branch.parent === closedKey) {
+                                        nestedKeysToClose.push(branch.key);
                                     }
-                                    // Remove other major sections
-                                    if (majorSectionKeys.includes(key) && key !== newlyOpenedMajor) return false;
-                                    return true;
                                 });
-                            } else {
-                                // When closing a major section, also close its nested children
-                                const closedKeys = activeCollapseKey.filter(k => !keyArray.includes(k));
-                                const nestedKeysToClose: string[] = [];
-                                
-                                closedKeys.forEach(closedKey => {
-                                    formBranching.forEach(branch => {
-                                        if (branch.parent === closedKey) {
-                                            nestedKeysToClose.push(branch.key);
-                                        }
-                                    });
-                                });
-                                
-                                finalKeys = keyArray.filter(k => !nestedKeysToClose.includes(k));
-                            }
-                            
+                            });
+
+                            const finalKeys = keyArray.filter((k) => !nestedKeysToClose.includes(k));
+
                             setActiveCollapseKey(finalKeys);
-                            
-                            // Find the first major section that's open
-                            const openMajorSection = majorSectionKeys.find(key => finalKeys.includes(key));
-                            setCurrentEditingSection(openMajorSection || undefined);
+
+                            // Update the current editing section based on open majors
+                            let nextEditingSection = currentEditingSection;
+
+                            if (newlyOpenedMajors.length > 0) {
+                                // Prefer the most recently opened major section
+                                nextEditingSection = newlyOpenedMajors[newlyOpenedMajors.length - 1];
+                            } else if (!nextEditingSection || !finalKeys.includes(nextEditingSection)) {
+                                // Fall back to any open major section, if current is no longer valid
+                                const openMajorSection = majorSectionKeys.find((key) => finalKeys.includes(key));
+                                nextEditingSection = openMajorSection;
+                            }
+
+                            setCurrentEditingSection(nextEditingSection || undefined);
                         }}
                         expandIconPosition="end"
                     >
