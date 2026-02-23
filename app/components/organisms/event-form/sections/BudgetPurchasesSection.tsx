@@ -23,7 +23,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
         control,
         name: "form_data.elements",
     });
-    
+
     // Watch for level 0 confirmation from event elements
     const level0Confirmed = useWatch({
         control,
@@ -63,7 +63,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                     style={{ marginBottom: 24 }}
                 />
             )}
-            
+
             {/* Only show vendor section if NOT a level 0 event */}
             {!level0Confirmed && (
                 <>
@@ -75,23 +75,23 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
             )}
 
             {fields.map((field, index) => (
-                <div key={field.id} style={{ 
-                    marginTop: 16, 
-                    padding: 16, 
-                    border: "1px solid #d9d9d9", 
+                <div key={field.id} style={{
+                    marginTop: 16,
+                    padding: 16,
+                    border: "1px solid #d9d9d9",
                     borderRadius: 4,
                     position: "relative"
                 }}>
-                    <MinusCircleOutlined 
-                        onClick={() => removeVendor(index)} 
-                        style={{ 
-                            position: "absolute", 
-                            top: 16, 
-                            right: 16, 
+                    <MinusCircleOutlined
+                        onClick={() => removeVendor(index)}
+                        style={{
+                            position: "absolute",
+                            top: 16,
+                            right: 16,
                             fontSize: 18,
                             color: "var(--red-5)",
                             cursor: "pointer"
-                        }} 
+                        }}
                     />
 
                     {/* Vendor Type */}
@@ -306,9 +306,9 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                             <div style={{ marginBottom: 16 }}>
                                 <FieldLabel>Please upload official quote from the vendor, if you have received one.</FieldLabel>
                                 <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional</Text>
-                                <Upload 
-                                    beforeUpload={() => false} 
-                                    maxCount={1} 
+                                <Upload
+                                    beforeUpload={() => false}
+                                    maxCount={1}
                                     onChange={(info) => {
                                         const file = info.fileList[0]?.originFileObj;
                                         field.onChange(file);
@@ -372,13 +372,13 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                 </div>
             ))}
 
-            
+
 
             {/* Only show Add Vendor button if NOT a level 0 event */}
             {!level0Confirmed && (
-                <Button 
-                    type="dashed" 
-                    onClick={() => appendVendor({ 
+                <Button
+                    type="dashed"
+                    onClick={() => appendVendor({
                         type: "",
                         companyName: "",
                         contactPersonName: "",
@@ -390,20 +390,20 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         quote_file: null,
                         description: "",
                         org_providing: ""
-                    })} 
-                    icon={<PlusOutlined />} 
+                    })}
+                    icon={<PlusOutlined />}
                     style={{ marginTop: 16, width: "100%" }}
                 >
                     Add Vendor
                 </Button>
             )}
 
-                        {/* Vendor Letter Notice - Single checkbox for all vendors */}
+            {/* Vendor Letter Notice - Single checkbox for all vendors */}
             {hasVendors && (
                 <Controller
                     name="form_data.vendors_notice_acknowledged"
                     control={control}
-                    rules={{ 
+                    rules={{
                         required: "You must acknowledge reading the vendor letter notice",
                         validate: (value) => value === true || "You must check this box to proceed"
                     }}
@@ -432,16 +432,15 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
             {/* Only show funding questions if NOT a level 0 event and has vendors, elements, or services */}
             {(hasVendors || hasElements || hasServices) && !level0Confirmed && (
                 <>
-                    {hasServices && !hasVendors && (
-                        <Alert
-                            message="Funding Information Required"
-                            description="You have selected services that may incur costs. Please provide your account information below."
-                            type="info"
-                            showIcon
-                            style={{ marginTop: 24, marginBottom: 16 }}
-                        />
-                    )}
-                    
+                    <div style={{ marginTop: 24 }}>
+                        <Text strong style={{ display: "block", marginBottom: 8 }}>
+                            Funding Information Required
+                        </Text>
+                        <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+                            You have selected services that may incur costs. Please provide your account information below.
+                        </Text>
+                    </div>
+
                     <FieldLabel required style={{ marginTop: 24 }}>How will you be funding your event?</FieldLabel>
                     <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
                         {hasServices ? "This funding source will be used for any vendor payments and service charges" : "Select the funding source for this event"}
@@ -452,9 +451,9 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         rules={{ required: "Funding source is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginTop: 8 }}>
-                                <Select 
-                                    {...field} 
-                                    placeholder="Select Funding Source" 
+                                <Select
+                                    {...field}
+                                    placeholder="Select Funding Source"
                                     style={{ width: 240 }}
                                     status={fieldState.error ? "error" : ""}
                                 >
@@ -493,13 +492,13 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                 title="Account Number Format"
                                 trigger="click"
                             >
-                                <InfoCircleOutlined 
-                                    style={{ 
-                                        marginLeft: 8, 
-                                        color: "var(--blue-6)", 
+                                <InfoCircleOutlined
+                                    style={{
+                                        marginLeft: 8,
+                                        color: "var(--blue-6)",
                                         cursor: "pointer",
                                         fontSize: 16
-                                    }} 
+                                    }}
                                 />
                             </Popover>
                         </FieldLabel>
@@ -507,11 +506,11 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                             {hasServices ? "This account will be charged for vendor payments and any service fees" : "Provide the account number for event expenses"}
                         </Text>
                     </div>
-                    
+
                     <Controller
                         name="form_data.budget.account_number"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "Account number is required",
                             pattern: {
                                 value: /^\d{2}-\d{6}$/,
@@ -520,10 +519,10 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginTop: 8 }}>
-                                <Input 
-                                    {...field} 
-                                    placeholder="XX-XXXXXX (e.g., 17-123456)" 
-                                    style={{ width: 300 }} 
+                                <Input
+                                    {...field}
+                                    placeholder="XX-XXXXXX (e.g., 17-123456)"
+                                    style={{ width: 300 }}
                                     status={fieldState.error ? "error" : ""}
                                     maxLength={10}
                                 />
