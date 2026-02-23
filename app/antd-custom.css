@@ -16,8 +16,8 @@
 	font-display: swap;
 }
 
-body{
-    box-sizing: border-box;
+body {
+	box-sizing: border-box;
 }
 
 /* Theme Variables */
@@ -26,12 +26,12 @@ body{
 	/* OLD VARIABLES */
 	--background: #FAFAFA;
 	--background-2: #FFFFFF;
-    --primary: #045966;
-    --primary-active: #0D7F8C;
-    --primary-disabled: #447A7E;
-    --accent-gray-light: #D6D6D6;
-    --accent-gray-medium: #A0A0A0;
-    --accent-gray-dark: #919191;
+	--primary: #045966;
+	--primary-active: #0D7F8C;
+	--primary-disabled: #447A7E;
+	--accent-gray-light: #D6D6D6;
+	--accent-gray-medium: #A0A0A0;
+	--accent-gray-dark: #919191;
 	--Work-Sans: "Work Sans", sans-serif;
 
 	/* COLOR PALETTE */
@@ -178,7 +178,7 @@ body{
 	--color-secondary-disabled: #9fc0ba;
 	--color-highlight: #000000;
 	--color-red-error: #cb5251;
-;
+	;
 	--color-message-transparent: rgba(51, 51, 51, 0.6);
 	--color-message-transparent-2: rgba(51, 51, 51, 0.4);
 
@@ -303,7 +303,7 @@ p {
 	margin-bottom: 0.5rem;
 }
 
-.ant-card li a{
+.ant-card li a {
 	text-decoration: underline;
 }
 
@@ -378,9 +378,11 @@ p {
 	box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.02);
 	cursor: pointer;
 }
-.ant-select-suffix{
+
+.ant-select-suffix {
 	color: var(--gray-8) !important;
 }
+
 /* TAGS */
 
 .eventDetailTag {
@@ -508,7 +510,7 @@ p {
 	border-color: var(--gray-6) !important;
 }
 
-.ant-statistic-title{
+.ant-statistic-title {
 	color: var(--gray-8) !important;
 }
 
@@ -525,23 +527,24 @@ p {
 	font-family: var(--font-body);
 }
 
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
 	font-family: var(--font-body);
 }
 
-.ant-table-tbody > tr > td {
+.ant-table-tbody>tr>td {
 	font-family: var(--font-body);
 }
 
-.ant-table-tbody > tr:nth-child(odd) > td {
+.ant-table-tbody>tr:nth-child(odd)>td {
 	background: var(--background);
 }
 
-.ant-table-tbody > tr > td:first-child {
+.ant-table-tbody>tr>td:first-child {
 	background: var(--sage-3);
 }
+
 .ant-table-cell {
-    padding: 8px 16px !important;
+	padding: 8px 16px !important;
 }
 
 .ant-tag {
@@ -549,7 +552,7 @@ p {
 }
 
 /* BRAINSTORM */
-.toggle-nav{
+.toggle-nav {
 	width: 206px;
 	height: 36px;
 	border: solid, 1px, var(--accent-gray-dark);
@@ -558,7 +561,7 @@ p {
 	align-content: center;
 }
 
-.toggle-nav a{
+.toggle-nav a {
 	font-size: 0.875rem;
 	width: 95px;
 	padding: 5px 30px;
@@ -568,7 +571,7 @@ p {
 	color: var(--gray-13);
 }
 
-.toggle-nav a:hover{
+.toggle-nav a:hover {
 	color: var(--sea-green-9);
 	background-color: var(--gray-4);
 }
@@ -578,46 +581,47 @@ p {
 	color: white;
 }
 
-.brainstorm-nav{
+.brainstorm-nav {
 	display: flex;
 	justify-content: space-between;
 }
 
 
-.custom-doc-card{
+.custom-doc-card {
 	max-width: 275px;
 
 }
 
-.custom-doc-card .ant-card-body{
+.custom-doc-card .ant-card-body {
 	padding-top: 0px;
 }
 
-.custom-doc-card .ant-card-cover img{
+.custom-doc-card .ant-card-cover img {
 	padding: 13px;
 	border-radius: 0px;
 }
+
 .custom-doc-card:hover {
-    cursor: pointer;
-    box-shadow: 0px 2px 0px 0px var(--gray-4);
+	cursor: pointer;
+	box-shadow: 0px 2px 0px 0px var(--gray-4);
 }
 
-.card-title-row{
+.card-title-row {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
 }
 
-.card-title-text{
-    display: inline-block;   
-    max-width: 75%;        
-    white-space: nowrap; 
-    overflow: hidden;         
-    text-overflow: ellipsis;    
-    vertical-align: middle;    
+.card-title-text {
+	display: inline-block;
+	max-width: 75%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
 }
 
-.docs-more{
+.docs-more {
 	margin-top: 24px;
 }
 
@@ -625,20 +629,21 @@ p {
 	border-radius: 0;
 }
 
-.ant-table-tbody > tr:hover > td:first-child {
-    background: #D8E3D6 !important;
+.ant-table-tbody>tr:hover>td:first-child {
+	background: #D8E3D6 !important;
 }
+
 /* Primary button hover — lighter teal */
 .ant-btn-primary:hover {
-    background-color: var(--sea-green-7) !important;
-    border-color: var(--sea-green-7) !important;
+	background-color: var(--sea-green-7) !important;
+	border-color: var(--sea-green-7) !important;
 }
 
 /* Default/secondary button hover — for "New Brainstorm" style buttons */
 .ant-btn-default:hover {
-    color: var(--sea-green-8) !important;
-    border-color: var(--sea-green-8) !important;
-    background-color: var(--sea-green-1) !important;
+	color: var(--sea-green-8) !important;
+	border-color: var(--sea-green-8) !important;
+	background-color: var(--sea-green-1) !important;
 }
 
 .ant-dropdown-menu {
@@ -661,11 +666,20 @@ p {
 }
 
 .eventDetailTag {
-  background: var(--gray-1) !important;
+	background: var(--gray-1) !important;
 }
 
 .ant-alert-warning {
-  background-color: var(--gold-1) !important;
-  border-color: var(--gold-5) !important;
-  color: var(--gold-9) !important;
+	background-color: var(--gold-1) !important;
+	border-color: var(--gold-5) !important;
+	color: var(--gold-9) !important;
+}
+
+.inDraftTag .ant-tag-close-icon,
+.inReviewTag .ant-tag-close-icon,
+.approvedTag .ant-tag-close-icon,
+.cancelledTag .ant-tag-close-icon,
+.pastTag .ant-tag-close-icon,
+.deniedTag .ant-tag-close-icon {
+	color: inherit !important;
 }

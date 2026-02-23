@@ -264,7 +264,6 @@ export function EventSubmissionsContent() {
                                         const statusUi = serverToUi(e.eventStatus);
                                         return (
                                         <CardEvent
-                                            disableHover
                                             key={e.id}
                                             isPast={isPast}
                                             eventImg={e.eventImg}
