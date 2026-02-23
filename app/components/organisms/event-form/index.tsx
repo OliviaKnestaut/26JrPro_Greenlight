@@ -387,7 +387,7 @@ export function EventForm() {
                 const fd = new FormData();
                 fd.append('event_img', file);
                 if (desiredName) fd.append('desired_name', desiredName);
-                const resp = await fetch('/~ojk25/jrProjGreenlight/uploads/upload_event_image.php', { method: 'POST', body: fd });
+                const resp = await fetch('/~ojk25/graphql/upload_event_image.php', { method: 'POST', body: fd });
 
                 const text = await resp.text();
                 // Try to parse JSON response from server, otherwise include raw text

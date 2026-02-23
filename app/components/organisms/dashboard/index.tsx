@@ -84,23 +84,29 @@ export function DashboardContent() {
         }
     };
 
-    // Prepare calendar items (next 30 days) for CardCalendarUpcoming
+    // Prepare calendar items: include all approved and in-review events regardless of date
     const calendarItems = (() => {
-        const now = new Date();
-        now.setHours(0,0,0,0);
-        const end = new Date(now);
-        end.setDate(end.getDate() + 14);
-
         return (events || [])
             .map((e: any) => ({ ...e, parsed: e.eventDate ? new Date(e.eventDate) : null }))
-            .filter((e: any) => e.parsed && e.parsed.getTime() >= now.getTime() && e.parsed.getTime() <= end.getTime())
             .filter((e: any) => {
                 const s = serverToUi(e.eventStatus);
                 return s === 'approved' || s === 'in-review';
             })
-            .sort((a: any, b: any) => (a.parsed as Date).getTime() - (b.parsed as Date).getTime())
+            .sort((a: any, b: any) => {
+                const ta = a.parsed ? (a.parsed as Date).getTime() : Infinity;
+                const tb = b.parsed ? (b.parsed as Date).getTime() : Infinity;
+                return ta - tb;
+            })
             .slice(0, 6)
-            .map((e: any) => ({ id: e.id, title: e.title, date: formatDateMDY(e.eventDate), time: e.startTime, status: serverToUi(e.eventStatus) }));
+            .map((e: any) => ({
+                id: e.id,
+                title: e.title,
+                date: formatDateMDY(e.eventDate),
+                // include start/end times for mini-card display
+                startTime: e.startTime ?? e.start_time ?? null,
+                endTime: e.endTime ?? e.end_time ?? null,
+                status: serverToUi(e.eventStatus),
+            }));
     })();
 
     return (
@@ -261,7 +267,7 @@ export function DashboardContent() {
                                     if (!b.parsedDate) return -1;
                                     return (a.parsedDate as Date).getTime() - (b.parsedDate as Date).getTime();
                                 });
-                                const top = sortedByDate.slice(0, 6);
+                                const top = sortedByDate.slice(0, 4);
                             if (loading) {
                                 return (
                                     <>

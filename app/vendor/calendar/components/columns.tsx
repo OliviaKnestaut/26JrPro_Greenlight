@@ -52,7 +52,8 @@ export function createDayColumns<T extends GenericEvent>(
             ),
             dataIndex: dayNames[dayIndex],
             key: dayNames[dayIndex],
-            width: 2,
+            // fixed column width so all day columns render equal width
+            width: 150,
 
             // Header cell styles
             onHeaderCell: () => ({
@@ -69,7 +70,7 @@ export function createDayColumns<T extends GenericEvent>(
                 const weekend = isWeekend(columnDate);
                 return {
                     style: {
-                        backgroundColor: weekend ? 'var(--gray-2)' : 'white',
+                        backgroundColor: isToday ? 'rgba(25,169,179,0.06)' : (weekend ? 'var(--gray-2)' : 'white'),
                         padding: '0',
                         height: '6rem',
                     },

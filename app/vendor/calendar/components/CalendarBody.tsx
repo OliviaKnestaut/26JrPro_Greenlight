@@ -19,12 +19,6 @@ function Calendar<T extends GenericEvent>({
 
   const screens = useBreakpoint();
 
-  useEffect(() => {
-    if (rowRef.current && tableContainerRef.current && 'scrollTo' in tableContainerRef.current) {
-      const scrollOffset = calculateScrollOffset(tableContainerRef.current, rowRef.current);
-      tableContainerRef.current.scrollTo({ top: scrollOffset, behavior: 'smooth' });
-    }
-  }, [SCROLL_TO_ROW]);
 
   const hourColumn = {
 

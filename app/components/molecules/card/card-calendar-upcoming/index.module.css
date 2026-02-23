@@ -27,7 +27,6 @@
 }
 
 .item { display:flex; 
-    align-items: flex-start;
     margin: 0px;
     width: 100%;
     min-width: 0;
@@ -84,4 +83,11 @@
 }
 
 .content { margin-top:8px ;}
+
+/* Hover / focus style for clickable cards (role="button") */
+.card[role="button"]:hover,
+.card[role="button"]:focus {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    outline: none;
+}
 

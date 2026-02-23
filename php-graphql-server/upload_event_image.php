@@ -1,26 +1,5 @@
 <?php
-// Temporary debug logging: append basic request info to upload_debug.log
-$debugFile = rtrim(__DIR__, '/\\') . '/upload_debug.log';
 $filesInfo = [];
-foreach ((array)($_FILES ?? []) as $k => $v) {
-    $filesInfo[$k] = [
-        'name' => $v['name'] ?? null,
-        'type' => $v['type'] ?? null,
-        'size' => $v['size'] ?? null,
-        'error' => $v['error'] ?? null,
-        'tmp_name' => $v['tmp_name'] ?? null,
-    ];
-}
-$debug = [
-    'time' => date('c'),
-    'method' => $_SERVER['REQUEST_METHOD'] ?? null,
-    'content_type' => $_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? null),
-    'content_length' => $_SERVER['CONTENT_LENGTH'] ?? null,
-    'remote_addr' => $_SERVER['REMOTE_ADDR'] ?? null,
-    'files' => $filesInfo,
-    'post' => $_POST ?? [],
-];
-@file_put_contents($debugFile, json_encode($debug) . PHP_EOL, FILE_APPEND);
 header('Content-Type: application/json');
 
 $includeDebug = isset($_GET['debug']) && $_GET['debug'] === '1';
@@ -41,9 +20,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond(['error' => 'Method not allowed, use POST'], 405);
 }
 
-// Use a directory relative to this script so the path works on the server.
-// This will place uploaded images in the `event_img` folder next to this PHP file.
-$targetDir = rtrim(__DIR__, '/\\') . '/event_img';
+// Place uploaded images in the `event_img` folder.
+// Prefer the site uploads path under DOCUMENT_ROOT when available.
+$uploadsSubpath = '';
+$documentRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
+if (!empty($documentRoot)) {
+    $targetDir = '/home/ojk25@drexel.edu/public_html/jrProjGreenlight/uploads/event_img';
+} else {
+    // Fallback to a directory next to this script
+    $targetDir = rtrim(__DIR__, '/\\') . '/event_img';
+}
 
 if (!is_dir($targetDir)) {
     if (!mkdir($targetDir, 0775, true)) {
@@ -52,7 +38,7 @@ if (!is_dir($targetDir)) {
     }
 }
 
-// Ensure target directory is writable by the webserver before accepting files
+// Ensure directory is writable
 if (!is_writable($targetDir)) {
     error_log("upload_event_image: target directory not writable: {$targetDir}");
     respond(['error' => 'Target directory not writable', 'targetDir' => $targetDir, 'is_writable' => is_writable($targetDir)], 500);
@@ -64,9 +50,9 @@ if (!isset($_FILES['event_img'])) {
 
 $file = $_FILES['event_img'];
 
-$maxSize = 5 * 1024 * 1024; // 5MB
+$maxSize = 2 * 1024 * 1024; // 2MB
 if ($file['size'] > $maxSize) {
-    respond(['error' => 'File exceeds maximum size of 5MB'], 451);
+    respond(['error' => 'File exceeds maximum size of 2MB'], 451);
 }
 
 $finfo = null;
@@ -78,7 +64,7 @@ if ($finfo && !empty($file['tmp_name'])) {
     $mime = @finfo_file($finfo, $file['tmp_name']);
     @finfo_close($finfo);
 }
-// Fallbacks if finfo is not available or failed
+// Fallbacks if not available or failed
 if (empty($mime) && function_exists('mime_content_type') && !empty($file['tmp_name'])) {
     $mime = @mime_content_type($file['tmp_name']);
 }
@@ -88,11 +74,8 @@ if (empty($mime) && !empty($file['type'])) {
 if (empty($mime)) {
     $mime = 'application/octet-stream';
 }
-
-// Log resolved mime for debugging
 @file_put_contents($debugFile, json_encode(['time' => date('c'), 'resolved_mime' => $mime]) . PHP_EOL, FILE_APPEND);
 
-// Additional fallback: if mime still generic, try getimagesize() or exif_imagetype()
 if ($mime === 'application/octet-stream' || empty($mime)) {
     $imgTmp = false;
     if (!empty($file['tmp_name']) && file_exists($file['tmp_name'])) {
@@ -114,6 +97,7 @@ if ($mime === 'application/octet-stream' || empty($mime)) {
     @file_put_contents($debugFile, json_encode(['time'=>date('c'),'fallback_mime'=>$mime]) . PHP_EOL, FILE_APPEND);
 }
 
+// Allowed file types
 $allowed = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
@@ -135,8 +119,7 @@ if ($width && $height && ($width != $recommendedW || $height != $recommendedH)) 
     $dimensionWarning = "Recommended dimensions are {$recommendedW}x{$recommendedH}. Uploaded is {$width}x{$height}.";
 }
 
-
-// Allow client to request a desired filename (without extension). We'll sanitize it.
+// Rename File
 $desiredNameRaw = $_POST['desired_name'] ?? null;
 $ext = $allowed[$mime];
 if ($desiredNameRaw) {
@@ -156,27 +139,20 @@ if ($desiredNameRaw) {
     $destination = rtrim($targetDir, '/') . '/' . $targetName;
 }
 
-if (!e_uploaded_filmove($file['tmp_name'], $destination)) {
+if (!move_uploaded_file($file['tmp_name'], $destination)) {
     error_log("upload_event_image: move_uploaded_file failed from {$file['tmp_name']} to {$destination}");
     respond(['error' => 'Failed to move uploaded file to destination', 'tmp' => $file['tmp_name'], 'dest' => $destination], 500);
 }
 
-
-// Build a public URL based on the known public path. Adjust if your hosting differs.
+// Pulbic URL
 $publicUrl = '/~ojk25/jrProjGreenlight/uploads/event_img/' . $targetName;
 
-$response = [
+$response = [ 
     'success' => true,
     'path' => $destination,
     'url' => $publicUrl,
     'filename' => $targetName,
     'dimensionWarning' => $dimensionWarning
 ];
-
-// If requested, include server-side debug info in the response for testing
-if (isset($_GET['debug']) && $_GET['debug'] === '1') {
-    $response['server_debug'] = $debug;
-    $response['server_debug']['resolved_mime'] = $mime ?? null;
-}
 
 respond($response, 200);
