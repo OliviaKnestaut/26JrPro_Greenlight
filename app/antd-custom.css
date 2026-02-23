@@ -663,3 +663,12 @@ p {
 .eventDetailTag {
   background: var(--gray-1) !important;
 }
+
+.inDraftTag .ant-tag-close-icon,
+.inReviewTag .ant-tag-close-icon,
+.approvedTag .ant-tag-close-icon,
+.cancelledTag .ant-tag-close-icon,
+.pastTag .ant-tag-close-icon,
+.deniedTag .ant-tag-close-icon {
+    color: inherit !important;
+}

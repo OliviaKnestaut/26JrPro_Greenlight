@@ -333,7 +333,7 @@ const cardProps = { ...(rest as any), className: combinedClassName };
         <Card {...cardProps}
             hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
-            style={{ ...incomingStyle, border: 'none', background: 'var(--accent-gray-light-2)' }}>
+            style={{ ...incomingStyle, border: '1px solid var(--accent-gray-light-2)', background: 'var(--accent-gray-light-2)' }}>
             <div className='flex flex-col gap-1'>
                 <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
                     <OptimizedImage

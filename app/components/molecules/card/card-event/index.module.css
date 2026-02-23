@@ -29,7 +29,7 @@
 }
 
 .cancelledCard.cancelledCard:hover {
-    border-color: var(--gray-7) !important;
+    border-color: var(--gray-8) !important;
 }
 
 .pastCard.pastCard:hover {
