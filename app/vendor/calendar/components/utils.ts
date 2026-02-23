@@ -5,6 +5,7 @@ import {
   addHours,
   eachDayOfInterval,
   startOfDay,
+  endOfDay,
   getDay,
   isSameWeek,
   startOfWeek,
@@ -64,8 +65,16 @@ export const daysToWeekObject = <T extends GenericEvent>(
     return weekObject;
   }
   for (const eventListIndex in events) {
-    const eventStartTimeDay = events[eventListIndex].startTime;
-    const eventEndTimeDay = events[eventListIndex].endTime;
+    const rawEvent = events[eventListIndex] as any;
+    // coerce start/end to Date if they're strings
+    const eventStartTimeDay: Date = rawEvent.startTime instanceof Date ? rawEvent.startTime : new Date(rawEvent.startTime);
+    const eventEndTimeDay: Date = rawEvent.endTime instanceof Date ? rawEvent.endTime : new Date(rawEvent.endTime);
+
+    // if dates are invalid, skip
+    if (isNaN(eventStartTimeDay.getTime()) || isNaN(eventEndTimeDay.getTime())) continue;
+
+    // create an event object with Date times for internal processing
+    const eventForWeek: any = { ...rawEvent, startTime: eventStartTimeDay, endTime: eventEndTimeDay };
 
     if (!isSameWeek(eventStartTimeDay, startWeek)) {
       continue;
@@ -75,18 +84,24 @@ export const daysToWeekObject = <T extends GenericEvent>(
         start: eventStartTimeDay,
         end: eventEndTimeDay,
       });
-      for (const dayInterval in result) {
-        const splitedEvent = { ...events[eventListIndex] };
-        splitedEvent.startTime = result[dayInterval];
-        splitedEvent.endTime = result[dayInterval];
-        const weekObjectKey: DayName =
-          dayNames[getDay(new Date(result[dayInterval]))];
-        isSameWeek(startWeek, splitedEvent.startTime) &&
-          weekObject[weekObjectKey].push(splitedEvent);
+      for (const day of result) {
+        const splitedEvent = { ...eventForWeek };
+        // For each split day, set the start to either the event start (if it falls on this day)
+        // or the start of the day. Similarly set the end to either the event end (if it falls
+        // on this day) or the end of the day. This preserves the correct intra-day times
+        // so the event boxes appear at the correct vertical positions and sizes.
+        const dayStart = startOfDay(day);
+        const dayEnd = endOfDay(day);
+        const newStart = eventStartTimeDay.getTime() > dayStart.getTime() ? eventStartTimeDay : dayStart;
+        const newEnd = eventEndTimeDay.getTime() < dayEnd.getTime() ? eventEndTimeDay : dayEnd;
+        splitedEvent.startTime = newStart;
+        splitedEvent.endTime = newEnd;
+        const weekObjectKey: DayName = dayNames[getDay(new Date(day))];
+        isSameWeek(startWeek, splitedEvent.startTime) && weekObject[weekObjectKey].push(splitedEvent);
       }
     } else {
       const weekObjectKey: DayName = dayNames[getDay(eventStartTimeDay)];
-      weekObject[weekObjectKey].push(events[eventListIndex]);
+      weekObject[weekObjectKey].push(eventForWeek);
     }
   }
   return weekObject;
