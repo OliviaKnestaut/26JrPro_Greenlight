@@ -270,7 +270,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
 
                     {/* Payment Amount */}
                     <Controller
-                        name={`form_data.vendors.${index}.amount`}
+                        name={`form_data.vendors.${index}.estimatedCost`}
                         control={control}
                         rules={hasVendors ? { required: "Payment amount is required" } : {}}
                         render={({ field, fieldState }) => (
