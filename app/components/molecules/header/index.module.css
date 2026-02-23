@@ -67,4 +67,11 @@
 		right: 3rem;
 		z-index: 1100;
 	}
+
+	.header {
+	background: var(--primary);
+	box-shadow: inset 0 -1px 0 var(--primary);
+	position: fixed;
+
+}
 }

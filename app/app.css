@@ -33,3 +33,24 @@ button {
     max-width: 100% !important;
   }
 }
+
+/* Event submissions card sizing: default 3-up, on small screens (<=768px) use 4-up */
+.event-card {
+  flex: 0 0 calc(33% - 0.66rem);
+  max-width: calc(33% - 0.66rem);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .event-card {
+    flex: 0 0 calc(50% - 0.5rem);
+    max-width: calc(50% - 0.5rem);
+  }
+}
+
+@media (max-width: 460px) {
+  .event-card {
+    flex: 0 0 calc(100% - 0.5rem);
+    max-width: calc(100% - 0.5rem);
+  }
+}

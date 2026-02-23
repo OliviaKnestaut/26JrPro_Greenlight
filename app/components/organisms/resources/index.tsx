@@ -1,4 +1,4 @@
-import { Typography, Card } from "antd";
+import { Typography, Card, Grid } from "antd";
 const { Title, Paragraph, Link } = Typography;
 import { useNavigate } from "react-router";
 import { ArrowLeftOutlined } from "@ant-design/icons";
@@ -78,7 +78,16 @@ export const orgDocuments: ResourceItem[] = [
 
 export function ResourcesContent() {
 
-
+    const screens = Grid.useBreakpoint();
+    if (!screens.md) {
+        return (
+            <div className="container">
+                <Card>
+                    <Title level={3}>This page is not available on mobile devices</Title>
+                </Card>
+            </div>
+        );
+    }
     const navigate = useNavigate();
 
     return (

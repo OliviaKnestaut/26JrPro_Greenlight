@@ -236,7 +236,7 @@ export function EventSubmissionsContent() {
                         children: (loading ? (
                             <div className="flex gap-4">
                                 {Array.from({ length: 3 }).map((_, i) => (
-                                    <div key={i} style={{ width: "calc(33% - 0.66rem)" }}>
+                                    <div key={i} className="event-card">
                                         <CardEvent loading skeletonVariant="compact" style={{ width: '100%' }} />
                                     </div>
                                 ))}
@@ -270,7 +270,8 @@ export function EventSubmissionsContent() {
                                             isPast={isPast}
                                             eventImg={e.eventImg}
                                             onClick={statusUi !== 'draft' ? () => navigate(`/event-overview/${e.id}`) : undefined}
-                                            style={{ width: "calc(33% - 0.66rem)", cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
+                                            className="event-card"
+                                            style={{ cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
                                             title={e.title}
                                             date={formatDateMDY(e.eventDate)}
                                             location={e.location ?? ''}
@@ -301,7 +302,7 @@ export function EventSubmissionsContent() {
             <div className="flex gap-4 flex-wrap w-full my-4">
                 {loading ? (
                     Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} style={{ width: "calc(33% - 0.66rem)" }}>
+                        <div key={i} className="event-card">
                             <CardEvent className="visual-card" loading skeletonVariant="visual" style={{ width: '100%' }} />
                         </div>
                     ))
@@ -374,12 +375,12 @@ export function EventSubmissionsContent() {
                         const isPast = e.parsedDate ? (e.parsedDate as Date).getTime() < today.getTime() : false;
                         const statusUi = serverToUi(e.eventStatus);
                         return (
-                        <CardEvent className="visual-card"
+                        <CardEvent className="visual-card event-card"
                             key={e.id}
                             isPast={isPast}
                             eventImg={e.eventImg}
                             onClick={statusUi !== 'draft' ? () => navigate(`/event-overview/${e.id}`) : undefined}
-                            style={{ flex: '0 0 calc(33% - 0.66rem)', maxWidth: 'calc(33% - 0.66rem)', boxSizing: 'border-box', cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
+                            style={{ cursor: statusUi !== 'draft' ? 'pointer' : undefined }}
                             title={e.title}
                             date={formatDateMDY(e.eventDate)}
                             location={e.location ?? ''}

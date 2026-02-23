@@ -6,11 +6,9 @@ import 'dayjs/locale/en';
 
 import { Calendar, Popover, theme, Typography } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Link } from 'react-router';
 import type { CalendarProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayLocaleData from 'dayjs/plugin/localeData';
-import { CardCalendarUpcoming } from '../card';
 import CardCalendarMiniCard from '../card/card-calendar-upcoming/mini-card';
 
 dayjs.extend(dayLocaleData);
@@ -135,7 +133,7 @@ const StyledCalendar: React.FC<{ events?: StyledCalendarEvent[] }> = ({ events =
                             <LeftOutlined />
                         </button>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Typography.Title level={4} style={{ margin: 0 }}>
+                            <Typography.Title level={4} style={{ margin: 0, textAlign: 'center', }}>
                                 {value.format('MMMM YYYY')}
                             </Typography.Title>
                         </div>
