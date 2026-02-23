@@ -1,10 +1,20 @@
-import { Collapse, Typography, Badge, Card } from 'antd';
+import { Collapse, Typography, Badge, Card, Grid } from 'antd';
 import doc2 from '../../assets/sheets-img.svg';
 import { MoreOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
 export function BrainstormSheetsContent() {
+    const screens = Grid.useBreakpoint();
+    if (!screens.md) {
+        return (
+            <div className="container">
+                <Card>
+                    <Title level={3}>This page is not available on mobile devices</Title>
+                </Card>
+            </div>
+        );
+    }
     const docs = [
         { id: '1', title: 'Budget Tracker', lastEdited: '01/28/26', img: doc2 },
         { id: '2', title: 'Order Tracker', lastEdited: '01/26/26', img: doc2 },

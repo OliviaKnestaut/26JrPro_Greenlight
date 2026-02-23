@@ -19,6 +19,13 @@ export function CalendarContent() {
     const { user } = useAuth();
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+    useEffect(() => {
+        const onResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     useEffect(() => {
         const fetchOrgEvents = async () => {
@@ -70,7 +77,6 @@ export function CalendarContent() {
                 const tb = b.parsed ? (b.parsed as Date).getTime() : Infinity;
                 return ta - tb;
             })
-            .slice(0, 6)
                 .map((e: any) => ({
                     id: e.id || e.eventId,
                     title: e.title,
@@ -161,13 +167,13 @@ export function CalendarContent() {
                 <Paragraph>View your upcoming org events.</Paragraph>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "row", gap: "2rem", marginTop: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem", flex: "1" }}>
+            <div style={{ display: 'flex', flexDirection: windowWidth <= 900 ? 'column' : 'row', gap: '2rem', marginTop: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem', width: windowWidth <= 900 ? '100%' : 'calc(33% - 0.5rem)' }}>
                     <Card>
                         <CardCalendarUpcoming events={calendarItems} />
                     </Card>
                 </div>
-                <div style={{ flex: "2" }}>
+                <div style={{ width: windowWidth <= 900 ? '100%' : 'calc(66% - 0.5rem)' }}>
                     <WeeklyCalendar
                         events={weeklyEvents}
                         weekends={true}

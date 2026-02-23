@@ -97,7 +97,6 @@ export function DashboardContent() {
                 const tb = b.parsed ? (b.parsed as Date).getTime() : Infinity;
                 return ta - tb;
             })
-            .slice(0, 6)
             .map((e: any) => ({
                 id: e.id,
                 title: e.title,

@@ -137,7 +137,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 				<div className={styles.hamburgerContainer} style={{ zIndex: 1050 }}>
 					<Button
 						className={styles.hamburger ?? ''}
-						icon={mobileOpen ? <CloseOutlined style={{ color: 'var(--primary)' }}/> : <MenuOutlined style={{ color: 'var(--primary)' }}/>}
+						icon={mobileOpen ? <CloseOutlined style={{ color: 'var(--background-2)' }}/> : <MenuOutlined style={{ color: 'var(--background-2)' }}/>}
 						onClick={() => setMobileOpen(!mobileOpen)}
 						type="text"
 						aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}

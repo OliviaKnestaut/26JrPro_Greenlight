@@ -33,6 +33,7 @@
 	height: 3px;
 	border-radius: 2px;
 	display: block;
+	color: var(--background-2);
 }
 .overlay {
 	position: fixed;

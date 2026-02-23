@@ -57,18 +57,21 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
     const { pathname } = useLocation();
     const isDashboard = pathname.includes('dashboard') || pathname === '/';
 
+    // Calendar should receive ALL events that are in-review or approved.
+    const calendarEvents = events.filter((ev) => ev && (ev.status === 'approved' || ev.status === 'in-review'));
+
     if (filteredEvents && filteredEvents.length > 0) {
         return (
             <>
-                <StyledCalendar events={events} />
+                <StyledCalendar events={calendarEvents} />
                 <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
                 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    {filteredEvents.slice(0, isDashboard ? 2 : 6).map((e) => (
+                    {filteredEvents.slice(0, isDashboard ? 2 : 4).map((e) => (
                         <CardCalendarMiniCard
                             key={e.id}
                             {...e}
-                            style={isDashboard ? { flex: '0 0 calc((100% - 0.5rem) / 2)', maxWidth: 'calc((100% - 0.5rem) / 2)', boxSizing: 'border-box', cursor: e.id ? 'pointer' : 'default' } : { flex: '1 1 100%', maxWidth: '100%' }}
+                            style={{ flex: '0 0 calc(100% - 0.5rem)', maxWidth: 'calc(100% - 0.5rem)', boxSizing: 'border-box', cursor: e.id ? 'pointer' : 'default' }}
                         />
                     ))}
                 </div>

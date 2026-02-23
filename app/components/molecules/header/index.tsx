@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Layout, Button } from 'antd';
+import { Layout, Button, Grid } from 'antd';
 import styles from './index.module.css';
 import logoIcon from '../../assets/GreenlightLogo.svg';
 import { useNavigate } from 'react-router';
@@ -17,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
     const noop = () => undefined;
 	const navigate = useNavigate();
+	const screens = Grid.useBreakpoint();
 
 	return (
 		<AntHeader className={styles.header}>
@@ -28,9 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
 				</div>
 			</div>
 			<div className={`${styles.userSection} px-8`}>
-				<Button type="primary" className={styles.btn} onClick={() => navigate('/event-form')}>
-                	New Event
-            	</Button>
+				<Button type={screens.lg ? 'primary' : 'default'} className={styles.btn} onClick={() => navigate('/event-form')}>
+					New Event
+				</Button>
 			</div>
 		</AntHeader>
 	);
