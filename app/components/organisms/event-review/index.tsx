@@ -186,7 +186,7 @@ export function EventReview() {
             mutationInput.createdBy = user.username;
         }
 
-        if (data.event_img) mutationInput.eventImg = data.event_img;
+        if (data.event_img && typeof data.event_img === 'string') mutationInput.eventImg = data.event_img;
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
         if (convertedEndTime) mutationInput.endTime = convertedEndTime;
         if (convertedSetupTime) mutationInput.setupTime = convertedSetupTime;

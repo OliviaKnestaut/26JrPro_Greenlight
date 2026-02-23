@@ -5,6 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams, useBlocker } from "react-router";
 import { useAuth } from "~/auth/AuthProvider";
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useGetOnCampusQuery, useGetEventByIdQuery } from "~/lib/graphql/generated";
+import { uploadEventImage } from "~/lib/uploadImage";
 import { calculateEventLevel } from "~/vendor/calendar/components/utils";
 import styles from "./eventform.module.css";
 import EventDetailsSection from "../event-form/sections/EventDetailsSection";
@@ -226,7 +227,18 @@ export function EventForm() {
         }
     }, [isSelected]);
 
-    const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
+    const resolveEventImage = async (eventImg: any): Promise<string | undefined> => {
+        if (!eventImg) return undefined;
+        if (typeof eventImg === 'string') return eventImg;
+        if (eventImg instanceof File) {
+            const filename = await uploadEventImage(eventImg);
+            setValue("event_img", filename);
+            return filename;
+        }
+        return undefined;
+    };
+
+    const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false, eventImgFilename?: string) => {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
         }
@@ -319,7 +331,8 @@ export function EventForm() {
             mutationInput.createdBy = user.username;
         }
 
-        if (data.event_img) mutationInput.eventImg = data.event_img;
+        if (eventImgFilename) mutationInput.eventImg = eventImgFilename;
+        else if (data.event_img && typeof data.event_img === 'string') mutationInput.eventImg = data.event_img;
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
         if (convertedEndTime) mutationInput.endTime = convertedEndTime;
         if (convertedSetupTime) mutationInput.setupTime = convertedSetupTime;
@@ -340,7 +353,17 @@ export function EventForm() {
             return;
         }
         const data = getValues();
-        const mutationInput = buildMutationInput(data, "DRAFT", !!draftId);
+
+        let eventImgFilename: string | undefined;
+        try {
+            eventImgFilename = await resolveEventImage(data.event_img);
+        } catch (err) {
+            console.error("❌ Error uploading image:", err);
+            message.error("Failed to upload image. Please try again.");
+            return;
+        }
+
+        const mutationInput = buildMutationInput(data, "DRAFT", !!draftId, eventImgFilename);
         console.log("💾 SAVING DRAFT:", mutationInput);
 
         try {
@@ -511,6 +534,18 @@ export function EventForm() {
         // If validation passes, proceed to review
         try {
             const data = getValues();
+
+            // Upload image now so that the filename (a string) can be stored in
+            // localStorage and passed to the review page — File objects cannot be
+            // serialised to JSON.
+            try {
+                data.event_img = await resolveEventImage(data.event_img) ?? data.event_img;
+            } catch (uploadErr) {
+                console.error("❌ Error uploading image:", uploadErr);
+                message.error("Failed to upload image. Please try again.");
+                return;
+            }
+
             localStorage.setItem("eventFormReview", JSON.stringify(data));
             setCurrentEditingSection(undefined);
             navigateSafely(`/event-review${draftId ? `/${draftId}` : ''}`);
