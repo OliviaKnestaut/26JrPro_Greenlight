@@ -15,7 +15,7 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
         return (
             <>
             
-            <StyledCalendar/>
+            <StyledCalendar events={events} />
             <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {events.map((e) => {
