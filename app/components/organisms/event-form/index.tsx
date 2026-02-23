@@ -455,17 +455,38 @@ export function EventForm() {
                     'location_type': 'dateLocation',
                 };
                 
+                // Map form_data sub-keys to their corresponding panel keys
+                const formDataFieldToPanelMap: Record<string, string> = {
+                    // eventElements panel
+                    'elements': 'eventElements',
+                    'level0_confirmed': 'eventElements',
+                    'food': 'eventElements',
+                    'alcohol': 'eventElements',
+                    'minors': 'eventElements',
+                    'movies': 'eventElements',
+                    'raffles': 'eventElements',
+                    'fire': 'eventElements',
+                    'sorc_games': 'eventElements',
+                    // dateLocation panel
+                    'location': 'dateLocation',
+                    'travel': 'dateLocation',
+                    // budgetPurchase panel
+                    'budget': 'budgetPurchase',
+                    'vendors': 'budgetPurchase',
+                    'vendors_notice_acknowledged': 'budgetPurchase',
+                    'non_vendor_services': 'budgetPurchase',
+                    'non_vendor_services_notes': 'budgetPurchase',
+                    'non_vendor_services_acknowledged': 'budgetPurchase',
+                };
+
                 // Check if error is in form_data (nested fields)
                 let panelToOpen = 'eventDetails'; // default
                 
                 if (firstErrorField === 'form_data') {
                     const formDataErrors = errors.form_data as any;
-                    if (formDataErrors?.elements) {
-                        panelToOpen = 'eventElements';
-                    } else if (formDataErrors?.location) {
-                        panelToOpen = 'dateLocation';
-                    } else if (formDataErrors?.budget) {
-                        panelToOpen = 'budgetPurchase';
+                    const firstFormDataErrorKey = Object.keys(formDataErrors || {})[0];
+                    if (firstFormDataErrorKey) {
+                        panelToOpen = formDataFieldToPanelMap[firstFormDataErrorKey] || 'eventDetails';
                     }
                 } else {
                     panelToOpen = fieldToPanelMap[firstErrorField] || 'eventDetails';
