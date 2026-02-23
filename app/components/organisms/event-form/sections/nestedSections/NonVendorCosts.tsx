@@ -32,20 +32,20 @@ export default function NonVendorCosts({ control, setValue }: Props) {
         const updates: Record<string, boolean> = {};
         let hasUpdates = false;
 
-        // Auto-select SORC Equipment if SORC Games is selected
-        if (elements?.sorc_games && !selectedServices?.sorc_equipment_rental) {
+        // Auto-select SORC Equipment if SORC Games is selected (only set initial default)
+        if (elements?.sorc_games && selectedServices?.sorc_equipment_rental === undefined) {
             updates.sorc_equipment_rental = true;
             hasUpdates = true;
         }
 
-        // Auto-select Minor Background Checks if Minors Present is selected
-        if (elements?.minors && !selectedServices?.minor_clearances) {
+        // Auto-select Minor Background Checks if Minors Present is selected (only set initial default)
+        if (elements?.minors && selectedServices?.minor_clearances === undefined) {
             updates.minor_clearances = true;
             hasUpdates = true;
         }
 
-        // Auto-select A/V Support if Movies/Media is selected
-        if (elements?.movies && !selectedServices?.av_support) {
+        // Auto-select A/V Support if Movies/Media is selected (only set initial default)
+        if (elements?.movies && selectedServices?.av_support === undefined) {
             updates.av_support = true;
             hasUpdates = true;
         }
@@ -54,32 +54,33 @@ export default function NonVendorCosts({ control, setValue }: Props) {
         // - Alcohol events
         // - Large events (100+ attendees)
         // - Events with minors
+        // (only set initial default)
         const needsSafetyCustodial = 
             elements?.alcohol || 
             (attendees && parseInt(attendees) >= 100) ||
             elements?.minors;
             
-        if (needsSafetyCustodial && !selectedServices?.custodial_safety) {
+        if (needsSafetyCustodial && selectedServices?.custodial_safety === undefined) {
             updates.custodial_safety = true;
             hasUpdates = true;
         }
 
-        // Auto-select Rec Athletics Staff for specific venues
+        // Auto-select Rec Athletics Staff for specific venues (only set initial default)
         if (locationType === "On-Campus" && locationData?.selected) {
             const requiresAthleticsStaff = ["Vidas", "DAC", "Daskalakis Athletic Center"].some(
                 venue => locationData.selected?.includes(venue)
             );
-            if (requiresAthleticsStaff && !selectedServices?.rec_athletics_staff) {
+            if (requiresAthleticsStaff && selectedServices?.rec_athletics_staff === undefined) {
                 updates.rec_athletics_staff = true;
                 hasUpdates = true;
             }
         }
 
-        // Auto-select Athletics Space Fee if using athletics facilities
+        // Auto-select Athletics Space Fee if using athletics facilities (only set initial default)
         if (locationType === "On-Campus" && locationData?.selected) {
             const athleticsBuildings = ["DAC", "Daskalakis Athletic Center", "Vidas", "Recreation Center"];
             if (athleticsBuildings.some(building => locationData.selected?.includes(building))) {
-                if (!selectedServices?.athletics_space) {
+                if (selectedServices?.athletics_space === undefined) {
                     updates.athletics_space = true;
                     hasUpdates = true;
                 }
@@ -340,6 +341,7 @@ export default function NonVendorCosts({ control, setValue }: Props) {
                                                     <Checkbox 
                                                         {...field}
                                                         checked={field.value}
+                                                        disabled={autoSelected}
                                                     >
                                                         <Text strong>{item.label}</Text>
                                                     </Checkbox>
@@ -360,7 +362,7 @@ export default function NonVendorCosts({ control, setValue }: Props) {
                                                         type="secondary" 
                                                         style={{ display: "block", marginLeft: 24, marginTop: 4, fontSize: 11, fontStyle: "italic" }}
                                                     >
-                                                        {getAutoReason(item.value)}
+                                                        {getAutoReason(item.value)} (This is required and cannot be unchecked)
                                                     </Text>
                                                 )}
                                             </div>
