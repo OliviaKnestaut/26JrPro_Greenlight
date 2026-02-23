@@ -226,6 +226,47 @@ export function EventForm() {
         }
     }, [isSelected]);
 
+    // Resize an image File on the client to fit within max dimensions.
+    const resizeImageFile = async (file: File, maxWidth = 1300, maxHeight = 780, quality = 0.85): Promise<File> => {
+        try {
+            if (!file || !file.type.startsWith('image/')) return file;
+
+            // Use createImageBitmap when available for performance
+            const bitmap = await createImageBitmap(file);
+            let { width, height } = bitmap;
+
+            const ratio = Math.min(1, maxWidth / width, maxHeight / height);
+            const targetW = Math.round(width * ratio);
+            const targetH = Math.round(height * ratio);
+
+            if (ratio === 1) {
+                // No resize needed
+                return file;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetW;
+            canvas.height = targetH;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return file;
+            ctx.drawImage(bitmap, 0, 0, targetW, targetH);
+
+            const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            const blob: Blob | null = await new Promise((resolve) => {
+                canvas.toBlob((b) => resolve(b), mime, quality);
+            });
+            if (!blob) return file;
+
+            const baseName = file.name.replace(/\.[^.]+$/, '');
+            const ext = mime === 'image/png' ? '.png' : '.jpg';
+            const resizedFile = new File([blob], `${baseName}-resized${ext}`, { type: blob.type });
+            return resizedFile;
+        } catch (err) {
+            console.warn('resizeImageFile failed, uploading original', err);
+            return file;
+        }
+    };
+
     const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
@@ -340,6 +381,123 @@ export function EventForm() {
             return;
         }
         const data = getValues();
+
+        // Helper: upload image to server endpoint and return the public url and filename
+            const uploadImage = async (file: File, desiredName?: string) => {
+                const fd = new FormData();
+                fd.append('event_img', file);
+                if (desiredName) fd.append('desired_name', desiredName);
+                const resp = await fetch('/~ojk25/jrProjGreenlight/uploads/upload_event_image.php', { method: 'POST', body: fd });
+
+                const text = await resp.text();
+                // Try to parse JSON response from server, otherwise include raw text
+                let parsed: any = null;
+                try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+
+                if (!resp.ok) {
+                    if (parsed && parsed.error) {
+                        const parts = [parsed.error];
+                        if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                        if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
+                        if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
+                        throw new Error(parts.join(' | '));
+                    }
+                    throw new Error(`Upload failed: ${resp.status} ${text}`);
+                }
+
+                if (parsed) {
+                    if (!parsed.success) {
+                        const parts = [parsed.error || 'Upload endpoint returned an error'];
+                        if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                        throw new Error(parts.join(' | '));
+                    }
+                    return parsed; // { success, url, filename, path }
+                }
+
+                // If we couldn't parse JSON but status is OK, throw with raw text
+                throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
+        };
+
+        const slugify = (str: string) => {
+            return (str || 'event')
+                .toString()
+                .normalize('NFKD')
+                .replace(/\s+/g, '_')
+                .replace(/[^A-Za-z0-9_-]/g, '')
+                .toLowerCase()
+                .substring(0, 120);
+        };
+
+        // If event_img is a File object (from Upload), handle upload specially.
+        if (data.event_img && data.event_img instanceof File) {
+            // Use a local id variable to ensure we pass a string to the mutation
+            let idToUse: string | null = draftId;
+
+            // If we don't yet have a draftId (new create), create the draft first without eventImg
+            if (!idToUse) {
+                try {
+                    const createInput = buildMutationInput({ ...data, event_img: undefined }, "DRAFT", false);
+                    // Ensure we are not sending a File to createEvent
+                    delete createInput.eventImg;
+                    message.loading({ content: 'Creating draft...', key: 'draft' });
+                    const { data: createResult } = await createEvent({ variables: { input: createInput } });
+                    const newId = createResult?.createEvent?.id;
+                    if (!newId) throw new Error('Failed to create draft before image upload');
+                    idToUse = newId;
+                    setDraftId(newId);
+                    setDraftAlertMessage('created');
+                    setTimeout(() => setDraftAlertMessage(''), 3000);
+                    message.success({ content: 'Draft created', key: 'draft', duration: 1 });
+                } catch (err) {
+                    console.error('❌ Failed to create draft before image upload:', err);
+                    message.error('Failed to create draft before uploading image. Please try again.');
+                    return;
+                }
+            }
+
+                // Now we have an idToUse; upload using desired name: {eventId}_{slugifiedTitle}
+            try {
+                if (!idToUse) {
+                    throw new Error('Missing draft id for image upload');
+                }
+                message.loading({ content: 'Uploading image...', key: 'upload' });
+                const desired = `${idToUse}_${slugify(data.title || '')}`;
+                    // Resize image client-side to meet server limits before uploading
+                    let fileToUpload: File = data.event_img as File;
+                    try {
+                        fileToUpload = await resizeImageFile(fileToUpload, 1300, 780, 0.85);
+                    } catch (e) {
+                        console.warn('Image resize failed, proceeding with original file', e);
+                    }
+                    const uploadResp = await uploadImage(fileToUpload, desired);
+                // Write the stored filename (not the File object) to DB
+                const filenameToSave = uploadResp.filename || uploadResp.url || uploadResp.path;
+                // Update the event with the filename
+                try {
+                    const updateInput = buildMutationInput({ ...data, event_img: filenameToSave }, "DRAFT", true);
+                    // Ensure eventImg is a string filename
+                    updateInput.eventImg = filenameToSave;
+                    message.loading({ content: 'Saving image reference...', key: 'save' });
+                    const { data: updateResult } = await updateEvent({ variables: { id: idToUse, input: updateInput } });
+                    if (updateResult?.updateEvent?.id) {
+                        message.success({ content: 'Image uploaded and saved', key: 'upload', duration: 1 });
+                        message.success({ content: 'Draft updated', key: 'save', duration: 1 });
+                    }
+                } catch (err) {
+                    console.error('❌ Failed to update event with image filename:', err);
+                    message.error('Uploaded image but failed to save filename to event.');
+                    return;
+                }
+            } catch (err) {
+                console.error('❌ Image upload failed:', err);
+                message.error('Image upload failed. Please try again.');
+                return;
+            }
+
+            // At this point the draft exists and has the image filename saved; nothing more to do below for create path
+            return;
+        }
+
         const mutationInput = buildMutationInput(data, "DRAFT", !!draftId);
         console.log("💾 SAVING DRAFT:", mutationInput);
 
