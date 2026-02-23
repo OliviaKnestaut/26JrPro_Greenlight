@@ -49,8 +49,8 @@ const CardCalendarMiniCard: React.FC<CardCalendarMiniCardProps> = ({ id, title, 
             className={cardClass}
             size="small"
             {...rest}
-            onClick={() => id && navigate(`/event-overview/${id}`)}
-            onKeyDown={(ev) => { if ((ev as any).key === 'Enter' && id) navigate(`/event-overview/${id}`); }}
+            onClick={() => id && navigate(`/event-overview?id=${encodeURIComponent(id)}`)}
+            onKeyDown={(ev) => { if ((ev as any).key === 'Enter' && id) navigate(`/event-overview?id=${encodeURIComponent(id)}`); }}
             role={id ? 'button' : undefined}
             tabIndex={id ? 0 : undefined}
         >

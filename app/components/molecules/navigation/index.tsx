@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { Layout, Menu, Button, Drawer, ConfigProvider, Avatar } from 'antd';
+import { Layout, Menu, Button, Drawer, ConfigProvider, Avatar, Popconfirm } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	LineChartOutlined,
@@ -179,12 +179,13 @@ export const Navigation: React.FC<NavigationProps> = ({
 						<div>
 							<span className={styles.userName}>{user?.firstName} {user?.lastName ? user.lastName.charAt(0) + '.' : ''}</span>
 						</div>
-						<Button
-							className={styles.logout}
-							icon={<LogoutOutlined />}
-							type="link"
-							onClick={onLogout}>
-						</Button>
+						<Popconfirm title="Are you sure you want to log out?" onConfirm={() => onLogout && onLogout()} okText="Yes" cancelText="No">
+							<Button
+								className={styles.logout}
+								icon={<LogoutOutlined />}
+								type="link"
+							/>
+						</Popconfirm>
 					</div>
 				</Sider>
 			)}
@@ -217,12 +218,13 @@ export const Navigation: React.FC<NavigationProps> = ({
 						<div>
 							<span className={styles.userName}>{user?.firstName} {user?.lastName ? user.lastName.charAt(0) + '.' : ''}</span>
 						</div>
-						<Button
-							className={styles.logout}
-							icon={<LogoutOutlined />}
-							type="link"
-							onClick={onLogout}>
-						</Button>
+						<Popconfirm title="Are you sure you want to log out?" onConfirm={() => onLogout && onLogout()} okText="Yes" cancelText="No">
+							<Button
+								className={styles.logout}
+								icon={<LogoutOutlined />}
+								type="link"
+							/>
+						</Popconfirm>
 					</div>
 				</Drawer>
 			)}

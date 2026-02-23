@@ -41,13 +41,6 @@ export function DashboardContent() {
                 const fetched = data?.eventsByOrganization ?? [];
                 setEvents(fetched);
 
-                const drafts = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
-                const inReview = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
-                if (import.meta.env.DEV) {
-                    console.log('Organization events:', fetched);
-                    console.log('In-Review events:', inReview);
-                    console.log('Draft events:', drafts);
-                }
             } catch (err) {
                 console.error('Failed to fetch events by organization', err);
             } finally {
@@ -179,7 +172,7 @@ export function DashboardContent() {
                                         key={e.id}
                                         isPast={isPast}
                                         eventImg={e.eventImg}
-                                        onClick={() => navigate(`/event-overview/${e.id}`)}
+                                        onClick={() => navigate(`/event-overview?id=${encodeURIComponent(e.id)}`)}
                                         className="w-full lg:w-1/2"
                                         style={{ cursor: 'pointer' }}
                                         title={e.title}

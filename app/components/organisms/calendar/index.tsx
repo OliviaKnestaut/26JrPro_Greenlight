@@ -45,13 +45,6 @@ export function CalendarContent() {
                 const fetched = data?.eventsByOrganization ?? [];
                 setEvents(fetched);
 
-                const drafts = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'draft');
-                const inReview = fetched.filter((e: any) => serverToUi(e.eventStatus) === 'in-review');
-                if (import.meta.env.DEV) {
-                    console.log('Organization events:', fetched);
-                    console.log('In-Review events:', inReview);
-                    console.log('Draft events:', drafts);
-                }
             } catch (err) {
                 console.error('Failed to fetch events by organization', err);
             } finally {
@@ -179,7 +172,7 @@ export function CalendarContent() {
                         weekends={true}
                         onEventClick={(event) => {
                             const id = (event as any).eventId || (event as any).id;
-                            if (id) navigate(`/event-overview/${id}`);
+                            if (id) navigate(`/event-overview?id=${encodeURIComponent(id)}`);
                         }}
                         onSelectDate={(date) => console.log(date)}
                     />

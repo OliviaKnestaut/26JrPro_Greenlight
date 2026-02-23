@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Typography, Statistic, Card, Tag, Avatar, Tooltip, Button } from "antd";
 const { Title, Paragraph, Link, Text } = Typography;
 import { ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined, PushpinOutlined, EditOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useGetEventByIdQuery, useGetUsersQuery } from '~/lib/graphql/generated';
 import NavMini from "../../molecules/nav-mini";
 import OptimizedImage from '../../atoms/OptimizedImage';
@@ -108,8 +108,11 @@ export function EventOverviewContent() {
         }
         return { text: status.toLowerCase(), className: '' };
     };
-    const { id } = useParams();
-    const { data, loading, error } = useGetEventByIdQuery({ variables: { id: id ?? '' }, skip: !id });
+    // Read `id` strictly from the query string: /event-overview?id=11
+    const queryId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : null;
+    const eventId = queryId ?? null;
+
+    const { data, loading, error } = useGetEventByIdQuery({ variables: { id: eventId ?? '' }, skip: !eventId });
     
     // Get the creator's username from the event data to query for their profile
     const creatorUsername = data?.event?.createdBy;
@@ -121,86 +124,89 @@ export function EventOverviewContent() {
     const creatorUser = userData?.users?.[0];
 
     useEffect(() => {
-        if (id && !loading && data?.event) {
-            const ev = data.event;
-            
-            // Parse formData JSON if it's a string
-            let parsedFormData: any = {};
-            if (typeof ev.formData === 'string') {
-                try {
-                    parsedFormData = JSON.parse(ev.formData);
-                } catch (e) {
-                    console.warn('Could not parse formData:', e);
+        // If an `eventId` is present, wait for the query to complete and only
+        // set form data from the query result. Do NOT run the localStorage
+        // fallback while an `eventId` is provided (prevents premature fallback).
+        if (eventId) {
+            if (!loading && data?.event) {
+                const ev = data.event;
+
+                // Parse formData JSON if it's a string
+                let parsedFormData: any = {};
+                if (typeof ev.formData === 'string') {
+                    try {
+                        parsedFormData = JSON.parse(ev.formData);
+                    } catch (e) {
+                        console.warn('Could not parse formData:', e);
+                    }
+                } else if (typeof ev.formData === 'object') {
+                    parsedFormData = ev.formData;
                 }
-            } else if (typeof ev.formData === 'object') {
-                parsedFormData = ev.formData;
+
+                const mapped = {
+                    event: {
+                        name: ev.title || '',
+                        description: ev.description || '',
+                        attendees: parsedFormData?.attendees || '',
+                        dateRange: ev.eventDate ? [ev.eventDate, ev.eventDate] : [],
+                    },
+                    location: {
+                        name: ev.location || '',
+                        type: formatLocationType(ev.locationType || ''),
+                        roomTitle: parsedFormData?.location?.room_title || '',
+                        buildingCode: parsedFormData?.location?.selected || '',
+                    },
+                    vendor: parsedFormData?.budget?.vendor_needed === true ? 'yes' : 'no',
+                    account: parsedFormData?.budget?.account_code || '',
+                    budget: parsedFormData?.budget?.total_purchase || parsedFormData?.estimatedCost || '',
+                    travel: {
+                        type: parsedFormData?.travel?.type || 'N/A',
+                        country: parsedFormData?.travel?.country || '',
+                        domestic_location: parsedFormData?.travel?.domestic_location || '',
+                    },
+                    eventElements: parsedFormData?.elements ? Object.keys(parsedFormData.elements).filter(key => parsedFormData.elements[key] === true) : [],
+                    eventLevel: ev.eventLevel !== undefined && ev.eventLevel !== null ? `Level ${ev.eventLevel}` : 'N/A',
+                    createdBy: ev.createdBy || 'N/A',
+                    createdByUser: parsedFormData?.createdByUser || null,
+                    eventStatus: ev.eventStatus || 'N/A',
+                    startTime: ev.startTime || 'N/A',
+                    endTime: ev.endTime || 'N/A',
+                    setupTime: ev.setupTime || 'N/A',
+                    organization_ids: parsedFormData?.organization_id || [],
+                    // Element nested data
+                    food: parsedFormData?.form_data?.food || null,
+                    alcohol: parsedFormData?.form_data?.alcohol || null,
+                    minors: parsedFormData?.form_data?.minors || null,
+                    movies: parsedFormData?.form_data?.movies || null,
+                    raffles: parsedFormData?.form_data?.raffles || null,
+                    fire: parsedFormData?.form_data?.fire || null,
+                    sorc_games: parsedFormData?.form_data?.sorc_games || null,
+                    // Vendors data
+                    vendors: parsedFormData?.form_data?.vendors || [],
+                    // Location nests
+                    onCampus: parsedFormData?.form_data?.location || null,
+                    offCampus: {
+                        off_campus_address: parsedFormData?.form_data?.location?.off_campus_address || '',
+                        google_maps_link: parsedFormData?.form_data?.location?.google_maps_link || '',
+                        travel_type: parsedFormData?.form_data?.travel?.type || '',
+                        transportation: parsedFormData?.form_data?.travel?.transportation || '',
+                        trip_leader: parsedFormData?.form_data?.travel?.trip_leader || '',
+                        trip_leader_emergency_contact: parsedFormData?.form_data?.travel?.trip_leader_emergency_contact || null,
+                        lodging: parsedFormData?.form_data?.travel?.lodging || '',
+                        eap_file: parsedFormData?.form_data?.travel?.eap_file || '',
+                    },
+                };
+                setFormData(mapped);
             }
-            
-            console.log('📋 Raw Event Data:', ev);
-            console.log('📦 Parsed Form Data:', parsedFormData);
-            
-            const mapped = {
-                event: {
-                    name: ev.title || '',
-                    description: ev.description || '',
-                    attendees: parsedFormData?.attendees || '',
-                    dateRange: ev.eventDate ? [ev.eventDate, ev.eventDate] : [],
-                },
-                location: {
-                    name: ev.location || '',
-                    type: formatLocationType(ev.locationType || ''),
-                    roomTitle: parsedFormData?.location?.room_title || '',
-                    buildingCode: parsedFormData?.location?.selected || '',
-                },
-                vendor: parsedFormData?.budget?.vendor_needed === true ? 'yes' : 'no',
-                account: parsedFormData?.budget?.account_code || '',
-                budget: parsedFormData?.budget?.total_purchase || parsedFormData?.estimatedCost || '',
-                travel: {
-                    type: parsedFormData?.travel?.type || 'N/A',
-                    country: parsedFormData?.travel?.country || '',
-                    domestic_location: parsedFormData?.travel?.domestic_location || '',
-                },
-                eventElements: parsedFormData?.elements ? Object.keys(parsedFormData.elements).filter(key => parsedFormData.elements[key] === true) : [],
-                eventLevel: ev.eventLevel !== undefined && ev.eventLevel !== null ? `Level ${ev.eventLevel}` : 'N/A',
-                createdBy: ev.createdBy || 'N/A',
-                createdByUser: parsedFormData?.createdByUser || null,
-                eventStatus: ev.eventStatus || 'N/A',
-                startTime: ev.startTime || 'N/A',
-                endTime: ev.endTime || 'N/A',
-                setupTime: ev.setupTime || 'N/A',
-                organization_ids: parsedFormData?.organization_id || [],
-                // Element nested data
-                food: parsedFormData?.form_data?.food || null,
-                alcohol: parsedFormData?.form_data?.alcohol || null,
-                minors: parsedFormData?.form_data?.minors || null,
-                movies: parsedFormData?.form_data?.movies || null,
-                raffles: parsedFormData?.form_data?.raffles || null,
-                fire: parsedFormData?.form_data?.fire || null,
-                sorc_games: parsedFormData?.form_data?.sorc_games || null,
-                // Vendors data
-                vendors: parsedFormData?.form_data?.vendors || [],
-                // Location nests
-                onCampus: parsedFormData?.form_data?.location || null,
-                offCampus: {
-                    off_campus_address: parsedFormData?.form_data?.location?.off_campus_address || '',
-                    google_maps_link: parsedFormData?.form_data?.location?.google_maps_link || '',
-                    travel_type: parsedFormData?.form_data?.travel?.type || '',
-                    transportation: parsedFormData?.form_data?.travel?.transportation || '',
-                    trip_leader: parsedFormData?.form_data?.travel?.trip_leader || '',
-                    trip_leader_emergency_contact: parsedFormData?.form_data?.travel?.trip_leader_emergency_contact || null,
-                    lodging: parsedFormData?.form_data?.travel?.lodging || '',
-                    eap_file: parsedFormData?.form_data?.travel?.eap_file || '',
-                },
-            };
-            setFormData(mapped);
             return;
         }
-        // fallback to previous localStorage behavior when no id provided
+
+        // No `id` provided: fallback to previous localStorage behavior
         const dataLs = localStorage.getItem("eventFormData");
         if (dataLs) {
             setFormData(JSON.parse(dataLs));
         }
-    }, [id, data, loading]);
+    }, [eventId, data, loading]);
     
     // Create refs for each section
     const eventDetailsRef = useRef<HTMLDivElement>(null);
@@ -251,7 +257,7 @@ export function EventOverviewContent() {
                         <Button 
                             type="primary" 
                             icon={<EditOutlined />}
-                            onClick={() => navigate(`/event-form/${id}`)}
+                            onClick={() => navigate(`/event-form/${eventId}`)}
                         >
                             Edit Submission
                         </Button>

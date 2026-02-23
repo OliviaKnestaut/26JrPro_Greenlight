@@ -34,7 +34,6 @@ const StyledCalendar: React.FC<{ events?: StyledCalendarEvent[] }> = ({ events =
         const today = dayjs();
         const newValue = val.isSame(today, 'month') ? today : val.startOf('month');
         setValue(newValue);
-        console.log(val.format('YYYY-MM-DD'), mode);
     };
     const eventMap = React.useMemo(() => {
         const map = new Map<string, StyledCalendarEvent[]>();
@@ -57,15 +56,6 @@ const StyledCalendar: React.FC<{ events?: StyledCalendarEvent[] }> = ({ events =
     }, [events]);
 
     const wrapperRef = React.useRef<HTMLDivElement | null>(null);
-
-    React.useEffect(() => {
-        console.log('StyledCalendar received events:', events);
-        try {
-            console.log('StyledCalendar eventMap keys:', Array.from(eventMap.keys()));
-        } catch (err) {
-            console.log('StyledCalendar eventMap unavailable', err);
-        }
-    }, [events, eventMap]);
 
     // Helper: whether the displayed month is the current month
     const isViewingCurrentMonth = (d: Dayjs) => d.isSame(dayjs(), 'month');
