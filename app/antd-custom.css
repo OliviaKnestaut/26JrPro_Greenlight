@@ -349,11 +349,21 @@ p {
 }
 
 .ant-input {
-	border-radius: 2px;
+	border-radius: 0;
 }
 
 .ant-input-textarea .ant-input {
-	border-radius: 2px !important;
+	border-radius: 0 !important;
+}
+
+.ant-select-selector,
+.ant-picker {
+	border-radius: 0 !important;
+}
+
+.ant-input-number,
+.ant-input-number-input {
+	border-radius: 0 !important;
 }
 
 .ant-checkbox-group,

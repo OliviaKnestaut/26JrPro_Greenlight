@@ -24,7 +24,7 @@ import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
 import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
 import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
 
-const { Title, Link } = Typography;
+const { Title, Link, Paragraph } = Typography;
 const { Panel } = Collapse;
 
 const formBranching = [
@@ -75,7 +75,7 @@ export function EventForm() {
     const { control, handleSubmit, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm({ mode: "onChange" });
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
-    const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>();
+    const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
     const allowNavigationRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
@@ -455,7 +455,7 @@ export function EventForm() {
                 }
             }
 
-                // Now we have an idToUse; upload using desired name: {eventId}_{slugifiedTitle}
+            // Now we have an idToUse; upload using desired name: {eventId}_{slugifiedTitle}
             try {
                 if (!idToUse) {
                     throw new Error('Missing draft id for image upload');
@@ -679,7 +679,7 @@ export function EventForm() {
     };
 
     return (
-        <div className="container mx-auto p-8">
+        <div className="container">
             <Title level={5}>
                 <Link onClick={() => {
                     setIsExplicitDiscard(false); // Navigating back, not explicit discard
@@ -688,7 +688,7 @@ export function EventForm() {
             </Title>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: 24 }}>
                 <h2 style={{ margin: 0 }}>Event Form</h2>
-                <p>Provide your event information for review and approval.</p>
+                <p>Provide your event information for review and approval. All required fields are marked with <span style={{ color: 'var(--red-6)' }}>*</span>. You must complete all required fields before proceeding to review.</p>
             </div>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
                 <ProgressTimeline getValues={getValues} currentEditingSection={currentEditingSection} />
@@ -701,41 +701,33 @@ export function EventForm() {
                             const keyArray = Array.isArray(keys) ? keys : [keys];
                             const majorSectionKeys = ["eventDetails", "dateLocation", "eventElements", "budgetPurchase"];
 
-                            // Determine which major sections have just been opened or closed
-                            const newlyOpenedMajors = majorSectionKeys.filter(
-                                (key) => keyArray.includes(key) && !activeCollapseKey.includes(key)
-                            );
-                            const justClosedMajors = majorSectionKeys.filter(
-                                (key) => activeCollapseKey.includes(key) && !keyArray.includes(key)
-                            );
-
-                            // When a major section is closed, also close its nested children
-                            const nestedKeysToClose: string[] = [];
-                            justClosedMajors.forEach((closedKey) => {
-                                formBranching.forEach((branch) => {
-                                    if (branch.parent === closedKey) {
-                                        nestedKeysToClose.push(branch.key);
+                            // Filter to get only major sections (not nested panels)
+                            const majorSectionsInKeys = keyArray.filter(key => majorSectionKeys.includes(key));
+                            
+                            // If multiple major sections are in the array, keep only the last one clicked
+                            let finalKeys: string[] = [];
+                            let activeMajor: string | null = null;
+                            
+                            if (majorSectionsInKeys.length > 0) {
+                                // Keep only the most recent major section
+                                activeMajor = majorSectionsInKeys[majorSectionsInKeys.length - 1];
+                                finalKeys.push(activeMajor);
+                                
+                                // Also add any nested panels that belong to this major section
+                                keyArray.forEach((key) => {
+                                    const nestedPanel = formBranching.find(p => p.key === key);
+                                    if (nestedPanel && nestedPanel.parent === activeMajor) {
+                                        finalKeys.push(key);
                                     }
                                 });
-                            });
-
-                            const finalKeys = keyArray.filter((k) => !nestedKeysToClose.includes(k));
-
-                            setActiveCollapseKey(finalKeys);
-
-                            // Update the current editing section based on open majors
-                            let nextEditingSection = currentEditingSection;
-
-                            if (newlyOpenedMajors.length > 0) {
-                                // Prefer the most recently opened major section
-                                nextEditingSection = newlyOpenedMajors[newlyOpenedMajors.length - 1];
-                            } else if (!nextEditingSection || !finalKeys.includes(nextEditingSection)) {
-                                // Fall back to any open major section, if current is no longer valid
-                                const openMajorSection = majorSectionKeys.find((key) => finalKeys.includes(key));
-                                nextEditingSection = openMajorSection;
                             }
-
-                            setCurrentEditingSection(nextEditingSection || undefined);
+                            
+                            setActiveCollapseKey(finalKeys);
+                            
+                            // Update currentEditingSection to stay in sync with progress timeline
+                            if (activeMajor) {
+                                setCurrentEditingSection(activeMajor);
+                            }
                         }}
                         expandIconPosition="end"
                     >

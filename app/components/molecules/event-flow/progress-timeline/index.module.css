@@ -38,6 +38,10 @@
 	color: var(--sea-green-6, #19A9B3);
 }
 
+.timeline :global(.ant-steps-error-icon) {
+	color: var(--red-6, #ff4d4f);
+}
+
 .timeline :global(.ant-steps-item-process .ant-steps-item-icon) {
 	border: 1px solid var(--sea-green-6, #19A9B3);
 	background: var(--sea-green-6, #19A9B3);
@@ -55,7 +59,14 @@
 .timeline :global(.ant-steps-item-wait .ant-steps-icon) {
 	color: var(--gray-7, #9ca3af);
 }
+.timeline :global(.ant-steps-item-error .ant-steps-item-icon) {
+	border: 1px solid var(--red-6, #ff4d4f);
+	background: var(--red-1, #fff2f0);
+}
 
+.timeline :global(.ant-steps-item-error .ant-steps-icon) {
+	color: var(--red-6, #ff4d4f);
+}
 .timeline :global(.ant-steps-item-icon) {
 	margin-inline-end: 0;
 }

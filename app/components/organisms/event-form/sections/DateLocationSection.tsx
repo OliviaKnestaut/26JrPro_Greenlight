@@ -31,7 +31,7 @@ export default function DateLocationSection({ control }: Props) {
                         <DatePicker
                             value={field.value ? dayjs(field.value) : null}
                             onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : null)}
-                            style={{ display: "block", marginTop: 8, width: 240 }}
+                            style={{ display: "block", marginTop: 8, width: "49%" }}
                             status={fieldState.error ? "error" : ""}
                         />
                         {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
@@ -93,13 +93,15 @@ export default function DateLocationSection({ control }: Props) {
                 control={control}
                 render={({ field }) => (
                     <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
-                        <FieldLabel>Does your event require additional setup or takedown time?</FieldLabel>
-                        <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Enter the number of minutes needed, or leave blank if not applicable</Text>
+                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                            <FieldLabel>Does your event require additional setup or takedown time? </FieldLabel>
+                            <Text type="secondary" style={{  }}>(Optional)</Text>
+                        </div>
                         <InputNumber
                             {...field}
                             min={0}
                             placeholder="Ex: 30"
-                            style={{ display: "block", width: 200 }}
+                            style={{ display: "block", width: "49%" }}
                         />
                     </div>
                 )}

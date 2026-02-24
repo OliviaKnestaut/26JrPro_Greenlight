@@ -11,7 +11,7 @@ type Props = {
 
 export default function AlcoholSection({ control }: Props) {
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
 
             {/* A1 - Company providing alcohol */}
             <Controller

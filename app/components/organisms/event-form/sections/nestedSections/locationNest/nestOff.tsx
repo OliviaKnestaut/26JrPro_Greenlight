@@ -44,7 +44,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
 
 
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
 
             {/* Off Campus Location Address */}
             <Controller
@@ -73,8 +73,10 @@ export default function OffCampusSection({ control, setValue }: Props) {
                 control={control}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <FieldLabel>Google Maps Link</FieldLabel>
-                        <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Provide a link to help locate the venue</Text>
+                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                            <FieldLabel>Google Maps Link</FieldLabel>
+                            <Text type="secondary" style={{}}>Provide a link to help locate the venue (Optional)</Text>
+                        </div>
                         <Input
                             {...field}
                             placeholder="https://maps.google.com/..."

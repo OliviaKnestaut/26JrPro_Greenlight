@@ -24,7 +24,7 @@ export default function MoviesSection({ control }: Props) {
     });
 
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
 
             {/* Movie Option Selection */}
             <Controller

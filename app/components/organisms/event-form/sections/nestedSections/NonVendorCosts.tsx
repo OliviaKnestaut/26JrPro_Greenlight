@@ -20,6 +20,7 @@ export default function NonVendorCosts({ control, setValue }: Props) {
     const locationData = useWatch({ control, name: "form_data.location" });
     const attendees = useWatch({ control, name: "attendees" });
     const level0Confirmed = useWatch({ control, name: "form_data.level0_confirmed" });
+    const fireData = useWatch({ control, name: "form_data.fire" });
     
     // Watch selected services to show account info section
     const selectedServices = useWatch({
@@ -87,13 +88,19 @@ export default function NonVendorCosts({ control, setValue }: Props) {
             }
         }
 
+        // Auto-select Fire Pit Package Fee if Fire Pit Package is selected (only set initial default)
+        if (fireData?.type === "fire_pit_package" && selectedServices?.fire_pit_package === undefined) {
+            updates.fire_pit_package = true;
+            hasUpdates = true;
+        }
+
         // Apply updates if any
         if (hasUpdates) {
             Object.entries(updates).forEach(([key, value]) => {
                 setValue(`form_data.non_vendor_services.${key}`, value);
             });
         }
-    }, [elements, locationType, locationData, attendees, selectedServices, setValue]);
+    }, [elements, locationType, locationData, attendees, selectedServices, fireData, setValue]);
 
     const hasSelectedServices = selectedServices && Object.values(selectedServices).some(Boolean);
 
@@ -102,11 +109,13 @@ export default function NonVendorCosts({ control, setValue }: Props) {
         elements: any,
         attendees: any,
         locationType: any,
-        locationData: any
+        locationData: any,
+        fireData: any
     ): boolean => {
         if (serviceValue === "sorc_equipment_rental" && elements?.sorc_games) return true;
         if (serviceValue === "minor_clearances" && elements?.minors) return true;
         if (serviceValue === "av_support" && elements?.movies) return true;
+        if (serviceValue === "fire_pit_package" && fireData?.type === "fire_pit_package") return true;
 
         if (serviceValue === "custodial_safety") {
             return (
@@ -133,7 +142,7 @@ export default function NonVendorCosts({ control, setValue }: Props) {
 
     // Helper to check if a service was auto-selected
     const isAutoSelected = (serviceValue: string): boolean => {
-        return shouldAutoSelectService(serviceValue, elements, attendees, locationType, locationData);
+        return shouldAutoSelectService(serviceValue, elements, attendees, locationType, locationData, fireData);
     };
     // Service categories with detailed descriptions
     const serviceCategories = [
@@ -186,6 +195,12 @@ export default function NonVendorCosts({ control, setValue }: Props) {
             description: "Additional space reservation or equipment rental fees",
             warning: "Fees vary by space and equipment type",
             items: [
+                { 
+                    value: "fire_pit_package", 
+                    label: "Fire Pit Package",
+                    details: "Professional fire pit setup, lighting agents, and management services during your event",
+                    autoReason: "Auto-applied because you selected 'Fire Pit Package' in event elements"
+                },
                 { 
                     value: "athletics_space", 
                     label: "Athletics Space Reservation",
@@ -395,12 +410,11 @@ export default function NonVendorCosts({ control, setValue }: Props) {
                         control={control}
                         render={({ field }) => (
                             <div style={{ marginTop: 16, marginBottom: 16 }}>
-                                <FieldLabel>
-                                    Additional Notes or Special Requirements
-                                </FieldLabel>
-                                <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
-                                    Optional - Provide any additional details about the services you need
-                                </Text>
+                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                    <FieldLabel>Additional Notes or Special Requirements</FieldLabel>
+                                    <Text type="secondary" style={{}}>(Optional)</Text>
+                                </div>
+                                <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>Provide any additional details about the services you need</Text>
                                 <TextArea
                                     {...field}
                                     rows={3}

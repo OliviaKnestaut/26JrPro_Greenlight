@@ -16,11 +16,11 @@ type ProgressTimelineProps = {
 }
 
 const defaultSteps: ProgressStep[] = [
-	{ title: "Event Details", key: "eventDetails"},
-	{ title: "Date & Location", key: "dateLocation"},
-	{ title: "Event Elements", key: "eventElements"},
-	{ title: "Budget & Purchases", key: "budgetPurchase"},
-	{ title: "Review", key: "review"},
+	{ title: "Event Details", key: "eventDetails" },
+	{ title: "Date & Location", key: "dateLocation" },
+	{ title: "Event Elements", key: "eventElements" },
+	{ title: "Budget & Purchases", key: "budgetPurchase" },
+	{ title: "Review", key: "review" },
 ];
 
 const defaultIsSectionComplete = (key: string, values: Record<string, any>): boolean => {
@@ -57,8 +57,8 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			return true;
 		case "review":
 			// All previous sections must be completed
-			return defaultIsSectionComplete("eventDetails", values) && 
-				   defaultIsSectionComplete("dateLocation", values);
+			return defaultIsSectionComplete("eventDetails", values) &&
+				defaultIsSectionComplete("dateLocation", values);
 		default:
 			return false;
 	}
@@ -70,25 +70,38 @@ export default function ProgressTimeline({
 	isSectionComplete = defaultIsSectionComplete,
 	currentEditingSection
 }: ProgressTimelineProps) {
-	const rawValues = getValues();
-	const values: Record<string, any> =
-		rawValues !== null && typeof rawValues === "object"
-			? (rawValues as Record<string, any>)
-			: (() => {
-					console.warn(
-						"ProgressTimeline: getValues() did not return a valid object. Falling back to an empty object."
-					);
-					return {};
-				})();
-	
+	// Safely get values and handle null/undefined cases
+	let values: Record<string, any> = {};
+	try {
+		const rawValues = getValues?.();
+		if (rawValues !== null && typeof rawValues === "object") {
+			values = rawValues as Record<string, any>;
+		}
+	} catch (err) {
+		console.warn(
+			"ProgressTimeline: Error calling getValues(). Falling back to empty object.",
+			err
+		);
+	}
+
+	// Ensure steps is a valid array
+	const validSteps = Array.isArray(steps) && steps.length > 0 ? steps : defaultSteps;
+
 	// If currentEditingSection is provided, use it to determine the active step
 	let activeStep: number;
 	if (currentEditingSection) {
-		const editingIndex = steps.findIndex(step => step.key === currentEditingSection);
+		const editingIndex = validSteps.findIndex(step => step.key === currentEditingSection);
 		activeStep = editingIndex !== -1 ? editingIndex : 0;
 	} else {
-		const currentStep = steps.findIndex((step) => !isSectionComplete(step.key, values));
-		activeStep = currentStep === -1 ? steps.length - 1 : currentStep;
+		const currentStep = validSteps.findIndex((step) => {
+			try {
+				return !isSectionComplete(step.key, values);
+			} catch (err) {
+				console.warn(`Error checking completion for section ${step.key}:`, err);
+				return true;
+			}
+		});
+		activeStep = currentStep === -1 ? validSteps.length - 1 : currentStep;
 	}
 
 	return (
@@ -96,10 +109,32 @@ export default function ProgressTimeline({
 			<Steps
 				current={activeStep}
 				labelPlacement="vertical"
-				items={steps.map((step) => ({
-					key: step.key,
-					title: step.title,
-				}))}
+				items={validSteps.map((step, index) => {
+					let status: "finish" | "process" | "wait" | "error" = "wait";
+					
+					try {
+						const isComplete = isSectionComplete(step.key, values);
+						const isCurrent = currentEditingSection === step.key;
+						
+						if (isComplete) {
+							status = "finish";
+						} else if (isCurrent) {
+							status = "process";
+						} else if (!isComplete && index < activeStep) {
+							// Past sections that aren't complete should show as error
+							status = "error";
+						}
+					} catch (err) {
+						console.warn(`Error calculating status for section ${step.key}:`, err);
+						status = "wait";
+					}
+					
+					return {
+						key: step.key,
+						title: step.title,
+						status: status,
+					};
+				})}
 			/>
 		</div>
 	);
