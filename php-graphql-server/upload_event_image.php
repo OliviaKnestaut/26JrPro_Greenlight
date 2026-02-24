@@ -74,7 +74,7 @@ if (empty($mime) && !empty($file['type'])) {
 if (empty($mime)) {
     $mime = 'application/octet-stream';
 }
-@file_put_contents($debugFile, json_encode(['time' => date('c'), 'resolved_mime' => $mime]) . PHP_EOL, FILE_APPEND);
+error_log('upload_event_image: resolved_mime=' . ($mime ?? 'unknown'));
 
 if ($mime === 'application/octet-stream' || empty($mime)) {
     $imgTmp = false;
@@ -94,7 +94,7 @@ if ($mime === 'application/octet-stream' || empty($mime)) {
             $mime = $map[$typeConst];
         }
     }
-    @file_put_contents($debugFile, json_encode(['time'=>date('c'),'fallback_mime'=>$mime]) . PHP_EOL, FILE_APPEND);
+    error_log('upload_event_image: fallback_mime=' . ($mime ?? 'unknown'));
 }
 
 // Allowed file types
