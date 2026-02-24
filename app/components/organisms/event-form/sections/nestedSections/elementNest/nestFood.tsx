@@ -44,7 +44,7 @@ export default function FoodSection({ control }: Props) {
   ].includes(foodType);
 
   return (
-    <div style={{ marginTop: 24 }}>
+    <div >
       {/* F1 — Food Type */}
       <Controller
         name="form_data.food.type"
@@ -83,7 +83,7 @@ export default function FoodSection({ control }: Props) {
           }}
           render={({ field, fieldState }) => (
             <div style={{ marginBottom: 16 }}>
-              <FieldLabel required>Estimated food cost</FieldLabel>
+              <FieldLabel required>Estimated Food Cost (under $500)</FieldLabel>
               <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
                 Note: You must submit a separate purchase request through DragonLink
               </Text>
@@ -91,7 +91,7 @@ export default function FoodSection({ control }: Props) {
                 {...field}
                 min={0}
                 step={1}
-                style={{ display: "block" }}
+                style={{ display: "block", width: "100%" }}
                 formatter={(value) =>
                   value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
                 }
@@ -124,7 +124,7 @@ export default function FoodSection({ control }: Props) {
                 {...field}
                 min={0}
                 step={1}
-                style={{ display: "block", marginTop: 8 }}
+                style={{ display: "block", marginTop: 8, width: "100%" }}
                 formatter={(value) =>
                   value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
                 }
@@ -150,7 +150,7 @@ export default function FoodSection({ control }: Props) {
             rules={{ required: "Vendor or restaurant name is required" }}
             render={({ field, fieldState }) => (
               <div style={{ marginBottom: 16 }}>
-                <FieldLabel required>Vendor or restaurant name</FieldLabel>
+                <FieldLabel required>What is the name of the vendor or restaurant?</FieldLabel>
                 <Input
                   {...field}
                   placeholder="Enter vendor name"
@@ -173,12 +173,12 @@ export default function FoodSection({ control }: Props) {
             }}
             render={({ field, fieldState }) => (
               <div style={{ marginBottom: 16 }}>
-                <FieldLabel required>Estimated food cost</FieldLabel>
+                <FieldLabel required>What is the estimated food cost?</FieldLabel>
                 <InputNumber
                   {...field}
                   min={0}
                   step={1}
-                  style={{ display: "block", marginTop: 8 }}
+                  style={{ display: "block", marginTop: 8, width: "100%" }}
                   formatter={(value) =>
                     value ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
                   }

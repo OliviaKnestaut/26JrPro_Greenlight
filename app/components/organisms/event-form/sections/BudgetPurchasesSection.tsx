@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
-import { Input, Button, Select, Typography, InputNumber, Radio, Upload, Checkbox, Alert, Popover } from "antd";
+import { Input, Button, Select, Typography, InputNumber, Radio, Upload, Checkbox, Alert, Popover, Divider } from "antd";
 import { PlusOutlined, MinusCircleOutlined, UploadOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import FieldLabel from "../components/FieldLabel";
 import NonVendorCosts from "./nestedSections/NonVendorCosts";
@@ -51,6 +52,10 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
         name: "form_data.vendors",
     });
 
+    const [showSpecialServices, setShowSpecialServices] = useState(false);
+    const canRevealSpecialServices = hasVendors || hasElements || hasServices;
+    const shouldShowSpecialServices = !level0Confirmed && (canRevealSpecialServices || showSpecialServices);
+
     return (
         <div style={{ marginBottom: 24 }}>
             {/* Level 0 Event Notice */}
@@ -67,10 +72,16 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
             {/* Only show vendor section if NOT a level 0 event */}
             {!level0Confirmed && (
                 <>
-                    <FieldLabel style={{ marginTop: 24 }}>What contracts requests (vendors) are you planning to use for your event?</FieldLabel>
-                    <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 16 }}>
-                        Optional - Add all vendors you will be working with for this event.
+                    <h5 style={{ display: "block", marginBottom: 8 }}>
+                        Vendors
+                    </h5>
+                    <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+                        Add any vendors you will pay directly for this event.
                     </Text>
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                        <FieldLabel>What contracts requests (vendors) are you planning to use for your event?</FieldLabel>
+                        <Text type="secondary" style={{}}>(Optional)</Text>
+                    </div>
                 </>
             )}
 
@@ -127,146 +138,151 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         )}
                     />
 
-                    {/* Vendor/Company Name */}
-                    <Controller
-                        name={`form_data.vendors.${index}.companyName`}
-                        control={control}
-                        rules={hasVendors ? { required: "Vendor/Company name is required" } : {}}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required={hasVendors}>Vendor/Company/Agency Name</FieldLabel>
-                                <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Enter N/A if you are not working through a company</Text>
-                                <Input
-                                    {...field}
-                                    placeholder="Enter vendor or company name, or N/A"
-                                    status={fieldState.error ? "error" : ""}
-                                />
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    />
+                    <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+                        {/* Vendor/Company Name */}
+                        <Controller
+                            name={`form_data.vendors.${index}.companyName`}
+                            control={control}
+                            rules={hasVendors ? { required: "Vendor/Company name is required" } : {}}
+                            render={({ field, fieldState }) => (
+                                <div style={{ flex: 1 }}>
+                                    <FieldLabel required={hasVendors} style={{ marginBottom: 8 }}>Vendor/Company/Agency Name</FieldLabel>
+                                    <Input
+                                        {...field}
+                                        placeholder="Enter vendor or company name, or N/A"
+                                        status={fieldState.error ? "error" : ""}
+                                    />
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                            {fieldState.error.message}
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                        />
 
-                    {/* Name of person in contact with / performing */}
-                    <Controller
-                        name={`form_data.vendors.${index}.contactPersonName`}
-                        control={control}
-                        rules={hasVendors ? { required: "Contact person name is required" } : {}}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required={hasVendors}>Name(s) of person(s) you are in contact with and/or the person performing</FieldLabel>
-                                <Input
-                                    {...field}
-                                    placeholder="Enter contact or performer name"
-                                    style={{ marginTop: 8 }}
-                                    status={fieldState.error ? "error" : ""}
-                                />
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    />
+                        {/* Name of person in contact with / performing */}
+                        <Controller
+                            name={`form_data.vendors.${index}.contactPersonName`}
+                            control={control}
+                            rules={hasVendors ? { required: "Contact person name is required" } : {}}
+                            render={({ field, fieldState }) => (
+                                <div style={{ flex: 1 }}>
+                                    <FieldLabel required={hasVendors}>Contact Person Name</FieldLabel>
+                                    <Input
+                                        {...field}
+                                        placeholder="Enter contact or performer name"
+                                        style={{ marginTop: 8 }}
+                                        status={fieldState.error ? "error" : ""}
+                                    />
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                            {fieldState.error.message}
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                        />
+                    </div>
 
-                    {/* Contact Email */}
-                    <Controller
-                        name={`form_data.vendors.${index}.contactEmail`}
-                        control={control}
-                        rules={hasVendors ? {
-                            required: "Contact email is required",
-                            pattern: {
-                                value: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i,
-                                message: "Enter a valid email address"
-                            }
-                        } : {}}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required={hasVendors}>Contact Email Address</FieldLabel>
-                                <Input
-                                    {...field}
-                                    placeholder="vendor@example.com"
-                                    style={{ marginTop: 8 }}
-                                    status={fieldState.error ? "error" : ""}
-                                />
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    />
+                    <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+                        {/* Contact Email */}
+                        <Controller
+                            name={`form_data.vendors.${index}.contactEmail`}
+                            control={control}
+                            rules={hasVendors ? {
+                                required: "Contact email is required",
+                                pattern: {
+                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i,
+                                    message: "Enter a valid email address"
+                                }
+                            } : {}}
+                            render={({ field, fieldState }) => (
+                                <div style={{ flex: 1 }}>
+                                    <FieldLabel required={hasVendors}>Contact Email Address</FieldLabel>
+                                    <Input
+                                        {...field}
+                                        placeholder="vendor@example.com"
+                                        style={{ marginTop: 8 }}
+                                        status={fieldState.error ? "error" : ""}
+                                    />
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                            {fieldState.error.message}
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                        />
 
-                    {/* Contact Phone */}
-                    <Controller
-                        name={`form_data.vendors.${index}.contactPhone`}
-                        control={control}
-                        rules={hasVendors ? { required: "Contact phone number is required" } : {}}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required={hasVendors}>Contact Phone Number</FieldLabel>
-                                <Input
-                                    {...field}
-                                    placeholder="(123) 456-7890"
-                                    style={{ marginTop: 8 }}
-                                    status={fieldState.error ? "error" : ""}
-                                />
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    />
+                        {/* Contact Phone */}
+                        <Controller
+                            name={`form_data.vendors.${index}.contactPhone`}
+                            control={control}
+                            rules={hasVendors ? { required: "Contact phone number is required" } : {}}
+                            render={({ field, fieldState }) => (
+                                <div style={{ flex: 1 }}>
+                                    <FieldLabel required={hasVendors}>Contact Phone Number</FieldLabel>
+                                    <Input
+                                        {...field}
+                                        placeholder="(123) 456-7890"
+                                        style={{ marginTop: 8 }}
+                                        status={fieldState.error ? "error" : ""}
+                                    />
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                            {fieldState.error.message}
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                        />
+                    </div>
 
-                    {/* Have you worked with this vendor before? */}
-                    <Controller
-                        name={`form_data.vendors.${index}.workedBefore`}
-                        control={control}
-                        rules={hasVendors ? { required: "Please select an option" } : {}}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required={hasVendors}>Have you worked with this vendor before?</FieldLabel>
-                                <Radio.Group {...field} style={{ display: "block", marginTop: 8 }}>
-                                    <Radio value="yes">Yes</Radio>
-                                    <Radio value="no">No</Radio>
-                                    <Radio value="not_sure">Not Sure</Radio>
-                                </Radio.Group>
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    />
+                    <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+                        {/* Have you worked with this vendor before? */}
+                        <Controller
+                            name={`form_data.vendors.${index}.workedBefore`}
+                            control={control}
+                            rules={hasVendors ? { required: "Please select an option" } : {}}
+                            render={({ field, fieldState }) => (
+                                <div style={{ flex: 1 }}>
+                                    <FieldLabel required={hasVendors}>Have you worked with this vendor before?</FieldLabel>
+                                    <Radio.Group {...field} style={{ display: "block", marginTop: 8 }}>
+                                        <Radio value="yes">Yes</Radio>
+                                        <Radio value="no">No</Radio>
+                                        <Radio value="not_sure">Not Sure</Radio>
+                                    </Radio.Group>
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                            {fieldState.error.message}
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                        />
 
-                    {/* Is vendor a current/recent Drexel student? */}
-                    <Controller
-                        name={`form_data.vendors.${index}.isDrexelStudent`}
-                        control={control}
-                        rules={hasVendors ? { required: "Please select an option" } : {}}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required={hasVendors}>Is the vendor a current Drexel student or have they been within the last year?</FieldLabel>
-                                <Radio.Group {...field} style={{ display: "block", marginTop: 8 }}>
-                                    <Radio value="yes">Yes</Radio>
-                                    <Radio value="no">No</Radio>
-                                </Radio.Group>
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    />
+                        {/* Is vendor a current/recent Drexel student? */}
+                        <Controller
+                            name={`form_data.vendors.${index}.isDrexelStudent`}
+                            control={control}
+                            rules={hasVendors ? { required: "Please select an option" } : {}}
+                            render={({ field, fieldState }) => (
+                                <div style={{ flex: 1 }}>
+                                    <FieldLabel required={hasVendors}>Is the vendor a current Drexel student or have they been within the last year?</FieldLabel>
+                                    <Radio.Group {...field} style={{ display: "block", marginTop: 8 }}>
+                                        <Radio value="yes">Yes</Radio>
+                                        <Radio value="no">No</Radio>
+                                    </Radio.Group>
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                            {fieldState.error.message}
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                        />
+                    </div>
 
                     {/* Payment Amount */}
                     <Controller
@@ -304,8 +320,10 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         control={control}
                         render={({ field }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <FieldLabel>Please upload official quote from the vendor, if you have received one.</FieldLabel>
-                                <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional</Text>
+                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                    <FieldLabel>Please upload official quote from the vendor, if you have received one.</FieldLabel>
+                                    <Text type="secondary" style={{}}>(Optional)</Text>
+                                </div>
                                 <Upload
                                     beforeUpload={() => false}
                                     maxCount={1}
@@ -422,16 +440,33 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                 />
             )}
 
-            {/* Non-Vendor Costs Section - Only show if NOT a level 0 event */}
-            {!level0Confirmed && (
-                <NonVendorCosts control={control} setValue={setValue} />
+            {!level0Confirmed && !shouldShowSpecialServices && (
+                <Button type="link" onClick={() => setShowSpecialServices(true)} style={{ paddingLeft: 0 }}>
+                    Add special services or equipment
+                </Button>
             )}
 
-
+            {shouldShowSpecialServices && (
+                <>
+                    <Divider style={{ borderColor: "var(--gray-5)", marginTop: 72, marginBottom: 45 }} />
+                    <h5 style={{ display: "block", marginTop: 24, marginBottom: 8 }}>
+                        Special Services and/or Equipment (e.g. AV, SORC Games, Fire Pit, etc.)
+                    </h5>
+                    <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+                        Select any non-vendor services or equipment that may incur fees.
+                    </Text>
+                    {/* Non-Vendor Costs Section - Only show if NOT a level 0 event */}
+                    <NonVendorCosts control={control} setValue={setValue} />
+                </>
+            )}
 
             {/* Only show funding questions if NOT a level 0 event and has vendors, elements, or services */}
             {(hasVendors || hasElements || hasServices) && !level0Confirmed && (
                 <>
+                    <Divider style={{ borderColor: "var(--gray-5)", marginTop: 72, marginBottom: 45 }} />
+                    <h5 style={{ display: "block", marginTop: 24, marginBottom: 8 }}>
+                        Account Information for Funding
+                    </h5>
                     <div style={{ marginTop: 24 }}>
                         <Text strong style={{ display: "block", marginBottom: 8 }}>
                             Funding Information Required
@@ -440,7 +475,6 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                             You have selected services that may incur costs. Please provide your account information below.
                         </Text>
                     </div>
-
                     <FieldLabel required style={{ marginTop: 24 }}>How will you be funding your event?</FieldLabel>
                     <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
                         {hasServices ? "This funding source will be used for any vendor payments and service charges" : "Select the funding source for this event"}
@@ -454,7 +488,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                 <Select
                                     {...field}
                                     placeholder="Select Funding Source"
-                                    style={{ width: 240 }}
+                                    style={{ width: "49%" }}
                                     status={fieldState.error ? "error" : ""}
                                 >
                                     <Option value="SAFAC">SAFAC (17 Account)</Option>
@@ -522,7 +556,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                 <Input
                                     {...field}
                                     placeholder="XX-XXXXXX (e.g., 17-123456)"
-                                    style={{ width: 300 }}
+                                    style={{ width: "49%" }}
                                     status={fieldState.error ? "error" : ""}
                                     maxLength={10}
                                 />
@@ -532,20 +566,6 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                     />
                 </>
             )}
-
-            {/* <Text style={{ display: "block", marginTop: 24 }}>28. Cash Handling</Text>
-            <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 8 }}>
-                <Controller
-                    name="form_data.budget.cash_collection.enabled"
-                    control={control}
-                    render={({ field }) => <Checkbox {...field} checked={field.value}>Collect Cash?</Checkbox>}
-                />
-                <Controller
-                    name="form_data.budget.cash_collection.estimated_amount"
-                    control={control}
-                    render={({ field }) => <InputNumber {...field} placeholder="Estimated Amount" min={0} />}
-                />
-            </div> */}
         </div>
     );
 }

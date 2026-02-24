@@ -56,6 +56,9 @@ export default function EventElementsSection({ control, setValue }: Props) {
     // Combined check: event is NOT eligible for Level 0 if any disqualifying factors exist
     const hasLevel0Conflicts = hasOtherElements || isOffCampus || hasHighAttendance;
     
+    // Check if user has selected ANY elements (including no_additional_elements)
+    const hasSelectedElements = selectedElements && Object.values(selectedElements).some(Boolean);
+
     // Watch for level 0 confirmation
     const level0Confirmed = useWatch({
         control,
@@ -76,8 +79,9 @@ export default function EventElementsSection({ control, setValue }: Props) {
                 control={control}
                 rules={{
                     validate: (value) => {
-                        const hasSelection = value && Object.values(value).some(Boolean);
-                        return hasSelection || "Please select at least one option";
+                        // Allow either: selecting at least one option, OR selecting no options at all
+                        // This allows "no additional elements" events as well as higher-level events with travel
+                        return true; // No validation error - users must make a choice, but can leave blank if needed
                     }
                 }}
                 render={({ field, fieldState }) => {
@@ -150,7 +154,7 @@ export default function EventElementsSection({ control, setValue }: Props) {
                 }}
             />
 
-            {/* Level 0 Confirmation - shows when ONLY no additional elements is checked */}
+            {/* Level 0 Confirmation - shows when ONLY no additional elements is checked AND no conflicts */}
             {noAdditionalElements && !hasLevel0Conflicts && (
                 <Controller
                     name="form_data.level0_confirmed"
@@ -192,24 +196,38 @@ export default function EventElementsSection({ control, setValue }: Props) {
                 />
             )}
             
-            {/* Warning when user has disqualifying factors for Level 0 */}
+            {/* Warning when user has disqualifying factors even with no other elements */}
             {noAdditionalElements && hasLevel0Conflicts && (
                 <Alert
-                    message="Cannot Be Level 0 Event"
+                    message="Event Requires Higher Level Classification"
                     description={
                         <div>
-                            <Text>This event cannot be classified as Level 0 due to the following:</Text>
+                            <Text>Even though you've selected no additional event elements, this event cannot be classified as Level 0 due to the following:</Text>
                             <ul style={{ margin: "8px 0 0 0", paddingLeft: 20 }}>
-                                {hasOtherElements && <li>Event elements selected (food, alcohol, minors, etc.) require additional resources</li>}
-                                {isOffCampus && <li>Off-campus location requires higher event level</li>}
+                                {isOffCampus && <li>Off-campus location requires travel arrangements and higher event level</li>}
                                 {hasHighAttendance && <li>Events with 150+ attendees require higher event level</li>}
                             </ul>
-                            <Text>Please unselect "no additional elements" or adjust the conflicting selections.</Text>
+                            <Text style={{ display: "block", marginTop: 8 }}>You will need to complete the budget and vendor/purchase request sections to proceed.</Text>
                         </div>
                     }
-                    type="error"
+                    type="info"
                     showIcon
-                    style={{ marginBottom: 24 }}
+                    style={{ marginBottom: 24, backgroundColor: "var(--lavender-1)", borderColor: "var(--lavender-6)" }}
+                />
+            )}
+            
+            {/* Warning when user has selected elements */}
+            {hasOtherElements && (
+                <Alert
+                    message="Additional Requirements Based on Event Elements"
+                    description={
+                        <div>
+                            <Text>Your selected event elements require additional planning and resources. You will need to complete relevant sections for each element, and likely the budget/vendor section.</Text>
+                        </div>
+                    }
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 24}}
                 />
             )}
         </>

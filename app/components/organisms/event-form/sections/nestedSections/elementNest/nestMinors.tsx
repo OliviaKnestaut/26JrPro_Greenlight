@@ -21,7 +21,7 @@ export default function MinorsSection({ control }: Props) {
     const users = usersData?.users || [];
 
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
                 <Text strong style={{ display: "block", marginBottom: 8 }}>
                     Student Point of Contact 
                 </Text>

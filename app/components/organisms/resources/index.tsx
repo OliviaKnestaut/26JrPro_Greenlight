@@ -77,8 +77,9 @@ export const orgDocuments: ResourceItem[] = [
 ];
 
 export function ResourcesContent() {
-
     const screens = Grid.useBreakpoint();
+    const navigate = useNavigate();
+
     if (!screens.md) {
         return (
             <div className="container">
@@ -88,7 +89,6 @@ export function ResourcesContent() {
             </div>
         );
     }
-    const navigate = useNavigate();
 
     return (
 
