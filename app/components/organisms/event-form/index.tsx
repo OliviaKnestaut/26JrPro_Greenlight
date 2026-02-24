@@ -345,6 +345,8 @@ export function EventForm() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
+                event_img_name: data.event_img_name,
                 createdByUser: {
                     username: user.username,
                     firstName: user.firstName,
@@ -383,39 +385,39 @@ export function EventForm() {
         const data = getValues();
 
         // Helper: upload image to server endpoint and return the public url and filename
-            const uploadImage = async (file: File, desiredName?: string) => {
-                const fd = new FormData();
-                fd.append('event_img', file);
-                if (desiredName) fd.append('desired_name', desiredName);
-                const resp = await fetch('/~ojk25/graphql/upload_event_image.php', { method: 'POST', body: fd });
+        const uploadImage = async (file: File, desiredName?: string) => {
+            const fd = new FormData();
+            fd.append('event_img', file);
+            if (desiredName) fd.append('desired_name', desiredName);
+            const resp = await fetch('/~ojk25/graphql/upload_event_image.php', { method: 'POST', body: fd });
 
-                const text = await resp.text();
-                // Try to parse JSON response from server, otherwise include raw text
-                let parsed: any = null;
-                try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+            const text = await resp.text();
+            // Try to parse JSON response from server, otherwise include raw text
+            let parsed: any = null;
+            try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
 
-                if (!resp.ok) {
-                    if (parsed && parsed.error) {
-                        const parts = [parsed.error];
-                        if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
-                        if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
-                        if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
-                        throw new Error(parts.join(' | '));
-                    }
-                    throw new Error(`Upload failed: ${resp.status} ${text}`);
+            if (!resp.ok) {
+                if (parsed && parsed.error) {
+                    const parts = [parsed.error];
+                    if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                    if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
+                    if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
+                    throw new Error(parts.join(' | '));
                 }
+                throw new Error(`Upload failed: ${resp.status} ${text}`);
+            }
 
-                if (parsed) {
-                    if (!parsed.success) {
-                        const parts = [parsed.error || 'Upload endpoint returned an error'];
-                        if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
-                        throw new Error(parts.join(' | '));
-                    }
-                    return parsed; // { success, url, filename, path }
+            if (parsed) {
+                if (!parsed.success) {
+                    const parts = [parsed.error || 'Upload endpoint returned an error'];
+                    if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                    throw new Error(parts.join(' | '));
                 }
+                return parsed; // { success, url, filename, path }
+            }
 
-                // If we couldn't parse JSON but status is OK, throw with raw text
-                throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
+            // If we couldn't parse JSON but status is OK, throw with raw text
+            throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
         };
 
         const slugify = (str: string) => {

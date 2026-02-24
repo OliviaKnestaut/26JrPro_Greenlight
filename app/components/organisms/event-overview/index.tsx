@@ -222,8 +222,15 @@ export function EventOverviewContent() {
             </div>
             {
                 (() => {
-                    const base = (import.meta as any).env?.BASE_URL ?? '/';
-                    const imgSrc = data?.event?.eventImg ? `${base}uploads/event_img/${data.event.eventImg}`.replace(/\\/g, '/') : undefined;
+                    const rawImg = data?.event?.eventImg;
+                    const uploadsBase = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                        ? 'https://digmstudents.westphal.drexel.edu/~ojk25/'
+                        : `${window.location.origin}/~ojk25/`;
+                    const imgSrc = rawImg
+                        ? (/^https?:\/\//i.test(rawImg) || rawImg.startsWith('/')
+                            ? rawImg
+                            : `${uploadsBase}uploads/event_img/${rawImg}`.replace(/\\/g, '/'))
+                        : undefined;
                     return <OptimizedImage placeholder="grey" src={imgSrc} alt="Event header" style={{ width: '100%', height: 365, objectFit: 'cover', borderRadius: '.25rem' }} />;
                 })()
             }

@@ -171,6 +171,8 @@ export function EventReview() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
+                event_img_name: data.event_img_name,
                 createdByUser: {
                     username: user.username,
                     firstName: user.firstName,
@@ -186,7 +188,7 @@ export function EventReview() {
             mutationInput.createdBy = user.username;
         }
 
-        if (data.event_img) mutationInput.eventImg = data.event_img;
+        if (typeof data.event_img === 'string' && data.event_img) mutationInput.eventImg = data.event_img;
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
         if (convertedEndTime) mutationInput.endTime = convertedEndTime;
         if (convertedSetupTime) mutationInput.setupTime = convertedSetupTime;
@@ -196,9 +198,88 @@ export function EventReview() {
         return mutationInput;
     };
 
+    const slugify = (str: string) => {
+        return (str || 'event')
+            .toString()
+            .normalize('NFKD')
+            .replace(/\s+/g, '_')
+            .replace(/[^A-Za-z0-9_-]/g, '')
+            .toLowerCase()
+            .substring(0, 120);
+    };
+
+    const dataUrlToFile = async (dataUrl: string, filename: string): Promise<File> => {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        return new File([blob], filename, { type: blob.type || 'image/jpeg' });
+    };
+
+    const uploadImage = async (file: File, desiredName?: string) => {
+        const fd = new FormData();
+        fd.append('event_img', file);
+        if (desiredName) fd.append('desired_name', desiredName);
+        const resp = await fetch('/~ojk25/graphql/upload_event_image.php', { method: 'POST', body: fd });
+
+        const text = await resp.text();
+        let parsed: any = null;
+        try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+
+        if (!resp.ok) {
+            if (parsed && parsed.error) {
+                const parts = [parsed.error];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
+                if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
+                throw new Error(parts.join(' | '));
+            }
+            throw new Error(`Upload failed: ${resp.status} ${text}`);
+        }
+
+        if (parsed) {
+            if (!parsed.success) {
+                const parts = [parsed.error || 'Upload endpoint returned an error'];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                throw new Error(parts.join(' | '));
+            }
+            return parsed;
+        }
+
+        throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
+    };
+
+    const prepareEventImage = async (data: any, desiredName: string) => {
+        if (data.event_img instanceof File) {
+            message.loading({ content: 'Uploading image...', key: 'upload' });
+            const uploadResp = await uploadImage(data.event_img as File, desiredName);
+            const filenameToSave = uploadResp.filename || uploadResp.url || uploadResp.path;
+            message.success({ content: 'Image uploaded', key: 'upload', duration: 1 });
+            return filenameToSave;
+        }
+        if (!data.event_img && data.event_img_preview && data.event_img_name) {
+            const file = await dataUrlToFile(data.event_img_preview, data.event_img_name);
+            message.loading({ content: 'Uploading image...', key: 'upload' });
+            const uploadResp = await uploadImage(file, desiredName);
+            const filenameToSave = uploadResp.filename || uploadResp.url || uploadResp.path;
+            message.success({ content: 'Image uploaded', key: 'upload', duration: 1 });
+            return filenameToSave;
+        }
+        if (typeof data.event_img === 'string') return data.event_img;
+        return undefined;
+    };
+
     const handleSaveDraft = async () => {
         if (!user || !formData) return;
-        const mutationInput = buildMutationInput(formData, "DRAFT", !!id);
+        const dataToUse = { ...formData };
+        const desired = id ? `${id}_${slugify(formData.title || '')}` : `${slugify(formData.title || '')}_${Date.now()}`;
+        try {
+            const filename = await prepareEventImage(dataToUse, desired);
+            if (filename) dataToUse.event_img = filename;
+        } catch (err) {
+            console.error('❌ Image upload failed:', err);
+            message.error('Image upload failed. Please try again.');
+            return;
+        }
+        const mutationInput = buildMutationInput(dataToUse, "DRAFT", !!id);
 
         if (id) {
             await updateEvent({ variables: { id, input: mutationInput } });
@@ -234,7 +315,17 @@ export function EventReview() {
             message.error("Missing user or form data");
             return;
         }
-        const mutationInput = buildMutationInput(formData, "REVIEW", !!id);
+        const dataToUse = { ...formData };
+        const desired = id ? `${id}_${slugify(formData.title || '')}` : `${slugify(formData.title || '')}_${Date.now()}`;
+        try {
+            const filename = await prepareEventImage(dataToUse, desired);
+            if (filename) dataToUse.event_img = filename;
+        } catch (err) {
+            console.error('❌ Image upload failed:', err);
+            message.error('Image upload failed. Please try again.');
+            return;
+        }
+        const mutationInput = buildMutationInput(dataToUse, "REVIEW", !!id);
 
         if (id) {
             const { data: result } = await updateEvent({ variables: { id, input: mutationInput } });
@@ -283,6 +374,64 @@ export function EventReview() {
                         <Title level={3}>Event Details</Title>
                         <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('eventDetails')} />
                     </div>
+                    
+                    {/* Debug output for image preview */}
+                    <div style={{ fontSize: '12px', color: '#888', marginBottom: 8 }}>
+                        <div>event_img: {JSON.stringify(formData.event_img)}</div>
+                        <div>event_img_name: {JSON.stringify(formData.event_img_name)}</div>
+                        <div>event_img_preview: {typeof formData.event_img_preview === 'string' ? '[string]' : JSON.stringify(formData.event_img_preview)}</div>
+                    </div>
+                    {/* Robust event image preview logic */}
+                    {(() => {
+                        let src = null;
+                        let filename = null;
+                        if (formData.event_img) {
+                            if (typeof formData.event_img === 'string') {
+                                // Use backend uploads path for filename
+                                src = `${(import.meta.env?.BASE_URL || '/') + 'uploads/event_img/' + formData.event_img}`.replace(/\\/g, '/');
+                                filename = formData.event_img;
+                            } else if (formData.event_img instanceof File) {
+                                src = URL.createObjectURL(formData.event_img);
+                                filename = formData.event_img.name;
+                            } else if (formData.event_img?.url) {
+                                src = formData.event_img.url;
+                                filename = formData.event_img.name || formData.event_img.url;
+                            } else if (formData.event_img?.thumbUrl) {
+                                src = formData.event_img.thumbUrl;
+                                filename = formData.event_img.name || formData.event_img.thumbUrl;
+                            }
+                        }
+                        // Fallback to preview if present
+                        if (formData.event_img_preview) {
+                            src = formData.event_img_preview;
+                        }
+                        if (formData.event_img_name) {
+                            filename = formData.event_img_name;
+                        }
+                        if (!src || !filename) return null;
+                        return (
+                            <div className="ant-upload-list-item ant-upload-list-item-done" style={{ 
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: "8px",
+                                padding: "4px 8px",
+                                border: "1px solid #d9d9d9",
+                                borderRadius: "4px",
+                                backgroundColor: "#fafafa",
+                                width: "fit-content",
+                                marginBottom: 24
+                            }}>
+                                <a className="ant-upload-list-item-thumbnail" href={src} target="_blank" rel="noopener noreferrer">
+                                    <img alt={filename} className="ant-upload-list-item-image" src={src} style={{ maxHeight: "32px", maxWidth: "32px" }} />
+                                </a>
+                                <a target="_blank" rel="noopener noreferrer" className="ant-upload-list-item-name" title={filename} href={src} style={{ color: "#1890ff", textDecoration: "none" }}>
+                                    {filename}
+                                </a>
+                            </div>
+                        );
+                    })()}
+                    
                     <div style={{ marginBottom: 16 }}>
                         <Text strong>Event Name:</Text>
                         <Paragraph>{formData.title || 'N/A'}</Paragraph>
