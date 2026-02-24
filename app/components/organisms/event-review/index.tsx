@@ -44,11 +44,11 @@ export function EventReview() {
         const year = date.getFullYear();
         return `${month}/${day}/${year}`;
     };
-    
+
     const calculateEstimatedCost = (formData: any): string => {
         let total = 0;
         let hasCosts = false;
-        
+
         // Add vendor costs
         if (formData?.form_data?.vendors && Array.isArray(formData.form_data.vendors)) {
             formData.form_data.vendors.forEach((vendor: any) => {
@@ -61,7 +61,7 @@ export function EventReview() {
                 }
             });
         }
-        
+
         // Add food cost
         if (formData?.form_data?.food?.estimated_cost) {
             const cost = parseFloat(formData.form_data.food.estimated_cost);
@@ -70,7 +70,7 @@ export function EventReview() {
                 hasCosts = true;
             }
         }
-        
+
         // Add raffle prize value
         if (formData?.form_data?.raffles?.total_value) {
             const cost = parseFloat(formData.form_data.raffles.total_value);
@@ -79,7 +79,7 @@ export function EventReview() {
                 hasCosts = true;
             }
         }
-        
+
         return hasCosts ? total.toFixed(2) : 'N/A';
     };
 
@@ -100,12 +100,12 @@ export function EventReview() {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
         }
-        
+
         const convert12to24Hour = (time12h: any): string => {
             if (!time12h || typeof time12h !== 'string') return '';
             const trimmed = time12h.trim();
             if (!trimmed) return '';
-            
+
             // Check if already in 24-hour format (HH:mm:ss or HH:mm)
             const time24Match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
             if (time24Match && !trimmed.match(/AM|PM/i)) {
@@ -114,7 +114,7 @@ export function EventReview() {
                 const seconds = time24Match[3] || '00';
                 return `${hours}:${minutes}:${seconds}`;
             }
-            
+
             // Parse 12-hour format (HH:mm AM/PM)
             const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
             if (!match) return trimmed;
@@ -171,6 +171,8 @@ export function EventReview() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
+                event_img_name: data.event_img_name,
                 createdByUser: {
                     username: user.username,
                     firstName: user.firstName,
@@ -186,7 +188,7 @@ export function EventReview() {
             mutationInput.createdBy = user.username;
         }
 
-        if (data.event_img) mutationInput.eventImg = data.event_img;
+        if (typeof data.event_img === 'string' && data.event_img) mutationInput.eventImg = data.event_img;
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
         if (convertedEndTime) mutationInput.endTime = convertedEndTime;
         if (convertedSetupTime) mutationInput.setupTime = convertedSetupTime;
@@ -196,9 +198,122 @@ export function EventReview() {
         return mutationInput;
     };
 
+    const slugify = (str: string) => {
+        return (str || 'event')
+            .toString()
+            .normalize('NFKD')
+            .replace(/\s+/g, '_')
+            .replace(/[^A-Za-z0-9_-]/g, '')
+            .toLowerCase()
+            .substring(0, 120);
+    };
+
+    const dataUrlToFile = async (dataUrl: string, filename: string): Promise<File> => {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        return new File([blob], filename, { type: blob.type || 'image/jpeg' });
+    };
+
+    const uploadImage = async (file: File, desiredName?: string) => {
+        const fd = new FormData();
+        fd.append('event_img', file);
+        if (desiredName) fd.append('desired_name', desiredName);
+        const getUploadUrl = () => {
+            if (import.meta.env.DEV) {
+                return 'http://localhost:4000/graphql/upload_event_image.php';
+            } else {
+                return '/~ojk25/jrProjGreenlight/graphql/upload_event_image.php';
+            }
+        };
+
+        const resp = await fetch(getUploadUrl(), {
+            method: 'POST',
+            body: fd
+        });
+
+        const text = await resp.text();
+        let parsed: any = null;
+        try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+
+        if (!resp.ok) {
+            if (parsed && parsed.error) {
+                const parts = [parsed.error];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
+                if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
+                throw new Error(parts.join(' | '));
+            }
+            throw new Error(`Upload failed: ${resp.status} ${text}`);
+        }
+
+        if (parsed) {
+            if (!parsed.success) {
+                const parts = [parsed.error || 'Upload endpoint returned an error'];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                throw new Error(parts.join(' | '));
+            }
+            return parsed;
+        }
+
+        throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
+    };
+
+    const prepareEventImage = async (data: any, desiredName: string) => {
+        let rawValue = data.event_img;
+
+        if (!rawValue) return undefined;
+
+        // Already saved filename
+        if (typeof rawValue === "string") {
+            return rawValue;
+        }
+
+        // Ant Upload object
+        if (rawValue?.originFileObj instanceof File) {
+            rawValue = rawValue.originFileObj;
+        }
+
+        // Direct File
+        if (rawValue instanceof File) {
+            message.loading({ content: 'Uploading image...', key: 'upload' });
+            const uploadResp = await uploadImage(rawValue, desiredName);
+            const filenameToSave =
+                uploadResp.filename || uploadResp.url || uploadResp.path;
+            message.success({ content: 'Image uploaded', key: 'upload', duration: 1 });
+            return filenameToSave;
+        }
+
+        // Base64 fallback
+        if (data.event_img_preview && data.event_img_name) {
+            const file = await dataUrlToFile(
+                data.event_img_preview,
+                data.event_img_name
+            );
+            message.loading({ content: 'Uploading image...', key: 'upload' });
+            const uploadResp = await uploadImage(file, desiredName);
+            const filenameToSave =
+                uploadResp.filename || uploadResp.url || uploadResp.path;
+            message.success({ content: 'Image uploaded', key: 'upload', duration: 1 });
+            return filenameToSave;
+        }
+
+        // Anything else is unsafe — do NOT pass to GraphQL
+        return undefined;
+    };
+
     const handleSaveDraft = async () => {
         if (!user || !formData) return;
-        const mutationInput = buildMutationInput(formData, "DRAFT", !!id);
+        const dataToUse = { ...formData };
+        const desired = id ? `${id}_${slugify(formData.title || '')}` : `${slugify(formData.title || '')}_${Date.now()}`;
+        try {
+            const filename = await prepareEventImage(dataToUse, desired);
+            if (filename) dataToUse.event_img = filename;
+        } catch (err) {
+            console.error('❌ Image upload failed:', err);
+            message.error('Image upload failed. Please try again.');
+            return;
+        }
+        const mutationInput = buildMutationInput(dataToUse, "DRAFT", !!id);
 
         if (id) {
             await updateEvent({ variables: { id, input: mutationInput } });
@@ -216,14 +331,14 @@ export function EventReview() {
 
     const handleDiscard = async () => {
         if (id) await deleteEvent({ variables: { id } });
-        
+
         try {
             localStorage.removeItem("eventFormReview");
             localStorage.removeItem("eventFormData");
         } catch (err) {
             console.error("❌ Error clearing localStorage:", err);
         }
-        
+
         setIsDiscardModalOpen(false);
         message.success("Draft discarded");
         navigate("/");
@@ -234,7 +349,17 @@ export function EventReview() {
             message.error("Missing user or form data");
             return;
         }
-        const mutationInput = buildMutationInput(formData, "REVIEW", !!id);
+        const dataToUse = { ...formData };
+        const desired = id ? `${id}_${slugify(formData.title || '')}` : `${slugify(formData.title || '')}_${Date.now()}`;
+        try {
+            const filename = await prepareEventImage(dataToUse, desired);
+            if (filename) dataToUse.event_img = filename;
+        } catch (err) {
+            console.error('❌ Image upload failed:', err);
+            message.error('Image upload failed. Please try again.');
+            return;
+        }
+        const mutationInput = buildMutationInput(dataToUse, "REVIEW", !!id);
 
         if (id) {
             const { data: result } = await updateEvent({ variables: { id, input: mutationInput } });
@@ -270,19 +395,69 @@ export function EventReview() {
             <Title level={5}>
                 <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back</Link>
             </Title>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem"}}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
                 <h2 style={{ margin: 0 }}>Review Your Event</h2>
                 <p>Please review all details before submitting your event for approval.</p>
             </div>
             <div style={{ marginBottom: 24, marginTop: 24, display: "flex", justifyContent: "center" }}>
                 <ProgressTimeline getValues={getValues} currentEditingSection="review" />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem"}}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <Card style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <Title level={3}>Event Details</Title>
                         <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('eventDetails')} />
                     </div>
+                    {/* Robust event image preview logic */}
+                    {(() => {
+                        let src = null;
+                        let filename = null;
+                        if (formData.event_img) {
+                            if (typeof formData.event_img === 'string') {
+                                // Use backend uploads path for filename
+                                src = `${(import.meta.env?.BASE_URL || '/') + 'uploads/event_img/' + formData.event_img}`.replace(/\\/g, '/');
+                                filename = formData.event_img;
+                            } else if (formData.event_img instanceof File) {
+                                src = URL.createObjectURL(formData.event_img);
+                                filename = formData.event_img.name;
+                            } else if (formData.event_img?.url) {
+                                src = formData.event_img.url;
+                                filename = formData.event_img.name || formData.event_img.url;
+                            } else if (formData.event_img?.thumbUrl) {
+                                src = formData.event_img.thumbUrl;
+                                filename = formData.event_img.name || formData.event_img.thumbUrl;
+                            }
+                        }
+                        // Fallback to preview if present
+                        if (formData.event_img_preview) {
+                            src = formData.event_img_preview;
+                        }
+                        if (formData.event_img_name) {
+                            filename = formData.event_img_name;
+                        }
+                        if (!src || !filename) return null;
+                        return (
+                            <div className="ant-upload-list-item ant-upload-list-item-done" style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                                padding: "1rem 0.75rem",
+                                border: "1px solid var(--color-border-default)",
+                                borderRadius: "4px",
+                                width: "25rem",
+                                marginBottom: 8
+                            }}>
+                                <a className="ant-upload-list-item-thumbnail" href={src} target="_blank" rel="noopener noreferrer">
+                                    <img alt={filename} className="ant-upload-list-item-image" src={src} style={{ maxHeight: "4rem", maxWidth: "4rem" }} />
+                                </a>
+                                <a target="_blank" rel="noopener noreferrer" className="ant-upload-list-item-name" title={filename} href={src} style={{ color: "#1890ff", textDecoration: "none" }}>
+                                    {filename}
+                                </a>
+                            </div>
+                        );
+                    })()}
+
                     <div style={{ marginBottom: 16 }}>
                         <Text strong>Event Name:</Text>
                         <Paragraph>{formData.title || 'N/A'}</Paragraph>
@@ -426,47 +601,47 @@ export function EventReview() {
                         Save as Draft
                     </Button>
                 </div>
-                <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)"  }} type="default" danger onClick={() => setIsDiscardModalOpen(true)}>
+                <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)" }} type="default" danger onClick={() => setIsDiscardModalOpen(true)}>
                     Discard
                 </Button>
-            {draftAlertMessage && (
-                <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, maxWidth: 400 }}>
-                    <Alert
-                        message={draftAlertMessage === 'created' ? "Draft Saved!" : "Draft Updated!"}
-                        description={draftAlertMessage === 'created' ? "Your event draft has been saved successfully." : "Your event draft has been updated successfully."}
-                        type="success"
-                        showIcon
-                        closable
-                        onClose={() => setDraftAlertMessage('')}
-                    />
-                </div>
-            )}
+                {draftAlertMessage && (
+                    <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1200, maxWidth: 400 }}>
+                        <Alert
+                            message={draftAlertMessage === 'created' ? "Draft Saved!" : "Draft Updated!"}
+                            description={draftAlertMessage === 'created' ? "Your event draft has been saved successfully." : "Your event draft has been updated successfully."}
+                            type="success"
+                            showIcon
+                            closable
+                            onClose={() => setDraftAlertMessage('')}
+                        />
+                    </div>
+                )}
             </div>
 
-            <SuccessModal 
+            <SuccessModal
                 open={isModalOpen}
                 title={id ? "Event Updated Successfully!" : "Event Form Submitted for Review!"}
-                message={id 
+                message={id
                     ? "Your event has been successfully updated. You can view the updated event details or return to your dashboard."
                     : "Your event form has been successfully submitted and is now under review. You can view the event details or return to your dashboard."
                 }
-                onDashboardClick={() => navigate("/")} 
+                onDashboardClick={() => navigate("/")}
                 onEventOverviewClick={() => {
                     if (createdEventId) {
                         navigate(`/event-overview?id=${encodeURIComponent(createdEventId)}`);
                     } else {
                         navigate("/event-overview");
                     }
-                }} 
+                }}
             />
-            <DiscardModal 
+            <DiscardModal
                 open={isDiscardModalOpen}
                 title="Discard Event Form?"
-                message={id 
+                message={id
                     ? "Are you sure you want to discard this saved draft? This action cannot be undone."
                     : "Are you sure you want to discard this event form? All changes will be lost."}
-                onDiscardClick={handleDiscard} 
-                onCancelClick={() => setIsDiscardModalOpen(false)} 
+                onDiscardClick={handleDiscard}
+                onCancelClick={() => setIsDiscardModalOpen(false)}
             />
             <ScrollToTop />
         </div>
