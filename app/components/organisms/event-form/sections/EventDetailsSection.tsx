@@ -12,9 +12,10 @@ const { Option } = Select;
 type Props = {
   control: any;
   watch: any;
+  setValue: any;
 };
 
-export default function EventDetailsSection({ control, watch }: Props) {
+export default function EventDetailsSection({ control, watch, setValue }: Props) {
   const { user } = useAuth();
   const { data: orgsData, loading: orgsLoading } = useGetOrganizationsQuery({
     variables: { limit: 1000 }
@@ -37,11 +38,22 @@ export default function EventDetailsSection({ control, watch }: Props) {
           <div style={{ marginBottom: 24 }}>
             <FieldLabel required>Upload a high-resolution cover photo for your event (1300px × 780px) under 2MB</FieldLabel>
             <Upload
-              beforeUpload={() => false} // prevent auto-upload
+              beforeUpload={() => false}
               maxCount={1}
               onChange={(info) => {
                 const file = info.fileList[0]?.originFileObj;
+                if (!file) return;
+
+                // Store actual file
                 field.onChange(file);
+
+                // Store helper fields for review page
+                const previewUrl = URL.createObjectURL(file);
+
+                // IMPORTANT: you must receive setValue from props
+                // (see note below)
+                setValue("event_img_name", file.name);
+                setValue("event_img_preview", previewUrl);
               }}
               style={{ marginTop: 8 }}
             >

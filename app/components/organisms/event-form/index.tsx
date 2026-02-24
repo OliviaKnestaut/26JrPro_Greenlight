@@ -106,9 +106,9 @@ export function EventForm() {
             } catch (err) {
                 console.error("❌ Error accessing editingSection from localStorage:", err);
             }
-            
+
             if (id) return;
-            
+
             try {
                 const savedFormData = localStorage.getItem("eventFormData");
                 if (savedFormData) {
@@ -198,10 +198,10 @@ export function EventForm() {
             for (const key of fieldPath) {
                 currentValue = currentValue?.[key];
             }
-            const shouldDisplay = Array.isArray(currentValue) 
-                ? currentValue.includes(panel.is) 
+            const shouldDisplay = Array.isArray(currentValue)
+                ? currentValue.includes(panel.is)
                 : currentValue === panel.is;
-            
+
             if (shouldDisplay) {
                 panelsToOpen.push(panel.key);
                 // Also ensure parent panel is open
@@ -267,16 +267,129 @@ export function EventForm() {
         }
     };
 
+    // Helper: upload image to server endpoint and return the public url and filename
+    const uploadImage = async (file: File, desiredName?: string) => {
+        const fd = new FormData();
+        fd.append('event_img', file);
+        if (desiredName) fd.append('desired_name', desiredName);
+        const getUploadUrl = () => {
+            if (import.meta.env.DEV) {
+                return 'http://localhost:4000/graphql/upload_event_image.php';
+            } else {
+                return '/~ojk25/jrProjGreenlight/graphql/upload_event_image.php';
+            }
+        };
+
+        const resp = await fetch(getUploadUrl(), {
+            method: 'POST',
+            body: fd
+        });
+
+
+        const text = await resp.text();
+        // Try to parse JSON response from server, otherwise include raw text
+        let parsed: any = null;
+        try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+
+        if (!resp.ok) {
+            if (parsed && parsed.error) {
+                const parts = [parsed.error];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
+                if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
+                throw new Error(parts.join(' | '));
+            }
+            throw new Error(`Upload failed: ${resp.status} ${text}`);
+        }
+
+        if (parsed) {
+            if (!parsed.success) {
+                const parts = [parsed.error || 'Upload endpoint returned an error'];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                throw new Error(parts.join(' | '));
+            }
+            return parsed; // { success, url, filename, path }
+        }
+
+        // If we couldn't parse JSON but status is OK, throw with raw text
+        throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
+    };
+
+    const slugify = (str: string) => {
+        return (str || 'event')
+            .toString()
+            .normalize('NFKD')
+            .replace(/\s+/g, '_')
+            .replace(/[^A-Za-z0-9_-]/g, '')
+            .toLowerCase()
+            .substring(0, 120);
+    };
+
+    const resolveEventImage = async (
+        rawValue: any,
+        desiredName: string
+    ): Promise<string | undefined> => {
+
+        if (!rawValue) return undefined;
+
+        // Already a stored filename
+        if (typeof rawValue === "string") {
+            return rawValue;
+        }
+
+        // Ant Upload object
+        if (rawValue?.originFileObj instanceof File) {
+            rawValue = rawValue.originFileObj;
+        }
+
+        // Direct File
+        if (rawValue instanceof File) {
+            let fileToUpload = rawValue;
+            try {
+                fileToUpload = await resizeImageFile(fileToUpload);
+            } catch { }
+            const uploadResp = await uploadImage(fileToUpload, desiredName);
+            return uploadResp.filename || uploadResp.url || uploadResp.path;
+        }
+
+        return undefined;
+    };
+
+    const prepareMutationInput = async (
+        data: any,
+        status: "DRAFT" | "REVIEW",
+        id?: string
+    ) => {
+        const safeData = { ...data };
+
+        const desired = id
+            ? `${id}_${slugify(data.title || "")}`
+            : `${slugify(data.title || "")}_${Date.now()}`;
+
+        const filename = await resolveEventImage(data.event_img, desired);
+
+        safeData.event_img = filename;
+
+        const input = buildMutationInput(safeData, status, !!id);
+
+        // Final schema enforcement
+        if (typeof input.eventImg !== "string") {
+            delete input.eventImg;
+        }
+
+        return input;
+    };
+
     const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
         }
-        
+
         const convert12to24Hour = (time12h: any): string => {
             if (!time12h || typeof time12h !== 'string') return '';
             const trimmed = time12h.trim();
             if (!trimmed) return '';
-            
+
             // Check if already in 24-hour format (HH:mm:ss or HH:mm)
             const time24Match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
             if (time24Match && !trimmed.match(/AM|PM/i)) {
@@ -285,7 +398,7 @@ export function EventForm() {
                 const seconds = time24Match[3] || '00';
                 return `${hours}:${minutes}:${seconds}`;
             }
-            
+
             // Parse 12-hour format (HH:mm AM/PM)
             const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
             if (!match) {
@@ -362,7 +475,9 @@ export function EventForm() {
             mutationInput.createdBy = user.username;
         }
 
-        if (data.event_img) mutationInput.eventImg = data.event_img;
+        if (typeof data.event_img === "string") {
+            mutationInput.eventImg = data.event_img;
+        }
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
         if (convertedEndTime) mutationInput.endTime = convertedEndTime;
         if (convertedSetupTime) mutationInput.setupTime = convertedSetupTime;
@@ -382,149 +497,27 @@ export function EventForm() {
             message.error("You must be logged in to save a draft.");
             return;
         }
+
         const data = getValues();
 
-        // Helper: upload image to server endpoint and return the public url and filename
-        const uploadImage = async (file: File, desiredName?: string) => {
-            const fd = new FormData();
-            fd.append('event_img', file);
-            if (desiredName) fd.append('desired_name', desiredName);
-            const resp = await fetch('/~ojk25/graphql/upload_event_image.php', { method: 'POST', body: fd });
-
-            const text = await resp.text();
-            // Try to parse JSON response from server, otherwise include raw text
-            let parsed: any = null;
-            try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
-
-            if (!resp.ok) {
-                if (parsed && parsed.error) {
-                    const parts = [parsed.error];
-                    if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
-                    if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
-                    if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
-                    throw new Error(parts.join(' | '));
-                }
-                throw new Error(`Upload failed: ${resp.status} ${text}`);
-            }
-
-            if (parsed) {
-                if (!parsed.success) {
-                    const parts = [parsed.error || 'Upload endpoint returned an error'];
-                    if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
-                    throw new Error(parts.join(' | '));
-                }
-                return parsed; // { success, url, filename, path }
-            }
-
-            // If we couldn't parse JSON but status is OK, throw with raw text
-            throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
-        };
-
-        const slugify = (str: string) => {
-            return (str || 'event')
-                .toString()
-                .normalize('NFKD')
-                .replace(/\s+/g, '_')
-                .replace(/[^A-Za-z0-9_-]/g, '')
-                .toLowerCase()
-                .substring(0, 120);
-        };
-
-        // If event_img is a File object (from Upload), handle upload specially.
-        if (data.event_img && data.event_img instanceof File) {
-            // Use a local id variable to ensure we pass a string to the mutation
-            let idToUse: string | null = draftId;
-
-            // If we don't yet have a draftId (new create), create the draft first without eventImg
-            if (!idToUse) {
-                try {
-                    const createInput = buildMutationInput({ ...data, event_img: undefined }, "DRAFT", false);
-                    // Ensure we are not sending a File to createEvent
-                    delete createInput.eventImg;
-                    message.loading({ content: 'Creating draft...', key: 'draft' });
-                    const { data: createResult } = await createEvent({ variables: { input: createInput } });
-                    const newId = createResult?.createEvent?.id;
-                    if (!newId) throw new Error('Failed to create draft before image upload');
-                    idToUse = newId;
-                    setDraftId(newId);
-                    setDraftAlertMessage('created');
-                    setTimeout(() => setDraftAlertMessage(''), 3000);
-                    message.success({ content: 'Draft created', key: 'draft', duration: 1 });
-                } catch (err) {
-                    console.error('❌ Failed to create draft before image upload:', err);
-                    message.error('Failed to create draft before uploading image. Please try again.');
-                    return;
-                }
-            }
-
-            // Now we have an idToUse; upload using desired name: {eventId}_{slugifiedTitle}
-            try {
-                if (!idToUse) {
-                    throw new Error('Missing draft id for image upload');
-                }
-                message.loading({ content: 'Uploading image...', key: 'upload' });
-                const desired = `${idToUse}_${slugify(data.title || '')}`;
-                    // Resize image client-side to meet server limits before uploading
-                    let fileToUpload: File = data.event_img as File;
-                    try {
-                        fileToUpload = await resizeImageFile(fileToUpload, 1300, 780, 0.85);
-                    } catch (e) {
-                        console.warn('Image resize failed, proceeding with original file', e);
-                    }
-                    const uploadResp = await uploadImage(fileToUpload, desired);
-                // Write the stored filename (not the File object) to DB
-                const filenameToSave = uploadResp.filename || uploadResp.url || uploadResp.path;
-                // Update the event with the filename
-                try {
-                    const updateInput = buildMutationInput({ ...data, event_img: filenameToSave }, "DRAFT", true);
-                    // Ensure eventImg is a string filename
-                    updateInput.eventImg = filenameToSave;
-                    message.loading({ content: 'Saving image reference...', key: 'save' });
-                    const { data: updateResult } = await updateEvent({ variables: { id: idToUse, input: updateInput } });
-                    if (updateResult?.updateEvent?.id) {
-                        message.success({ content: 'Image uploaded and saved', key: 'upload', duration: 1 });
-                        message.success({ content: 'Draft updated', key: 'save', duration: 1 });
-                    }
-                } catch (err) {
-                    console.error('❌ Failed to update event with image filename:', err);
-                    message.error('Uploaded image but failed to save filename to event.');
-                    return;
-                }
-            } catch (err) {
-                console.error('❌ Image upload failed:', err);
-                message.error('Image upload failed. Please try again.');
-                return;
-            }
-
-            // At this point the draft exists and has the image filename saved; nothing more to do below for create path
-            return;
-        }
-
-        const mutationInput = buildMutationInput(data, "DRAFT", !!draftId);
-        console.log("💾 SAVING DRAFT:", mutationInput);
-
         try {
+            const input = await prepareMutationInput(data, "DRAFT", draftId || undefined);
+
             if (draftId) {
-                console.log(`🔄 Updating draft ${draftId}`);
-                const { data: result } = await updateEvent({ variables: { id: draftId, input: mutationInput } });
-                if (result?.updateEvent?.id) {
-                    console.log("✅ Draft updated successfully");
-                    setDraftAlertMessage('updated');
-                    setTimeout(() => setDraftAlertMessage(''), 3000);
-                }
+                await updateEvent({ variables: { id: draftId, input } });
+                setDraftAlertMessage('updated');
             } else {
-                console.log("✨ Creating new draft");
-                const { data: result } = await createEvent({ variables: { input: mutationInput } });
+                const { data: result } = await createEvent({ variables: { input } });
                 if (result?.createEvent?.id) {
-                    console.log("✅ Draft created successfully:", result.createEvent.id);
                     setDraftId(result.createEvent.id);
                     setDraftAlertMessage('created');
-                    setTimeout(() => setDraftAlertMessage(''), 3000);
                 }
             }
+
+            setTimeout(() => setDraftAlertMessage(''), 3000);
         } catch (err) {
             console.error("❌ Error saving draft:", err);
-            message.error("Failed to save draft. Please try again.");
+            message.error("Failed to save draft.");
         }
     };
 
@@ -543,20 +536,20 @@ export function EventForm() {
             console.log("📝 Discarding unsaved localStorage draft");
         }
         reset();
-        
+
         try {
             localStorage.removeItem("eventFormData");
             localStorage.removeItem("eventFormReview");
         } catch (err) {
             console.error("❌ Error clearing localStorage:", err);
         }
-        
+
         setDraftId(null);
         setIsDiscardModalOpen(false);
         message.success("Draft discarded");
-        
+
         allowNavigationRef.current = true;
-        
+
         if (blocker.state === "blocked") {
             blocker.proceed();
         } else if (pendingNavigation) {
@@ -570,17 +563,17 @@ export function EventForm() {
     const handleLeaveWithoutDiscarding = () => {
         // Keep the draft saved in DB, just clear localStorage and navigate
         console.log("✅ Leaving without discarding saved draft");
-        
+
         try {
             localStorage.removeItem("eventFormData");
             localStorage.removeItem("eventFormReview");
         } catch (err) {
             console.error("❌ Error clearing localStorage:", err);
         }
-        
+
         setIsDiscardModalOpen(false);
         allowNavigationRef.current = true;
-        
+
         if (blocker.state === "blocked") {
             blocker.proceed();
         } else if (pendingNavigation) {
@@ -594,14 +587,14 @@ export function EventForm() {
     const handleReviewForm = async () => {
         // Trigger validation on all fields
         const isValid = await trigger();
-        
+
         if (!isValid) {
             // Find the first error field
             const errorFields = Object.keys(errors);
-            
+
             if (errorFields.length > 0) {
                 const firstErrorField = errorFields[0];
-                
+
                 // Map field names to their corresponding panel keys
                 const fieldToPanelMap: Record<string, string> = {
                     'title': 'eventDetails',
@@ -614,7 +607,7 @@ export function EventForm() {
                     'setup_time': 'dateLocation',
                     'location_type': 'dateLocation',
                 };
-                
+
                 // Map form_data sub-keys to their corresponding panel keys
                 const formDataFieldToPanelMap: Record<string, string> = {
                     // eventElements panel
@@ -641,7 +634,7 @@ export function EventForm() {
 
                 // Check if error is in form_data (nested fields)
                 let panelToOpen = 'eventDetails'; // default
-                
+
                 if (firstErrorField === 'form_data') {
                     const formDataErrors = errors.form_data as any;
                     const firstFormDataErrorKey = Object.keys(formDataErrors || {})[0];
@@ -651,20 +644,20 @@ export function EventForm() {
                 } else {
                     panelToOpen = fieldToPanelMap[firstErrorField] || 'eventDetails';
                 }
-                
+
                 // Open the panel with the error
                 setActiveCollapseKey([panelToOpen]);
                 setCurrentEditingSection(panelToOpen);
-                
+
                 // Show error message
                 message.error('Please complete all required fields before proceeding to review.');
-                
+
                 // Scroll to top after a brief delay to allow panel to open
                 setTimeout(() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 100);
             }
-            
+
             return;
         }
 
@@ -697,7 +690,7 @@ export function EventForm() {
             </div>
             <div className={styles.collapseWrapper}>
                 <Form layout="vertical">
-                    <Collapse 
+                    <Collapse
                         activeKey={activeCollapseKey}
                         onChange={(keys) => {
                             const keyArray = Array.isArray(keys) ? keys : [keys];
@@ -705,16 +698,16 @@ export function EventForm() {
 
                             // Filter to get only major sections (not nested panels)
                             const majorSectionsInKeys = keyArray.filter(key => majorSectionKeys.includes(key));
-                            
+
                             // If multiple major sections are in the array, keep only the last one clicked
                             let finalKeys: string[] = [];
                             let activeMajor: string | null = null;
-                            
+
                             if (majorSectionsInKeys.length > 0) {
                                 // Keep only the most recent major section
                                 activeMajor = majorSectionsInKeys[majorSectionsInKeys.length - 1];
                                 finalKeys.push(activeMajor);
-                                
+
                                 // Also add any nested panels that belong to this major section
                                 keyArray.forEach((key) => {
                                     const nestedPanel = formBranching.find(p => p.key === key);
@@ -723,9 +716,9 @@ export function EventForm() {
                                     }
                                 });
                             }
-                            
+
                             setActiveCollapseKey(finalKeys);
-                            
+
                             // Update currentEditingSection to stay in sync with progress timeline
                             if (activeMajor) {
                                 setCurrentEditingSection(activeMajor);
@@ -734,7 +727,11 @@ export function EventForm() {
                         expandIconPosition="end"
                     >
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
-                            <EventDetailsSection control={control} watch={watch} />
+                            <EventDetailsSection
+                                control={control}
+                                watch={watch}
+                                setValue={setValue}
+                            />
                         </Panel>
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
                             <DateLocationSection control={control} />
@@ -757,7 +754,7 @@ export function EventForm() {
                                 Save as Draft
                             </Button>
                         </div>
-                        <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)"  }} onClick={() => {
+                        <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)" }} onClick={() => {
                             setIsExplicitDiscard(true); // Explicit discard action
                             setIsDiscardModalOpen(true);
                         }}>
@@ -778,22 +775,22 @@ export function EventForm() {
                     />
                 </div>
             )}
-            <DiscardModal 
+            <DiscardModal
                 open={isDiscardModalOpen}
                 title={!isExplicitDiscard && draftId ? "Leave Event Form?" : "Discard Event Form?"}
-                message={!isExplicitDiscard && draftId 
-                    ? "Your draft has been saved. Do you want to leave this page?" 
+                message={!isExplicitDiscard && draftId
+                    ? "Your draft has been saved. Do you want to leave this page?"
                     : draftId
                         ? "Are you sure you want to discard this saved draft? This action cannot be undone."
                         : "Are you sure you want to discard this event form? All unsaved changes will be lost."}
                 cancelButtonText={!isExplicitDiscard && draftId ? "Stay" : "Cancel"}
                 discardButtonText={!isExplicitDiscard && draftId ? "Leave" : "Discard"}
-                onDiscardClick={!isExplicitDiscard && draftId ? handleLeaveWithoutDiscarding : handleDiscard} 
+                onDiscardClick={!isExplicitDiscard && draftId ? handleLeaveWithoutDiscarding : handleDiscard}
                 onCancelClick={() => {
                     setIsDiscardModalOpen(false);
                     setPendingNavigation(null);
                     if (blocker.state === "blocked") blocker.reset();
-                }} 
+                }}
             />
             <ScrollToTop />
         </div>
