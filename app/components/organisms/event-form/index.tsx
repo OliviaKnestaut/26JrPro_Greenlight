@@ -27,6 +27,7 @@ import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
 const { Title, Link, Paragraph } = Typography;
 const { Panel } = Collapse;
 
+// Define the branching logic for nested panels based on form values
 const formBranching = [
     { when: "location_type", is: "On-Campus", key: "onCampus", parent: "dateLocation", header: "On-Campus Details", component: OnCampusSection, indent: 32 },
     { when: "location_type", is: "Off-Campus", key: "offCampus", parent: "dateLocation", header: "Off-Campus Details", component: OffCampusSection, indent: 32 },
@@ -39,6 +40,7 @@ const formBranching = [
     { when: "form_data.elements.sorc_games", is: true, key: "sorc_games", parent: "eventElements", header: "SORC Games Details", component: SORCGamesSection, indent: 32 },
 ];
 
+// Recursively render nested panels based on branching logic and current form values
 const formNesting = (parentKey: string, isSelected: Record<string, any>, control: any, setValue: any) => {
     return formBranching.filter((panel) => panel.parent === parentKey).map((panel) => {
         const fieldPath = panel.when.split('.');
@@ -56,6 +58,7 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
     });
 };
 
+// Main EventForm component
 export function EventForm() {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -72,28 +75,31 @@ export function EventForm() {
         variables: { id: id ?? '' },
         skip: !id,
     });
-    const { control, handleSubmit, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm({ mode: "onChange" });
+    const { control, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm({ mode: "onChange" });
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
     const allowNavigationRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
+    // Block navigation if there are unsaved changes
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
         if (allowNavigationRef.current) return false;
         return currentLocation.pathname !== nextLocation.pathname;
     });
 
+    // When blocker state changes to "blocked", show the discard confirmation modal
     useEffect(() => {
         if (blocker.state === "blocked") {
             setPendingNavigation(
                 `${blocker.location.pathname}${blocker.location.search}${blocker.location.hash}`
             );
-            setIsExplicitDiscard(false); // Navigation attempt, not explicit discard
+            setIsExplicitDiscard(false);
             setIsDiscardModalOpen(true);
         }
     }, [blocker]);
 
+    // On mount, check for existing draft in localStorage and load it. Also handle loading existing event data if editing.
     useEffect(() => {
         const loadDraft = async () => {
             try {
@@ -123,6 +129,7 @@ export function EventForm() {
         loadDraft();
     }, [id, setValue]);
 
+    // Warn user if they try to close the tab/window with unsaved changes
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (!allowNavigationRef.current) {
@@ -134,6 +141,7 @@ export function EventForm() {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, []);
 
+    // When existing event data is loaded for editing, populate the form fields
     useEffect(() => {
         if (existingEventData?.event && !loadingEvent) {
             const ev = existingEventData.event;
@@ -167,6 +175,7 @@ export function EventForm() {
         }
     }, [existingEventData, loadingEvent, setValue]);
 
+    // Auto-save form data to localStorage on change, but only if not currently editing an existing draft (to avoid conflicts)
     useEffect(() => {
         const subscription = watch((data) => {
             if (!draftId) {
@@ -225,6 +234,44 @@ export function EventForm() {
             });
         }
     }, [isSelected]);
+
+    // Scroll to and open a specific section when currentEditingSection changes (e.g. when user clicks on a step in the ProgressTimeline)
+    useEffect(() => {
+        if (!currentEditingSection) return;
+
+        // Open the corresponding collapse panel first
+        setActiveCollapseKey([currentEditingSection]);
+
+        // Wait for Collapse animation + DOM layout
+        setTimeout(() => {
+            const mainContent = document.querySelector('main');
+            const el = document.getElementById(`panel-${currentEditingSection}`);
+
+            if (!mainContent || !el) return;
+
+            const targetTop = el.offsetTop - 16;
+
+            const duration = 400;
+            const start = mainContent.scrollTop;
+            const startTime = performance.now();
+
+            const animateScroll = (currentTime: number) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+
+                const scrollTo = start + (targetTop - start) * easeOutCubic;
+                mainContent.scrollTop = scrollTo;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            };
+
+            requestAnimationFrame(animateScroll);
+        }, 50);
+
+    }, [currentEditingSection]);
 
     // Resize an image File on the client to fit within max dimensions.
     const resizeImageFile = async (file: File, maxWidth = 1300, maxHeight = 780, quality = 0.85): Promise<File> => {
@@ -315,6 +362,7 @@ export function EventForm() {
         throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
     };
 
+    // Generate a URL-friendly slug from the event title for use in image filenames
     const slugify = (str: string) => {
         return (str || 'event')
             .toString()
@@ -325,6 +373,7 @@ export function EventForm() {
             .substring(0, 120);
     };
 
+    // Resolve the event image from various possible input formats (string filename, Ant Upload object, or File), handle resizing and uploading if necessary, and return the stored filename or URL.
     const resolveEventImage = async (
         rawValue: any,
         desiredName: string
@@ -355,6 +404,7 @@ export function EventForm() {
         return undefined;
     };
 
+    // Prepare the input for create/update mutation by processing form data, handling image upload, and enforcing schema requirements. This function ensures that the event image is properly handled whether it's a new upload or an existing filename, and constructs the final input object for the GraphQL mutation.
     const prepareMutationInput = async (
         data: any,
         status: "DRAFT" | "REVIEW",
@@ -380,6 +430,7 @@ export function EventForm() {
         return input;
     };
 
+    // Build the mutation input object from form data, converting times to 24-hour format, mapping location details, calculating event level, and including necessary metadata. This function centralizes all the logic for transforming the raw form data into the shape expected by the create/update event mutations, ensuring consistency and correctness in how event data is processed before being sent to the server.
     const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
@@ -487,11 +538,13 @@ export function EventForm() {
         return mutationInput;
     };
 
+    // Helper to allow navigation after confirming discard of changes, ensuring that the blocker is properly bypassed and the user is taken to the intended destination without being stuck in a navigation loop or having to click multiple times. This function centralizes the logic for safely navigating away from the form after handling unsaved changes, providing a smooth user experience.
     const navigateSafely = (path: string) => {
         allowNavigationRef.current = true;
         navigate(path);
     };
 
+    // Handle saving the draft by preparing the mutation input, uploading the image if necessary, and calling either create or update mutation based on whether we're editing an existing draft. This function also manages the state of the draft ID and shows appropriate success or error messages to the user.
     const handleSaveDraft = async () => {
         if (!user) {
             message.error("You must be logged in to save a draft.");
@@ -521,6 +574,7 @@ export function EventForm() {
         }
     };
 
+    // Handle discarding the draft by deleting it from the database if it exists, clearing localStorage, and navigating away. This function ensures that all traces of the draft are removed and that the user is properly navigated away from the form after confirming their intent to discard changes.
     const handleDiscard = async () => {
         if (draftId) {
             console.log("🗑️ Deleting saved draft from DB:", draftId);
@@ -560,6 +614,7 @@ export function EventForm() {
         }
     };
 
+    //  Handle leaving the form without discarding changes by simply clearing localStorage and allowing navigation, without deleting any existing draft from the database. This provides a way for users to exit the form while keeping their draft intact for future editing, while also ensuring that they won't be prompted about unsaved changes again until they return to the form.
     const handleLeaveWithoutDiscarding = () => {
         // Keep the draft saved in DB, just clear localStorage and navigate
         console.log("✅ Leaving without discarding saved draft");
@@ -584,6 +639,7 @@ export function EventForm() {
         }
     };
 
+    // Handle the review action by first triggering validation on all form fields, then checking for errors and automatically opening the relevant panel with the first error if validation fails, and finally navigating to the review page if validation passes. This function ensures that users are guided to fix any issues in their form before proceeding to review, providing a smoother and more user-friendly experience.
     const handleReviewForm = async () => {
         // Trigger validation on all fields
         const isValid = await trigger();
@@ -673,6 +729,7 @@ export function EventForm() {
         }
     };
 
+    // Render the form with collapsible sections, progress timeline, and action buttons, along with modals and alerts for user interactions. This JSX structure defines the layout and interactive elements of the event form, ensuring that users have a clear and intuitive interface for entering their event details, navigating between sections, and managing their draft.
     return (
         <div className="container">
             <Title level={5}>
@@ -683,10 +740,11 @@ export function EventForm() {
             </Title>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: 24 }}>
                 <h2 style={{ margin: 0 }}>Event Form</h2>
-                <p>Provide your event information for review and approval. All required fields are marked with <span style={{ color: 'var(--red-6)' }}>*</span>. You must complete all required fields before proceeding to review.</p>
+                <p>Provide your event information for review and approval.</p>
+                <p> All required fields are marked with an asterisk (<span style={{ color: 'var(--red-6)' }}>*</span>). You must complete all required fields before proceeding to review.</p>
             </div>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
-                <ProgressTimeline getValues={getValues} currentEditingSection={currentEditingSection} />
+                <ProgressTimeline getValues={getValues} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
             </div>
             <div className={styles.collapseWrapper}>
                 <Form layout="vertical">
@@ -727,22 +785,30 @@ export function EventForm() {
                         expandIconPosition="end"
                     >
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
-                            <EventDetailsSection
-                                control={control}
-                                watch={watch}
-                                setValue={setValue}
-                            />
+                            <div id="panel-eventDetails">
+                                <EventDetailsSection
+                                    control={control}
+                                    watch={watch}
+                                    setValue={setValue}
+                                />
+                            </div>
                         </Panel>
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
-                            <DateLocationSection control={control} />
+                            <div id="panel-dateLocation">
+                                <DateLocationSection control={control} />
+                            </div>
                         </Panel>
                         {formNesting("dateLocation", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Elements</h4>} key="eventElements">
-                            <EventElementsSection control={control} setValue={setValue} />
+                            <div id="panel-eventElements">
+                                <EventElementsSection control={control} setValue={setValue} />
+                            </div>
                         </Panel>
                         {formNesting("eventElements", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Budget & Purchases</h4>} key="budgetPurchase">
-                            <BudgetPurchaseSection control={control} setValue={setValue} />
+                            <div id="panel-budgetPurchase">
+                                <BudgetPurchaseSection control={control} setValue={setValue} />
+                            </div>
                         </Panel>
                     </Collapse>
                     <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>

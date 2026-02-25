@@ -28,34 +28,34 @@ export default function EventElementsSection({ control, setValue }: Props) {
         control,
         name: "form_data.elements",
     });
-    
+
     // Watch for location type and attendees (affects Level 0 eligibility)
     const locationType = useWatch({
         control,
         name: "location_type",
     });
-    
+
     const attendees = useWatch({
         control,
         name: "attendees",
     });
-    
+
     const noAdditionalElements = selectedElements?.no_additional_elements;
-    
+
     // Check if any OTHER elements are selected (which would make it NOT level 0)
     const hasOtherElements = selectedElements && Object.keys(selectedElements).some(
         key => key !== "no_additional_elements" && selectedElements[key] === true
     );
-    
+
     // Check if location is off-campus (Level 1+)
     const isOffCampus = locationType === "Off-Campus";
-    
+
     // Check if attendees >= 150 (Level 2+)
     const hasHighAttendance = attendees && parseInt(attendees) >= 150;
-    
+
     // Combined check: event is NOT eligible for Level 0 if any disqualifying factors exist
     const hasLevel0Conflicts = hasOtherElements || isOffCampus || hasHighAttendance;
-    
+
     // Check if user has selected ANY elements (including no_additional_elements)
     const hasSelectedElements = selectedElements && Object.values(selectedElements).some(Boolean);
 
@@ -67,10 +67,12 @@ export default function EventElementsSection({ control, setValue }: Props) {
 
     // Clear level 0 confirmation if user adds disqualifying factors
     useEffect(() => {
-        if (hasLevel0Conflicts && level0Confirmed) {
+        // If event no longer qualifies for Level 0,
+        // automatically clear the confirmation
+        if ((!noAdditionalElements || hasLevel0Conflicts) && level0Confirmed) {
             setValue("form_data.level0_confirmed", false);
         }
-    }, [hasLevel0Conflicts, level0Confirmed, setValue]);
+    }, [noAdditionalElements, hasLevel0Conflicts, level0Confirmed, setValue]);
 
     return (
         <>
@@ -114,8 +116,8 @@ export default function EventElementsSection({ control, setValue }: Props) {
                             <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
                                 Select all that apply
                             </Text>
-                            <div style={{ 
-                                display: "flex", 
+                            <div style={{
+                                display: "flex",
                                 flexDirection: "column",
                                 padding: fieldState.error ? 12 : 0,
                                 border: fieldState.error ? "1px solid var(--red-6)" : "none",
@@ -125,7 +127,7 @@ export default function EventElementsSection({ control, setValue }: Props) {
                                 {elementOptions.map((option) => {
                                     const isNoElementsOption = option.value === "no_additional_elements";
                                     const isDisabled = !isNoElementsOption && noAdditionalElements;
-                                    
+
                                     return (
                                         <Checkbox
                                             key={option.value}
@@ -159,7 +161,7 @@ export default function EventElementsSection({ control, setValue }: Props) {
                 <Controller
                     name="form_data.level0_confirmed"
                     control={control}
-                    rules={{ 
+                    rules={{
                         required: "You must confirm this is a level 0 event",
                         validate: (value) => value === true || "Please check the box to confirm"
                     }}
@@ -170,12 +172,12 @@ export default function EventElementsSection({ control, setValue }: Props) {
                                 description={
                                     <div>
                                         <Text>
-                                            You have indicated your event requires no extra elements (food, alcohol, etc.) and no travel. 
+                                            You have indicated your event requires no extra elements (food, alcohol, etc.) and no travel.
                                             Can you confirm this is a level 0 event?
                                         </Text>
                                         <div style={{ marginTop: 12 }}>
-                                            <Checkbox 
-                                                {...field} 
+                                            <Checkbox
+                                                {...field}
                                                 checked={field.value}
                                             >
                                                 Yes, I confirm this is a level 0 event <span style={{ color: "var(--red-5)" }}>*</span>
@@ -195,7 +197,7 @@ export default function EventElementsSection({ control, setValue }: Props) {
                     )}
                 />
             )}
-            
+
             {/* Warning when user has disqualifying factors even with no other elements */}
             {noAdditionalElements && hasLevel0Conflicts && (
                 <Alert
@@ -215,7 +217,7 @@ export default function EventElementsSection({ control, setValue }: Props) {
                     style={{ marginBottom: 24, backgroundColor: "var(--lavender-1)", borderColor: "var(--lavender-6)" }}
                 />
             )}
-            
+
             {/* Warning when user has selected elements */}
             {hasOtherElements && (
                 <Alert
@@ -227,7 +229,7 @@ export default function EventElementsSection({ control, setValue }: Props) {
                     }
                     type="warning"
                     showIcon
-                    style={{ marginBottom: 24}}
+                    style={{ marginBottom: 24 }}
                 />
             )}
         </>

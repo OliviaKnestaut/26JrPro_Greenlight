@@ -12,7 +12,8 @@ type ProgressTimelineProps = {
 	getValues: () => Record<string, any>
 	steps?: ProgressStep[]
 	isSectionComplete?: (key: string, values: Record<string, any>) => boolean
-	currentEditingSection?: string // Override to show specific step as current
+	currentEditingSection?: string 
+	onSectionClick?: (key: string) => void
 }
 
 const defaultSteps: ProgressStep[] = [
@@ -68,7 +69,8 @@ export default function ProgressTimeline({
 	getValues,
 	steps = defaultSteps,
 	isSectionComplete = defaultIsSectionComplete,
-	currentEditingSection
+	currentEditingSection,
+	onSectionClick,
 }: ProgressTimelineProps) {
 	// Safely get values and handle null/undefined cases
 	let values: Record<string, any> = {};
@@ -109,6 +111,12 @@ export default function ProgressTimeline({
 			<Steps
 				current={activeStep}
 				labelPlacement="vertical"
+				onChange={(index) => {
+					const selectedStep = validSteps[index];
+					if (selectedStep && onSectionClick) {
+						onSectionClick(selectedStep.key);
+					}
+				}}
 				items={validSteps.map((step, index) => {
 					let status: "finish" | "process" | "wait" | "error" = "wait";
 					

@@ -45,3 +45,23 @@ export const formatTime = (s?: string) => {
     }
     return s;
 };
+
+export const formatDuration = (minutes?: number | string): string => {
+    if (minutes == null) return '';
+
+    const totalMinutes = typeof minutes === 'string' ? parseInt(minutes, 10) : minutes;
+    if (isNaN(totalMinutes) || totalMinutes < 0) return '';
+
+    if (totalMinutes < 60) {
+        return `${totalMinutes} minute${totalMinutes === 1 ? '' : 's'}`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+
+    if (remainingMinutes === 0) {
+        return `${hours} hour${hours === 1 ? '' : 's'}`;
+    }
+
+    return `${hours} hour${hours === 1 ? '' : 's'} ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'}`;
+};
