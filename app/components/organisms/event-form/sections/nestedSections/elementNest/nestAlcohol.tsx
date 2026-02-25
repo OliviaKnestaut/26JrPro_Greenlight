@@ -1,6 +1,7 @@
 import { Controller } from "react-hook-form";
 import { Radio, Input, Typography, Checkbox } from "antd";
 import FieldLabel from "../../../components/FieldLabel";
+import { formatPhoneNumber } from "~/lib/formatters";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -20,7 +21,7 @@ export default function AlcoholSection({ control }: Props) {
                 rules={{ required: "Company name is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <FieldLabel required>Name of company providing alcohol</FieldLabel>
+                        <FieldLabel required>What is the name of the company providing alcohol?</FieldLabel>
                         <Input
                             {...field}
                             placeholder="Enter approved vendor name"
@@ -41,7 +42,7 @@ export default function AlcoholSection({ control }: Props) {
                 rules={{ required: "Event type is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
-                        <FieldLabel required>Type of Event</FieldLabel>
+                        <FieldLabel required>What is the type of event you are hosting?</FieldLabel>
                         <Radio.Group
                             {...field}
                             style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
@@ -62,67 +63,85 @@ export default function AlcoholSection({ control }: Props) {
             <div style={{ marginBottom: 16 }}>
                 <FieldLabel required>Full-time faculty or staff member who will be present for the duration of your event</FieldLabel>
 
-                <Controller
-                    name="form_data.alcohol.faculty_staff.name"
-                    control={control}
-                    rules={{ required: "Name is required" }}
-                    render={({ field, fieldState }) => (
-                        <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Full Name" status={fieldState.error ? "error" : ""} />
-                            {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
-                            )}
-                        </div>
-                    )}
-                />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <Controller
+                        name="form_data.alcohol.faculty_staff.name"
+                        control={control}
+                        rules={{ required: "Name is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginTop: 8 }}>
+                                <Text> Full Name </Text>
+                                <Input {...field} placeholder="Full Name" status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
+                            </div>
+                        )}
+                    />
 
-                <Controller
-                    name="form_data.alcohol.faculty_staff.title"
-                    control={control}
-                    rules={{ required: "Title is required" }}
-                    render={({ field, fieldState }) => (
-                        <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Title" status={fieldState.error ? "error" : ""} />
-                            {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
-                            )}
-                        </div>
-                    )}
-                />
+                    <Controller
+                        name="form_data.alcohol.faculty_staff.title"
+                        control={control}
+                        rules={{ required: "Title is required" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginTop: 8 }}>
+                                <Text> Title </Text>
+                                <Input {...field} placeholder="Title" status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
+                            </div>
+                        )}
+                    />
 
-                <Controller
-                    name="form_data.alcohol.faculty_staff.email"
-                    control={control}
-                    rules={{
-                        required: "Email is required",
-                        pattern: {
-                            value: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i,
-                            message: "Enter a valid email address",
-                        },
-                    }}
-                    render={({ field, fieldState }) => (
-                        <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Email Address" status={fieldState.error ? "error" : ""} />
-                            {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
-                            )}
-                        </div>
-                    )}
-                />
+                    <Controller
+                        name="form_data.alcohol.faculty_staff.email"
+                        control={control}
+                        rules={{
+                            required: "Email is required",
+                            pattern: {
+                                value: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i,
+                                message: "Enter a valid email address",
+                            },
+                        }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginTop: 8 }}>
+                                <Text> Email Address </Text>
+                                <Input {...field} placeholder="Email Address" status={fieldState.error ? "error" : ""} />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
+                            </div>
+                        )}
+                    />
 
-                <Controller
-                    name="form_data.alcohol.faculty_staff.phone"
-                    control={control}
-                    rules={{ required: "Phone number is required" }}
-                    render={({ field, fieldState }) => (
-                        <div style={{ marginTop: 8 }}>
-                            <Input {...field} placeholder="Phone Number" status={fieldState.error ? "error" : ""} />
-                            {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
-                            )}
-                        </div>
-                    )}
-                />
+                    <Controller
+                        name="form_data.alcohol.faculty_staff.phone"
+                        control={control}
+                        rules={{
+                            required: "Phone number is required",
+                            validate: (value) =>
+                                /^\(\d{3}\) \d{3}-\d{4}$/.test(value) || "Enter a valid 10-digit phone number"
+                        }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ marginTop: 8 }}>
+                                <Text> Phone Number </Text>
+                                <Input {...field}
+                                    placeholder="(555) 123-4567"
+                                    maxLength={14}
+                                    status={fieldState.error ? "error" : ""}
+                                    onChange={(e) => {
+                                        const formatted = formatPhoneNumber(e.target.value);
+                                        field.onChange(formatted);
+                                    }}
+                                />
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
+                            </div>
+                        )}
+                    />
+                </div>
             </div>
 
             {/* A5 - Guests under 21 */}
@@ -203,7 +222,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.id_check"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -222,7 +241,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.approved_vendor"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -241,7 +260,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.hard_liquor_charge"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -260,7 +279,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.no_drinking_games"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -279,7 +298,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.no_liquor_university_funds"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -298,7 +317,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.food_available"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -317,7 +336,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.non_salty_options"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -336,7 +355,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.heavy_appetizers"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}
@@ -355,7 +374,7 @@ export default function AlcoholSection({ control }: Props) {
                     <Controller
                         name="form_data.alcohol.checklist.cutoff_time"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "You must check this box to proceed",
                             validate: (value) => value === true || "You must agree to this policy"
                         }}

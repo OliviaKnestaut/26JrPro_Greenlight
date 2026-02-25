@@ -194,45 +194,60 @@ export function EventForm() {
         return () => subscription.unsubscribe();
     }, [watch, draftId]);
 
-    // Auto-open nested panels when conditions are met
+
+    // When the form values that control branching logic change, automatically open the relevant nested panels
+    const prevSelectedRef = useRef<any>(null);
+
     useEffect(() => {
-        const data = isSelected;
-        const panelsToOpen: string[] = [];
-        const parentPanelsToOpen: string[] = [];
+        const current = isSelected;
+        const previous = prevSelectedRef.current;
 
-        // Check each formBranching rule to see if its condition is met
+        if (!previous) {
+            prevSelectedRef.current = current;
+            return;
+        }
+
+        const keysToOpen: string[] = [];
+
         formBranching.forEach((panel) => {
-            const fieldPath = panel.when.split('.');
-            let currentValue: any = data;
-            for (const key of fieldPath) {
-                currentValue = currentValue?.[key];
-            }
-            const shouldDisplay = Array.isArray(currentValue)
-                ? currentValue.includes(panel.is)
-                : currentValue === panel.is;
+            const path = panel.when.split('.');
 
-            if (shouldDisplay) {
-                panelsToOpen.push(panel.key);
-                // Also ensure parent panel is open
-                if (panel.parent && !parentPanelsToOpen.includes(panel.parent)) {
-                    parentPanelsToOpen.push(panel.parent);
-                }
+            let currVal: any = current;
+            let prevVal: any = previous;
+
+            for (const key of path) {
+                currVal = currVal?.[key];
+                prevVal = prevVal?.[key];
+            }
+
+            const wasTrue = Array.isArray(prevVal)
+                ? prevVal?.includes(panel.is)
+                : prevVal === panel.is;
+
+            const isNowTrue = Array.isArray(currVal)
+                ? currVal?.includes(panel.is)
+                : currVal === panel.is;
+
+            if (!wasTrue && isNowTrue) {
+                keysToOpen.push(panel.parent); // ensure parent is open
+                keysToOpen.push(panel.key);    // open nested panel
             }
         });
 
-        // Add nested panel keys and their parent keys to active keys
-        const allPanelsToOpen = [...parentPanelsToOpen, ...panelsToOpen];
-        if (allPanelsToOpen.length > 0) {
+        if (keysToOpen.length > 0) {
             setActiveCollapseKey((prevKeys) => {
-                const newKeys = [...prevKeys];
-                allPanelsToOpen.forEach((key) => {
-                    if (!newKeys.includes(key)) {
-                        newKeys.push(key);
+                const next = [...prevKeys];
+                keysToOpen.forEach((key) => {
+                    if (!next.includes(key)) {
+                        next.push(key);
                     }
                 });
-                return newKeys;
+                return next;
             });
         }
+
+        prevSelectedRef.current = current;
+
     }, [isSelected]);
 
     // Scroll to and open a specific section when currentEditingSection changes (e.g. when user clicks on a step in the ProgressTimeline)
@@ -752,32 +767,46 @@ export function EventForm() {
                         activeKey={activeCollapseKey}
                         onChange={(keys) => {
                             const keyArray = Array.isArray(keys) ? keys : [keys];
-                            const majorSectionKeys = ["eventDetails", "dateLocation", "eventElements", "budgetPurchase"];
 
-                            // Filter to get only major sections (not nested panels)
-                            const majorSectionsInKeys = keyArray.filter(key => majorSectionKeys.includes(key));
+                            const majorSectionKeys = [
+                                "eventDetails",
+                                "dateLocation",
+                                "eventElements",
+                                "budgetPurchase"
+                            ];
 
-                            // If multiple major sections are in the array, keep only the last one clicked
-                            let finalKeys: string[] = [];
-                            let activeMajor: string | null = null;
+                            // Build nested → parent map dynamically
+                            const nestedToParentMap: Record<string, string> = {};
+                            formBranching.forEach(panel => {
+                                nestedToParentMap[panel.key] = panel.parent;
+                            });
 
-                            if (majorSectionsInKeys.length > 0) {
-                                // Keep only the most recent major section
-                                activeMajor = majorSectionsInKeys[majorSectionsInKeys.length - 1];
-                                finalKeys.push(activeMajor);
+                            let finalKeys = [...keyArray];
 
-                                // Also add any nested panels that belong to this major section
-                                keyArray.forEach((key) => {
-                                    const nestedPanel = formBranching.find(p => p.key === key);
-                                    if (nestedPanel && nestedPanel.parent === activeMajor) {
-                                        finalKeys.push(key);
+                            // 🔥 Ensure parent auto-opens if nested panel is clicked
+                            keyArray.forEach((key) => {
+                                if (!majorSectionKeys.includes(key)) {
+                                    const parent = nestedToParentMap[key];
+                                    if (parent && !finalKeys.includes(parent)) {
+                                        finalKeys.push(parent);
                                     }
-                                });
+                                }
+                            });
+
+                            // 🎯 Only allow ONE major section open at a time
+                            const openMajorSections = finalKeys.filter(k => majorSectionKeys.includes(k));
+                            if (openMajorSections.length > 1) {
+                                const mostRecentMajor = openMajorSections[openMajorSections.length - 1];
+                                finalKeys = finalKeys.filter(
+                                    k =>
+                                        !majorSectionKeys.includes(k) ||
+                                        k === mostRecentMajor
+                                );
                             }
 
                             setActiveCollapseKey(finalKeys);
 
-                            // Update currentEditingSection to stay in sync with progress timeline
+                            const activeMajor = finalKeys.find(k => majorSectionKeys.includes(k));
                             if (activeMajor) {
                                 setCurrentEditingSection(activeMajor);
                             }

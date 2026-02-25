@@ -68,16 +68,16 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
 
     const isPastEvent = computeIsPastEvent(isPast, date);
     const combinedClassName = [
-    styles.card,
-    status === 'draft' && styles.draftCard,
-    status === 'in-review' && styles.reviewCard,
-    status === 'approved' && !isPastEvent && styles.approvedCard,
-    status === 'cancelled' && styles.cancelledCard,
-    status === 'approved' && isPastEvent && styles.pastCard,
-    disableHover && styles.noHover, 
-    (rest as any)?.className,
-].filter(Boolean).join(' ');
-const cardProps = { ...(rest as any), className: combinedClassName };
+        styles.card,
+        status === 'draft' && styles.draftCard,
+        status === 'in-review' && styles.reviewCard,
+        status === 'approved' && !isPastEvent && styles.approvedCard,
+        status === 'cancelled' && styles.cancelledCard,
+        status === 'approved' && isPastEvent && styles.pastCard,
+        disableHover && styles.noHover,
+        (rest as any)?.className,
+    ].filter(Boolean).join(' ');
+    const cardProps = { ...(rest as any), className: combinedClassName };
 
     const menuItems = [
         ...(onRename ? [{ key: 'rename', label: 'Rename' }] : []),
@@ -101,17 +101,16 @@ const cardProps = { ...(rest as any), className: combinedClassName };
     const renderMoreMenu = (iconColor?: string) => {
         if (menuItems.length === 0) return null;
         return (
-        <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} trigger={['click']} placement="bottomRight">
-            <button
-                type="button"
-                className={styles.moreButton}
-                aria-label="More actions"
-                style={iconColor ? { color: iconColor } : undefined}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <MoreOutlined style={{ fontSize: '24px' }} />
-            </button>
-        </Dropdown>
+            <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} trigger={['click']} placement="bottomRight">
+                <button
+                    type="button"
+                    className={styles.moreButton}
+                    aria-label="More actions"
+                    style={iconColor ? { color: iconColor } : undefined}
+                >
+                    <MoreOutlined style={{ fontSize: '24px' }} />
+                </button>
+            </Dropdown>
         );
     };
 
@@ -217,23 +216,55 @@ const cardProps = { ...(rest as any), className: combinedClassName };
     );
 
     const draftCard = (
-        <Card {...cardProps}
-            onClick={handleCardClick}
+        <Card
+            {...cardProps}
             hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
-            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', cursor: status === 'draft' ? 'pointer' : undefined }}>
-            <div className='flex flex-col gap-1'>
-                <div className="flex justify-between items-center">
-                    <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
+            style={{
+                ...incomingStyle,
+                border: '1px dashed var(--accent-gray-light-2)',
+            }}
+        >
+            <div className="flex flex-col gap-1">
+                <div className="flex justify-between items-start">
+                    {/* CLICKABLE CONTENT AREA ONLY */}
+                    <div
+                        onClick={handleCardClick}
+                        style={{
+                            flex: 1,
+                            cursor: status === 'draft' ? 'pointer' : 'default',
+                        }}
+                    >
+                        <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>
+                            {title}
+                        </Title>
+                    </div>
+
+                    {/* MENU IS NOT INSIDE CLICK REGION */}
                     {renderMoreMenu()}
                 </div>
+
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
-                <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
-                    {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
-                    {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
+
+                <div className="flex flex-wrap">
+                    {date && (
+                        <Tag className="eventDetailTag" icon={<CalendarOutlined />}>
+                            {date}
+                        </Tag>
+                    )}
+                    {startTime && (
+                        <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>
+                            {formatTime(startTime)}
+                        </Tag>
+                    )}
+                    {location && (
+                        <Tag className="eventDetailTag" icon={<PushpinOutlined />}>
+                            {location}
+                        </Tag>
+                    )}
                 </div>
             </div>
+
             <div className={styles.content}>{children}</div>
         </Card>
     );
@@ -299,32 +330,85 @@ const cardProps = { ...(rest as any), className: combinedClassName };
     );
 
     const draftCardVisual = (
-        <Card {...cardProps}
-            onClick={handleCardClick}
+        <Card
+            {...cardProps}
             hoverable={!disableHover}
             styles={{ body: { padding: 16 } }}
-            style={{ ...incomingStyle, border: '1px dashed var(--accent-gray-light-2)', background: 'var(--background-2)', cursor: status === 'draft' ? 'pointer' : undefined }}>
-            <div className='flex flex-col gap-1'>
-                <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', display: 'block' }}>
+            style={{
+                ...incomingStyle,
+                border: '1px dashed var(--accent-gray-light-2)',
+                background: 'var(--background-2)',
+            }}
+        >
+            <div className="flex flex-col gap-1">
+                <div
+                    style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: 160,
+                        overflow: 'hidden',
+                    }}
+                >
                     <OptimizedImage
                         alt="event"
-                        src={imagePath ?? eventImg ?? "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+                        src={
+                            imagePath ??
+                            eventImg ??
+                            'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png'
+                        }
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                        }}
                     />
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(217, 217, 217, 0.10)', boxShadow: '0 36px 36px 0 rgba(0, 0, 0, 0.36) inset', pointerEvents: 'none', zIndex: 2 }} />
-                    <Tag className="inDraftTag statusTag" style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>in-draft</Tag>
+
+                    <Tag
+                        className="inDraftTag statusTag"
+                        style={{ position: 'absolute', top: 8, right: 8 }}
+                    >
+                        in-draft
+                    </Tag>
                 </div>
-                <div className="flex justify-between items-center">
-                    <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>{title}</Title>
+
+                <div className="flex justify-between items-start">
+                    {/* CLICKABLE AREA */}
+                    <div
+                        onClick={handleCardClick}
+                        style={{
+                            flex: 1,
+                            cursor: status === 'draft' ? 'pointer' : 'default',
+                        }}
+                    >
+                        <Title level={4} ellipsis={{ rows: 2 }} className={styles.title}>
+                            {title}
+                        </Title>
+                    </div>
+
                     {renderMoreMenu()}
                 </div>
+
                 <Paragraph ellipsis={{ rows: 2 }}>{description}</Paragraph>
-                <div className='flex flex-wrap'>
-                    {date ? <Tag className="eventDetailTag" style={{ background: isPast ? '#FFF1F0' : 'var(--background)' }} icon={<CalendarOutlined />}>{date}</Tag> : null}
-                    {startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(startTime)}</Tag> : null}
-                    {location ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{location}</Tag> : null}
+
+                <div className="flex flex-wrap">
+                    {date && (
+                        <Tag className="eventDetailTag" icon={<CalendarOutlined />}>
+                            {date}
+                        </Tag>
+                    )}
+                    {startTime && (
+                        <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>
+                            {formatTime(startTime)}
+                        </Tag>
+                    )}
+                    {location && (
+                        <Tag className="eventDetailTag" icon={<PushpinOutlined />}>
+                            {location}
+                        </Tag>
+                    )}
                 </div>
             </div>
+
             <div className={styles.content}>{children}</div>
         </Card>
     );
