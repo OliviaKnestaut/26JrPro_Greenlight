@@ -2,6 +2,7 @@ import { Controller, useWatch } from "react-hook-form";
 import { Radio, Upload, Typography, Input } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import FieldLabel from "../../../components/FieldLabel";
+import { formatPhoneNumber } from "~/lib/formatters";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -117,7 +118,7 @@ export default function MoviesSection({ control }: Props) {
                         <Controller
                             name="form_data.movies.option_1.email"
                             control={control}
-                            rules={{ 
+                            rules={{
                                 required: "Email is required",
                                 pattern: {
                                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -243,7 +244,7 @@ export default function MoviesSection({ control }: Props) {
                         <Controller
                             name="form_data.movies.option_2.email"
                             control={control}
-                            rules={{ 
+                            rules={{
                                 required: "Email is required",
                                 pattern: {
                                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -262,11 +263,25 @@ export default function MoviesSection({ control }: Props) {
                         <Controller
                             name="form_data.movies.option_2.phone"
                             control={control}
-                            rules={{ required: "Phone number is required" }}
+                            rules={{
+                                required: "Phone number is required",
+                                validate: (value) =>
+                                    /^\(\d{3}\) \d{3}-\d{4}$/.test(value) || "Enter a valid 10-digit phone number"
+                            }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
                                     <FieldLabel required>Phone Number</FieldLabel>
-                                    <Input {...field} placeholder="(555) 123-4567" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                    <Input
+                                        {...field}
+                                        placeholder="(555) 123-4567"
+                                        maxLength={14}
+                                        style={{ marginTop: 8 }}
+                                        status={fieldState.error ? "error" : ""}
+                                        onChange={(e) => {
+                                            const formatted = formatPhoneNumber(e.target.value);
+                                            field.onChange(formatted);
+                                        }}
+                                    />
                                     {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                                 </div>
                             )}
@@ -340,7 +355,7 @@ export default function MoviesSection({ control }: Props) {
                     <Controller
                         name="form_data.movies.option_3.facilitator_email"
                         control={control}
-                        rules={{ 
+                        rules={{
                             required: "Drexel email is required",
                             pattern: {
                                 value: /^[A-Z0-9._%+-]+@drexel\.edu$/i,

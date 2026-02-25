@@ -3,6 +3,7 @@ import { Radio, Checkbox, Typography, Input, Upload, Alert, Select } from "antd"
 import { UploadOutlined } from "@ant-design/icons";
 import { useGetUsersQuery } from "~/lib/graphql/generated";
 import FieldLabel from "../../../components/FieldLabel";
+import { formatPhoneNumber } from "~/lib/formatters";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -222,15 +223,24 @@ export default function OffCampusSection({ control, setValue }: Props) {
                             <Controller
                                 name="form_data.travel.trip_leader_emergency_contact.phone"
                                 control={control}
-                                rules={{ required: "Emergency contact phone is required" }}
+                                rules={{
+                                    required: "Phone number is required",
+                                    validate: (value) =>
+                                        /^\(\d{3}\) \d{3}-\d{4}$/.test(value) || "Enter a valid 10-digit phone number"
+                                }}
                                 render={({ field, fieldState }) => (
                                     <div style={{ flex: 1 }}>
                                         <FieldLabel required>Emergency Contact Phone</FieldLabel>
                                         <Input
                                             {...field}
                                             placeholder="(555) 123-4567"
+                                            maxLength={14}
                                             style={{ marginTop: 8 }}
                                             status={fieldState.error ? "error" : ""}
+                                            onChange={(e) => {
+                                                const formatted = formatPhoneNumber(e.target.value);
+                                                field.onChange(formatted);
+                                            }}
                                         />
                                         {fieldState.error && (
                                             <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>

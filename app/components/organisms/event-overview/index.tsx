@@ -8,7 +8,7 @@ import NavMini from "../../molecules/nav-mini";
 import OptimizedImage from '../../atoms/OptimizedImage';
 import CommentInput from '../../molecules/comment-input';
 import ScrollToTop from '../../atoms/ScrollToTop';
-import { formatTime } from '~/lib/formatters';
+import { formatTime, formatDateMDY, formatDuration } from '~/lib/formatters';
 
 export function EventOverviewContent() {
     const navigate = useNavigate();
@@ -24,20 +24,11 @@ export function EventOverviewContent() {
         if (map[key]) return map[key];
         return String(val).replace(/_/g, ' ').split(/\s+/).map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
     };
-    const formatDate = (dateStr?: string) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return dateStr;
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        const year = date.getFullYear();
-        return `${month}/${day}/${year}`;
-    };
-    
+
     const calculateEstimatedCost = (formData: any): string => {
         let total = 0;
         let hasCosts = false;
-        
+
         // Add vendor costs
         if (formData?.vendors && Array.isArray(formData.vendors)) {
             formData.vendors.forEach((vendor: any) => {
@@ -50,7 +41,7 @@ export function EventOverviewContent() {
                 }
             });
         }
-        
+
         // Add food cost
         if (formData?.food?.estimated_cost) {
             const cost = parseFloat(formData.food.estimated_cost);
@@ -59,7 +50,7 @@ export function EventOverviewContent() {
                 hasCosts = true;
             }
         }
-        
+
         // Add raffle prize value
         if (formData?.raffles?.total_value) {
             const cost = parseFloat(formData.raffles.total_value);
@@ -68,20 +59,20 @@ export function EventOverviewContent() {
                 hasCosts = true;
             }
         }
-        
+
         // Add budget total purchase (if not already counted in vendors)
         if (formData?.budget && typeof formData.budget === 'number') {
             total += formData.budget;
             hasCosts = true;
         }
-        
+
         return hasCosts ? total.toFixed(2) : 'N/A';
     };
-    
+
     const getStatusDisplay = (status?: string, eventDate?: string) => {
         if (!status) return null;
         const statusUpper = status.toUpperCase();
-        
+
         // Check if event is in the past for approved events
         let isPast = false;
         if (eventDate) {
@@ -90,7 +81,7 @@ export function EventOverviewContent() {
                 isPast = date < new Date();
             }
         }
-        
+
         if (statusUpper === 'APPROVED' && isPast) {
             return { text: 'past event', className: 'pastTag' };
         }
@@ -113,14 +104,14 @@ export function EventOverviewContent() {
     const eventId = queryId ?? null;
 
     const { data, loading, error } = useGetEventByIdQuery({ variables: { id: eventId ?? '' }, skip: !eventId });
-    
+
     // Get the creator's username from the event data to query for their profile
     const creatorUsername = data?.event?.createdBy;
-    const { data: userData, loading: userLoading } = useGetUsersQuery({ 
+    const { data: userData, loading: userLoading } = useGetUsersQuery({
         variables: { limit: 1, offset: 0, username: creatorUsername },
         skip: !creatorUsername || creatorUsername === 'N/A'
     });
-    
+
     const creatorUser = userData?.users?.[0];
 
     useEffect(() => {
@@ -207,7 +198,7 @@ export function EventOverviewContent() {
             setFormData(JSON.parse(dataLs));
         }
     }, [eventId, data, loading]);
-    
+
     // Create refs for each section
     const eventDetailsRef = useRef<HTMLDivElement>(null);
     const dateLocationRef = useRef<HTMLDivElement>(null);
@@ -217,15 +208,15 @@ export function EventOverviewContent() {
         <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
-                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined/> Back </Link>
+                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
                 </Title>
             </div>
             {
                 (() => {
                     const rawImg = data?.event?.eventImg;
                     const uploadsBase = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-                        ? 'https://digmstudents.westphal.drexel.edu/~ojk25/'
-                        : `${window.location.origin}/~ojk25/`;
+                        ? 'https://digmstudents.westphal.drexel.edu/~ojk25/jrProjGreenlight/'
+                        : `${window.location.origin}/~ojk25/jrProjGreenlight/`;
                     const imgSrc = rawImg
                         ? (/^https?:\/\//i.test(rawImg) || rawImg.startsWith('/')
                             ? rawImg
@@ -245,7 +236,7 @@ export function EventOverviewContent() {
                     ]} />
                 </section>
 
-                <section style={{ display: "flex", flexDirection: "column", flexGrow: 1}}>
+                <section style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                             <Title level={2} style={{ margin: 0 }}>{formData?.event?.name || "Event"}</Title>
@@ -261,8 +252,8 @@ export function EventOverviewContent() {
                                 return null;
                             })()}
                         </div>
-                        <Button 
-                            type="primary" 
+                        <Button
+                            type="primary"
                             icon={<EditOutlined />}
                             onClick={() => navigate(`/event-form/${eventId}`)}
                         >
@@ -270,40 +261,40 @@ export function EventOverviewContent() {
                         </Button>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem"}}>
-                        <Paragraph style={{ margin: 0}}>Created By:</Paragraph>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                        <Paragraph style={{ margin: 0 }}>Created By:</Paragraph>
                         {(() => {
                             const base = (import.meta as any).env?.BASE_URL ?? '/';
-                            
+
                             // Try to get profile image from creatorUser query first, then fallback to formData
                             const profileImg = creatorUser?.profileImg || formData?.createdByUser?.profileImg;
                             const firstName = creatorUser?.firstName || formData?.createdByUser?.firstName;
                             const lastName = creatorUser?.lastName || formData?.createdByUser?.lastName;
-                            
+
                             // Generate avatar src if profile image is available
-                            const avatarSrc = profileImg 
+                            const avatarSrc = profileImg
                                 ? `${base}uploads/profile_img/${profileImg}`.replace(/\\/g, '/')
                                 : undefined;
-                            
+
                             // Generate initials for fallback
                             const initials = firstName && lastName
                                 ? `${firstName[0]}${lastName[0]}`.toUpperCase()
-                                : formData?.createdBy && formData.createdBy !== 'N/A' 
+                                : formData?.createdBy && formData.createdBy !== 'N/A'
                                     ? formData.createdBy.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
                                     : '?';
-                            
+
                             // Generate tooltip text (just the user's name)
                             const tooltipText = firstName && lastName
                                 ? `${firstName} ${lastName}`
                                 : formData?.createdBy && formData.createdBy !== 'N/A'
                                     ? formData.createdBy
                                     : 'Unknown user';
-                            
+
                             return (
                                 <Tooltip title={tooltipText} placement="right">
-                                    <Avatar 
-                                        src={avatarSrc} 
-                                        style={{ backgroundColor: 'var(--gray-1)', cursor: 'pointer', height: '1.75rem', width: '1.75rem'}}
+                                    <Avatar
+                                        src={avatarSrc}
+                                        style={{ backgroundColor: 'var(--gray-1)', cursor: 'pointer', height: '1.75rem', width: '1.75rem' }}
                                     >
                                         {!avatarSrc && initials}
                                     </Avatar>
@@ -313,25 +304,25 @@ export function EventOverviewContent() {
                     </div>
 
                     <div className='flex flex-wrap' style={{ gap: "0.25rem", marginTop: "1rem", marginBottom: "1.5rem" }}>
-                        {formData?.event?.dateRange?.[0] ? <Tag className="eventDetailTag" icon={<CalendarOutlined />}>{formatDate(formData.event.dateRange[0])}</Tag> : null}
+                        {formData?.event?.dateRange?.[0] ? <Tag className="eventDetailTag" icon={<CalendarOutlined />}>{formatDateMDY(formData.event.dateRange[0])}</Tag> : null}
                         {formData?.startTime ? <Tag className="eventDetailTag" icon={<ClockCircleOutlined />}>{formatTime(formData.startTime)}</Tag> : null}
-                        {formData?.location.name? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{formData.location.name}</Tag> : null}
+                        {formData?.location.name ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{formData.location.name}</Tag> : null}
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem",}}>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem", }}>
                         <Statistic className="stat-card-gray-border" title="Event Level" value={formData?.eventLevel || "N/A"} />
-                        <Statistic 
-                            className="stat-card-gray-border" 
-                            title="Estimated Cost" 
+                        <Statistic
+                            className="stat-card-gray-border"
+                            title="Estimated Cost"
                             value={(() => {
                                 const cost = calculateEstimatedCost(formData);
                                 return cost === 'N/A' ? 'N/A' : `$${cost}`;
-                            })()} 
+                            })()}
                         />
                         <Statistic className="stat-card-gray-border" title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
                         <Statistic className="stat-card-gray-border" title="Location Type" value={formData?.location?.type || "N/A"} />
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem"}}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                         {/* EVENT DETAILS SECTION */}
                         <Card id="section-0" ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", marginTop: "1rem", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Event Details</Title>
@@ -364,19 +355,19 @@ export function EventOverviewContent() {
                             </div>
                             <div style={{ marginBottom: 16 }}>
                                 <Title level={5}>Event Date</Title>
-                                <Paragraph>{formData?.event?.dateRange?.[0] || "N/A"}</Paragraph>
+                                <Paragraph>{formatDateMDY(formData?.event?.dateRange?.[0]) || "N/A"}</Paragraph>
                             </div>
                             <div style={{ marginBottom: 16 }}>
                                 <Title level={5}>Start Time</Title>
-                                <Paragraph>{formData?.startTime || "N/A"}</Paragraph>
+                                <Paragraph>{formatTime(formData?.startTime) || "N/A"}</Paragraph>
                             </div>
                             <div style={{ marginBottom: 16 }}>
                                 <Title level={5}>End Time</Title>
-                                <Paragraph>{formData?.endTime || "N/A"}</Paragraph>
+                                <Paragraph>{formatTime(formData?.endTime) || "N/A"}</Paragraph>
                             </div>
                             <div style={{ marginBottom: 16 }}>
                                 <Title level={5}>Setup Time</Title>
-                                <Paragraph>{formData?.setupTime || "N/A"}</Paragraph>
+                                <Paragraph>{formatDuration(formData?.setupTime) || "N/A"}</Paragraph>
                             </div>
 
                             {/* ON-CAMPUS SECTION */}
@@ -514,7 +505,7 @@ export function EventOverviewContent() {
                         {/* EVENT ELEMENTS SECTION */}
                         <Card id="section-2" ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Event Elements</Title>
-                            
+
                             {/* Food Element */}
                             {formData?.food && (
                                 <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
@@ -731,7 +722,7 @@ export function EventOverviewContent() {
                         {/* BUDGET & PURCHASE SECTION */}
                         <Card id="section-3" ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Budget & Purchase</Title>
-                            
+
                             {/* Budget Overview */}
                             <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
                                 <Title level={4}>Budget Overview</Title>

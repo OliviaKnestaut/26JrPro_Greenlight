@@ -4,6 +4,7 @@ import { Input, Button, Select, Typography, InputNumber, Radio, Upload, Checkbox
 import { PlusOutlined, MinusCircleOutlined, UploadOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import FieldLabel from "../components/FieldLabel";
 import NonVendorCosts from "./nestedSections/NonVendorCosts";
+import { formatPhoneNumber } from "~/lib/formatters";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -219,15 +220,24 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         <Controller
                             name={`form_data.vendors.${index}.contactPhone`}
                             control={control}
-                            rules={hasVendors ? { required: "Contact phone number is required" } : {}}
+                            rules={{
+                                required: "Phone number is required",
+                                validate: (value) =>
+                                    /^\(\d{3}\) \d{3}-\d{4}$/.test(value) || "Enter a valid 10-digit phone number"
+                            }}
                             render={({ field, fieldState }) => (
                                 <div style={{ flex: 1 }}>
                                     <FieldLabel required={hasVendors}>Contact Phone Number</FieldLabel>
                                     <Input
                                         {...field}
                                         placeholder="(123) 456-7890"
+                                        maxLength={14}
                                         style={{ marginTop: 8 }}
                                         status={fieldState.error ? "error" : ""}
+                                        onChange={(e) => {
+                                            const formatted = formatPhoneNumber(e.target.value);
+                                            field.onChange(formatted);
+                                        }}
                                     />
                                     {fieldState.error && (
                                         <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>

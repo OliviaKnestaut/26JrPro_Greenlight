@@ -55,6 +55,16 @@ export default function EventDetailsSection({ control, watch, setValue }: Props)
                 setValue("event_img_name", file.name);
                 setValue("event_img_preview", previewUrl);
               }}
+              onRemove={() => {
+                // Clear RHF value
+                field.onChange(null);
+
+                // Clear helper fields
+                setValue("event_img_name", "");
+                setValue("event_img_preview", "");
+
+                return true; // required for Ant Upload
+              }}
               style={{ marginTop: 8 }}
             >
               <div>
