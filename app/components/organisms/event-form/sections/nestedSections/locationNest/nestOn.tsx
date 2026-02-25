@@ -180,8 +180,41 @@ export default function OnCampusSection({ control, setValue }: Props) {
     }, [filteredLocations, selectedRoomType]);
 
     const isSpecialSpace = specialSpacesList.includes(selectedLocation);
-    const isOutdoor = selectedLocation?.toLowerCase().includes("outdoor");
+    const selectedRoomTitle = useWatch({ control, name: "form_data.location.room_title" });
+
+    const isOutdoor = useMemo(() => {
+        if (!selectedLocation || !selectedRoomTitle) return false;
+
+        const loc = allLocations.find(
+            l => l.buildingDisplayName === selectedLocation && l.roomTitle === selectedRoomTitle
+        );
+
+        if (!loc) return false;
+
+        // 1. Always outdoor by building display name
+        if (["Parks & Walks", "Outdoor Recreation"].includes(loc.buildingDisplayName)) return true;
+
+        // 2. Outdoor by building code
+        if (["GG", "VIDAS"].includes(loc.buildingCode)) return true;
+
+        // 3. Kelly Hall Lawn special case
+        if (loc.roomTitle.toLowerCase().includes("lawn")) return true;
+
+        return false;
+    }, [selectedLocation, selectedRoomTitle, allLocations]);
+
     const isIndoor = !isOutdoor;
+
+    useEffect(() => {
+        if (selectedLocation) {
+            setValue?.("form_data.location.room_type", undefined);
+            setValue?.("form_data.location.room_title", undefined);
+            setValue?.("form_data.location.room_setup", undefined);
+            setValue?.("form_data.location.furniture", []);
+            setValue?.("form_data.location.av_needs", undefined);
+            setValue?.("form_data.location.rain_location", undefined);
+        }
+    }, [selectedLocation, setValue]);
 
     return (
         <div >
@@ -308,7 +341,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     rules={{ required: "Rain plan is required for outdoor events" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <FieldLabel>You have selected an outdoor space. Please provide a backup plan/location in case of rain.</FieldLabel>
+                            <FieldLabel required>You have selected an outdoor space. Please provide a backup plan/location in case of rain.</FieldLabel>
                             <Input {...field} placeholder="What is your backup plan?" style={{ marginTop: 8 }} />
                             {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                         </div>
@@ -317,7 +350,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
             )}
 
             {/* Q13: Room Setup */}
-            {isIndoor && (
+            {(isIndoor || isOutdoor) && (
                 <Controller
                     name="form_data.location.room_setup"
                     control={control}
@@ -336,7 +369,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
             )}
 
             {/* Q14: Furniture Repeater */}
-            {isIndoor && (
+            {(isIndoor || isOutdoor) && (
                 <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                         <FieldLabel>Will your event require any additional furniture?</FieldLabel>
