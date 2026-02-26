@@ -1,5 +1,6 @@
-import type React from 'react';
+import React, { useEffect } from 'react';
 import { Layout } from 'antd';
+import { useLocation } from 'react-router';
 import { Header } from '../../molecules/header/index';
 import { Navigation } from '../../molecules/navigation/index';
 import { Footer } from '../../molecules/footer';
@@ -27,6 +28,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 	selectedKey,
 	children,
 }) => {
+	const location = useLocation();
+
+	useEffect(() => {
+		const main = document.querySelector('main');
+		if (main) {
+			main.scrollTop = 0;
+		}
+	}, [location.pathname]);
 	return (
 		<Layout className={styles.appLayout}>
 			<Header

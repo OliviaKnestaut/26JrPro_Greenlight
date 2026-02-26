@@ -21,7 +21,16 @@ export const Header: React.FC<HeaderProps> = ({
 
 	return (
 		<AntHeader className={styles.header}>
-			<div className={styles.logoSection}>
+			<div
+				className={styles.logoSection}
+				role="button"
+				tabIndex={0}
+				onClick={() => navigate('/')}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') navigate('/');
+				}}
+				style={{ cursor: 'pointer' }}
+			>
 				<img src={logoIcon} alt="Greenlight Logo" className={styles.logo} />
 				<div>
 					<span className={styles.logoText}>GreenLight</span>

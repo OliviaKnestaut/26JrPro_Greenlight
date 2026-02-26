@@ -32,7 +32,19 @@ const NavMini: React.FC<NavMiniProps> = ({ links }) => {
                     return {
                         key: anchorId,
                         href: `#${anchorId}`,
-                        title: <a onClick={(e) => handleAnchorClick(e as any, link)}>{link.title}</a>,
+                        title: (
+                            <span
+                                role="link"
+                                tabIndex={0}
+                                onClick={(e) => handleAnchorClick(e as any, link)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') handleAnchorClick(e as any, link);
+                                }}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                {link.title}
+                            </span>
+                        ),
                     };
                 })}
                 offsetTop={60}
