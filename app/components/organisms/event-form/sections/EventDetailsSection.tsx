@@ -11,11 +11,13 @@ const { Option } = Select;
 
 type Props = {
   control: any;
-  watch: any;
+  getValues: any;
   setValue: any;
+  setError: any;
+  clearErrors: any;
 };
 
-export default function EventDetailsSection({ control, watch, setValue }: Props) {
+export default function EventDetailsSection({ control, getValues, setValue, setError, clearErrors }: Props) {
   const { user } = useAuth();
   const { data: orgsData, loading: orgsLoading } = useGetOrganizationsQuery({
     variables: { limit: 1000 }
@@ -34,46 +36,102 @@ export default function EventDetailsSection({ control, watch, setValue }: Props)
       <Controller
         name="event_img"
         control={control}
-        rules={{ required: "Event image is required" }}
+        rules={{
+          required: "Event image is required",
+          validate: (file) => {
+            if (!file) return "Event image is required";
+
+            const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+            if (!validTypes.includes(file.type)) {
+              return "Only JPG and PNG images are allowed";
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+              return "Image must be under 5MB";
+            }
+
+            return true;
+          }
+        }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <FieldLabel required>Upload a high-resolution cover photo for your event (1300px × 780px) under 2MB</FieldLabel>
+            <FieldLabel required>
+              Upload a high-resolution cover photo for your event (1300px × 780px) under 5MB
+            </FieldLabel>
+
             <Upload
-              beforeUpload={() => false}
               maxCount={1}
+              beforeUpload={(file) => {
+                const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+                const isValidType = validTypes.includes(file.type);
+                const isUnder5MB = file.size <= 5 * 1024 * 1024;
+
+                if (!isValidType) {
+                  setError("event_img", {
+                    type: "manual",
+                    message: "Only JPG and PNG images are allowed",
+                  });
+                  return Upload.LIST_IGNORE;
+                }
+
+                if (!isUnder5MB) {
+                  setError("event_img", {
+                    type: "manual",
+                    message: "Image must be under 5MB",
+                  });
+                  return Upload.LIST_IGNORE;
+                }
+
+                clearErrors("event_img");
+                return false;
+              }}
               onChange={(info) => {
                 const file = info.fileList[0]?.originFileObj;
                 if (!file) return;
 
-                // Store actual file
+                clearErrors("event_img");
                 field.onChange(file);
 
-                // Store helper fields for review page
                 const previewUrl = URL.createObjectURL(file);
-
-                // IMPORTANT: you must receive setValue from props
-                // (see note below)
                 setValue("event_img_name", file.name);
                 setValue("event_img_preview", previewUrl);
               }}
               onRemove={() => {
-                // Clear RHF value
                 field.onChange(null);
-
-                // Clear helper fields
                 setValue("event_img_name", "");
                 setValue("event_img_preview", "");
-
-                return true; // required for Ant Upload
+                return true;
               }}
               style={{ marginTop: 8 }}
+              defaultFileList={
+                field.value
+                  ? [{
+                      uid: '-1',
+                      name: getValues("event_img_name") || 'Current Image',
+                      status: 'done',
+                      url: getValues("event_img_preview"),
+                      originFileObj: undefined, // existing file, not a new File
+                    }]
+                  : []
+              }
             >
               <div>
                 <UploadOutlined /> Click to Upload
               </div>
             </Upload>
-            {field.value && <Text type="success" style={{ display: "block", marginTop: 4 }}>✓ Image selected: {field.value.name}</Text>}
-            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+
+            {fieldState.error && (
+              <Text
+                type="danger"
+                style={{
+                  display: "block",
+                  marginTop: 4,
+                  color: "var(--red-6)",
+                }}
+              >
+                {fieldState.error.message}
+              </Text>
+            )}
           </div>
         )}
       />

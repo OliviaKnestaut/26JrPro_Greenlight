@@ -249,7 +249,7 @@ export default function MinorsSection({ control }: Props) {
             />
 
             {/* MN4 — Documentation Upload */}
-            <Controller
+            {/* <Controller
                 name="form_data.minors.file"
                 control={control}
                 rules={{ required: "Minors documentation is required" }}
@@ -276,7 +276,7 @@ export default function MinorsSection({ control }: Props) {
                         )}
                     </div>
                 )}
-            />
+            /> */}
 
         </div>
     );

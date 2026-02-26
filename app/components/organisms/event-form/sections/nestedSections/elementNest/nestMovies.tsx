@@ -161,7 +161,7 @@ export default function MoviesSection({ control }: Props) {
                         )}
                     />
 
-                    <Controller
+                    {/* <Controller
                         name="form_data.movies.option_1.permission_file"
                         control={control}
                         rules={{ required: "Written permission documentation is required" }}
@@ -188,7 +188,7 @@ export default function MoviesSection({ control }: Props) {
                                 )}
                             </div>
                         )}
-                    />
+                    /> */}
                 </>
             )}
 
@@ -288,7 +288,7 @@ export default function MoviesSection({ control }: Props) {
                         />
                     </div>
 
-                    <Controller
+                    {/* <Controller
                         name="form_data.movies.option_2.purchase_documentation"
                         control={control}
                         rules={{ required: "Purchase documentation is required" }}
@@ -315,7 +315,7 @@ export default function MoviesSection({ control }: Props) {
                                 )}
                             </div>
                         )}
-                    />
+                    /> */}
                 </>
             )}
 

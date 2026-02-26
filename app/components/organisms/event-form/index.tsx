@@ -23,6 +23,7 @@ import MoviesSection from "./sections/nestedSections/elementNest/nestMovies";
 import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
 import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
 import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
+import moment from "moment";
 
 const { Title, Link, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -75,7 +76,7 @@ export function EventForm() {
         variables: { id: id ?? '' },
         skip: !id,
     });
-    const { control, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm({ mode: "onChange" });
+    const { control, getValues, reset, watch, setValue, trigger, formState: { errors }, clearErrors, setError } = useForm({ mode: "onChange" });
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
@@ -146,32 +147,42 @@ export function EventForm() {
         if (existingEventData?.event && !loadingEvent) {
             const ev = existingEventData.event;
             console.log("📥 Loading existing event for editing:", ev);
+
             let parsedFormData: any = {};
             if (typeof ev.formData === 'string') {
                 try { parsedFormData = JSON.parse(ev.formData); } catch (e) { parsedFormData = {}; }
             } else if (typeof ev.formData === 'object' && ev.formData !== null) {
                 parsedFormData = ev.formData;
             }
+
             const formDataToLoad: Record<string, any> = {
                 title: ev.title,
                 description: ev.description,
-                event_date: ev.eventDate,
+                // Convert to moment for AntD DatePicker
+                event_date: ev.eventDate ? moment(ev.eventDate) : null,
+                start_time: ev.startTime ? moment(ev.startTime, "HH:mm:ss") : null,
+                end_time: ev.endTime ? moment(ev.endTime, "HH:mm:ss") : null,
+                setup_time: ev.setupTime ? moment(ev.setupTime, "HH:mm:ss") : null,
                 attendees: parsedFormData?.attendees || '',
-                start_time: ev.startTime,
-                end_time: ev.endTime,
-                setup_time: ev.setupTime,
-                event_img: null,
                 location_type: ev.locationType,
                 form_data: parsedFormData || {},
                 organization_id: parsedFormData?.organization_id || [],
+                // Preserve existing uploaded image filename for AntD Upload
+                event_img: parsedFormData?.event_img || null,
+                event_img_name: parsedFormData?.event_img_name || '',
+                event_img_preview: parsedFormData?.event_img
+                    ? `${process.env.UPLOAD_BASE_URL || ''}/${parsedFormData.event_img}`
+                    : '',
             };
+
             Object.keys(formDataToLoad).forEach((key) => {
                 if (formDataToLoad[key] !== null && formDataToLoad[key] !== undefined) {
                     setValue(key, formDataToLoad[key]);
                 }
             });
+
             setDraftId(ev.id);
-            console.log("✅ Form populated with existing event data");
+            console.log("✅ Form populated with existing event data, including image preview");
         }
     }, [existingEventData, loadingEvent, setValue]);
 
@@ -817,14 +828,16 @@ export function EventForm() {
                             <div id="panel-eventDetails">
                                 <EventDetailsSection
                                     control={control}
-                                    watch={watch}
+                                    getValues={getValues}
                                     setValue={setValue}
+                                    setError={setError}
+                                    clearErrors={clearErrors}
                                 />
                             </div>
                         </Panel>
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
                             <div id="panel-dateLocation">
-                                <DateLocationSection control={control} />
+                                <DateLocationSection control={control} getValues={getValues} />
                             </div>
                         </Panel>
                         {formNesting("dateLocation", isSelected, control, setValue)}
