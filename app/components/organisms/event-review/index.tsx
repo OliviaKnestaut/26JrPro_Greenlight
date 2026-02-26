@@ -220,9 +220,9 @@ export function EventReview() {
         if (desiredName) fd.append('desired_name', desiredName);
         const getUploadUrl = () => {
             if (import.meta.env.DEV) {
-                return 'http://localhost:4000/graphql/upload_event_image.php';
+                return '/~ojk25/graphql/upload_event_image.php';
             } else {
-                return '/~ojk25/jrProjGreenlight/graphql/upload_event_image.php';
+                return '/~ojk25/graphql/upload_event_image.php';
             }
         };
 

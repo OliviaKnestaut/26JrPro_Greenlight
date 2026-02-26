@@ -50,9 +50,9 @@ if (!isset($_FILES['event_img'])) {
 
 $file = $_FILES['event_img'];
 
-$maxSize = 2 * 1024 * 1024; // 2MB
+$maxSize = 5 * 1024 * 1024; // 5MB
 if ($file['size'] > $maxSize) {
-    respond(['error' => 'File exceeds maximum size of 2MB'], 451);
+    respond(['error' => 'File exceeds maximum size of 5MB'], 451);
 }
 
 $finfo = null;
