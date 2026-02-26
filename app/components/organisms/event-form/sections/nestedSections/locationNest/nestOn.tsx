@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
-import { Input, Select, Checkbox, Typography, InputNumber, Button } from "antd";
+import { Input, Select, Checkbox, Typography, InputNumber, Button, Radio } from "antd";
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
 import FieldLabel from "../../../components/FieldLabel";
 
@@ -434,6 +434,62 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 style={{ display: "flex", flexDirection: "column" }}
                             />
                         </div>
+                    )}
+                />
+            )}
+
+            {(isIndoor || isOutdoor) && (
+                <Controller
+                    name="form_data.location.utilities"
+                    control={control}
+                    render={({ field }) => (
+                        <div style={{ marginBottom: 16 }}>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                <FieldLabel>Will your event require any additional power sources?</FieldLabel>
+                                <Text type="secondary" style={{}}>(Optional)</Text>
+                            </div>
+                            <Radio.Group
+                                options={[
+                                    { label: "Yes", value: true },
+                                    { label: "No", value: false }
+                                ]}
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                            />
+                        </div>
+                    )}
+                />
+            )}
+
+            {/* Q16: Power */}
+            <Controller
+                name="form_data.utilities.power_required"
+                control={control}
+                render={({ field }) => (
+                    <div style={{ marginBottom: 16 }}>
+                        <Checkbox {...field} checked={field.value}>Will you need electrical power beyond standard outlets?</Checkbox>
+                    </div>
+                )}
+            />
+
+            {/* Q16a: Power Details */}
+            {useWatch({ control, name: "form_data.utilities.power_required" }) && (
+                <Controller
+                    name="form_data.utilities.power_details"
+                    control={control}
+                    render={({ field }) => (
+                        <Input {...field} placeholder="Specify amperage or wattage requirements" />
+                    )}
+                />
+            )}
+
+            {/* Q17: Outdoor Water */}
+            {isOutdoor && (
+                <Controller
+                    name="form_data.utilities.water_required"
+                    control={control}
+                    render={({ field }) => (
+                        <Checkbox {...field} checked={field.value}>Will you need outdoor water access?</Checkbox>
                     )}
                 />
             )}

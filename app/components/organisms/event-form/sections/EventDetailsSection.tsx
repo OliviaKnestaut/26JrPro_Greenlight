@@ -27,6 +27,7 @@ export default function EventDetailsSection({ control, watch, setValue }: Props)
     (org: any) => org.id !== currentOrgId
   ) || [];
 
+
   return (
     <>
       {/* Q1: Event Image */}
