@@ -6,17 +6,18 @@ import FieldLabel from "../components/FieldLabel";
 const { TextArea } = Input;
 const { Text } = Typography;
 
-
 type Props = {
     control: any;
+    getValues: any;
 };
 
-export default function DateLocationSection({ control }: Props) {
-    // Watch location_type for conditional field (virtual link)
+export default function DateLocationSection({ control, getValues }: Props) {
     const locationType = useWatch({
         control,
         name: "location_type",
     });
+
+    const today = dayjs().startOf("day");
 
     return (
         <>
@@ -27,60 +28,186 @@ export default function DateLocationSection({ control }: Props) {
                 rules={{ required: "Event date is required" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 24 }}>
-                        <FieldLabel required>What is the date of your event?</FieldLabel>
+                        <FieldLabel required>
+                            What is the date of your event?
+                        </FieldLabel>
+
                         <DatePicker
                             value={field.value ? dayjs(field.value) : null}
-                            onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : null)}
-                            style={{ display: "block", marginTop: 8, width: "49%" }}
+                            onChange={(date) =>
+                                field.onChange(
+                                    date ? date.format("YYYY-MM-DD") : null
+                                )
+                            }
+                            style={{
+                                display: "block",
+                                marginTop: 8,
+                                width: "49%",
+                            }}
+                            disabledDate={(current) => {
+                                if (!current) return false;
+                                return current.startOf("day").isBefore(today);
+                            }}
                             status={fieldState.error ? "error" : ""}
                         />
-                        {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+
+                        {fieldState.error && (
+                            <Text
+                                type="danger"
+                                style={{
+                                    display: "block",
+                                    marginTop: 4,
+                                    color: "var(--red-6)",
+                                }}
+                            >
+                                {fieldState.error.message}
+                            </Text>
+                        )}
                     </div>
                 )}
             />
 
             {/* Q7: Start and End Time */}
             <div style={{ marginBottom: 24 }}>
-                <FieldLabel required>What is the start and end time of your event?</FieldLabel>
+                <FieldLabel required>
+                    What is the start and end time of your event?
+                </FieldLabel>
+
                 <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                    {/* Start Time */}
                     <Controller
                         name="start_time"
                         control={control}
                         rules={{ required: "Start time is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ flex: 1 }}>
-                                <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>Start Time</Text>
+                                <Text
+                                    type="secondary"
+                                    style={{
+                                        display: "block",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    Start Time
+                                </Text>
+
                                 <TimePicker
-                                    value={field.value ? dayjs(field.value, "h:mm A") : null}
+                                    value={
+                                        field.value
+                                            ? dayjs(field.value, "h:mm A")
+                                            : null
+                                    }
                                     format="h:mm A"
                                     use12Hours
+                                    needConfirm={false}
                                     minuteStep={5}
-                                    onChange={(time) => field.onChange(time ? time.format("h:mm A") : null)}
-                                    style={{ display: "block", width: "100%" }}
+                                    onChange={(time) =>
+                                        field.onChange(
+                                            time
+                                                ? time.format("h:mm A")
+                                                : null
+                                        )
+                                    }
+                                    style={{
+                                        display: "block",
+                                        width: "100%",
+                                    }}
                                     status={fieldState.error ? "error" : ""}
                                 />
-                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+
+                                {fieldState.error && (
+                                    <Text
+                                        type="danger"
+                                        style={{
+                                            display: "block",
+                                            marginTop: 4,
+                                            color: "var(--red-6)",
+                                        }}
+                                    >
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
                             </div>
                         )}
                     />
 
+                    {/* End Time */}
                     <Controller
                         name="end_time"
                         control={control}
-                        rules={{ required: "End time is required" }}
+                        rules={{
+                            required: "End time is required",
+                            validate: (value) => {
+                                const start = getValues("start_time");
+                                const date = getValues("event_date");
+
+                                if (!start || !value || !date) return true;
+
+                                const startDateTime = dayjs(
+                                    `${date} ${start}`,
+                                    "YYYY-MM-DD h:mm A"
+                                );
+
+                                const endDateTime = dayjs(
+                                    `${date} ${value}`,
+                                    "YYYY-MM-DD h:mm A"
+                                );
+
+                                if (!endDateTime.isAfter(startDateTime)) {
+                                    return "End time must be after start time";
+                                }
+
+                                return true;
+                            },
+                        }}
                         render={({ field, fieldState }) => (
                             <div style={{ flex: 1 }}>
-                                <Text type="secondary" style={{ display: "block", marginBottom: 4 }}>End Time</Text>
+                                <Text
+                                    type="secondary"
+                                    style={{
+                                        display: "block",
+                                        marginBottom: 4,
+                                    }}
+                                >
+                                    End Time
+                                </Text>
+
                                 <TimePicker
-                                    value={field.value ? dayjs(field.value, "h:mm A") : null}
+                                    value={
+                                        field.value
+                                            ? dayjs(field.value, "h:mm A")
+                                            : null
+                                    }
                                     format="h:mm A"
                                     use12Hours
                                     minuteStep={5}
-                                    onChange={(time) => field.onChange(time ? time.format("h:mm A") : null)}
-                                    style={{ display: "block", width: "100%" }}
+                                    needConfirm={false}
+                                    onChange={(time) =>
+                                        field.onChange(
+                                            time
+                                                ? time.format("h:mm A")
+                                                : null
+                                        )
+                                    }
+                                    style={{
+                                        display: "block",
+                                        width: "100%",
+                                    }}
                                     status={fieldState.error ? "error" : ""}
                                 />
-                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+
+                                {fieldState.error && (
+                                    <Text
+                                        type="danger"
+                                        style={{
+                                            display: "block",
+                                            marginTop: 4,
+                                            color: "var(--red-6)",
+                                        }}
+                                    >
+                                        {fieldState.error.message}
+                                    </Text>
+                                )}
                             </div>
                         )}
                     />
@@ -92,16 +219,36 @@ export default function DateLocationSection({ control }: Props) {
                 name="setup_time"
                 control={control}
                 render={({ field }) => (
-                    <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                            <FieldLabel>Does your event require additional setup or takedown time? </FieldLabel>
-                            <Text type="secondary" style={{  }}>(Optional)</Text>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            marginBottom: 24,
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 4,
+                                marginBottom: 8,
+                            }}
+                        >
+                            <FieldLabel>
+                                Does your event require additional setup or takedown time?
+                            </FieldLabel>
+                            <Text type="secondary">(Optional)</Text>
                         </div>
+
                         <InputNumber
                             {...field}
                             min={0}
                             placeholder="Ex: 30"
-                            style={{ display: "block", width: "49%" }}
+                            style={{
+                                display: "block",
+                                width: "49%",
+                            }}
                         />
                     </div>
                 )}
@@ -114,17 +261,38 @@ export default function DateLocationSection({ control }: Props) {
                 rules={{ required: "Please select a location type" }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 24 }}>
-                        <FieldLabel required>Where will this event take place?</FieldLabel>
+                        <FieldLabel required>
+                            Where will this event take place?
+                        </FieldLabel>
+
                         <Radio.Group
                             {...field}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
+                            onChange={(e) =>
+                                field.onChange(e.target.value)
+                            }
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                marginTop: 8,
+                            }}
                         >
                             <Radio value="Virtual">Virtual</Radio>
                             <Radio value="On-Campus">On-Campus</Radio>
                             <Radio value="Off-Campus">Off-Campus</Radio>
                         </Radio.Group>
-                        {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+
+                        {fieldState.error && (
+                            <Text
+                                type="danger"
+                                style={{
+                                    display: "block",
+                                    marginTop: 4,
+                                    color: "var(--red-6)",
+                                }}
+                            >
+                                {fieldState.error.message}
+                            </Text>
+                        )}
                     </div>
                 )}
             />
@@ -137,14 +305,32 @@ export default function DateLocationSection({ control }: Props) {
                     rules={{ required: "Virtual event link is required" }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 24 }}>
-                            <FieldLabel required>Please provide the virtual event link</FieldLabel>
+                            <FieldLabel required>
+                                Please provide the virtual event link
+                            </FieldLabel>
+
                             <Input
                                 {...field}
                                 placeholder="https://zoom.us/meeting/..."
-                                style={{ display: "block", marginTop: 8 }}
+                                style={{
+                                    display: "block",
+                                    marginTop: 8,
+                                }}
                                 status={fieldState.error ? "error" : ""}
                             />
-                            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+
+                            {fieldState.error && (
+                                <Text
+                                    type="danger"
+                                    style={{
+                                        display: "block",
+                                        marginTop: 4,
+                                        color: "var(--red-6)",
+                                    }}
+                                >
+                                    {fieldState.error.message}
+                                </Text>
+                            )}
                         </div>
                     )}
                 />
@@ -152,5 +338,3 @@ export default function DateLocationSection({ control }: Props) {
         </>
     );
 }
-
-

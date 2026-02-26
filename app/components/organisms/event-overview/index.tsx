@@ -3,7 +3,7 @@ import { Typography, Statistic, Card, Tag, Avatar, Tooltip, Button } from "antd"
 const { Title, Paragraph, Link, Text } = Typography;
 import { ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined, PushpinOutlined, EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useGetEventByIdQuery, useGetUsersQuery } from '~/lib/graphql/generated';
+import { useGetEventByIdQuery, useGetUsersQuery, useGetUserQuery } from '~/lib/graphql/generated';
 import NavMini from "../../molecules/nav-mini";
 import OptimizedImage from '../../atoms/OptimizedImage';
 import CommentInput from '../../molecules/comment-input';
@@ -135,62 +135,79 @@ export function EventOverviewContent() {
                 }
 
                 const mapped = {
+                    // 1. EVENT METADATA
                     event: {
                         name: ev.title || '',
                         description: ev.description || '',
                         attendees: parsedFormData?.attendees || '',
                         dateRange: ev.eventDate ? [ev.eventDate, ev.eventDate] : [],
                     },
-                    location: {
-                        name: ev.location || '',
-                        type: formatLocationType(ev.locationType || ''),
-                        roomTitle: parsedFormData?.location?.room_title || '',
-                        buildingCode: parsedFormData?.location?.selected || '',
-                    },
-                    vendor: parsedFormData?.budget?.vendor_needed === true ? 'yes' : 'no',
-                    account: parsedFormData?.budget?.account_code || '',
-                    budget: parsedFormData?.budget?.total_purchase || parsedFormData?.estimatedCost || '',
-                    travel: {
-                        type: parsedFormData?.travel?.type || 'N/A',
-                        country: parsedFormData?.travel?.country || '',
-                        domestic_location: parsedFormData?.travel?.domestic_location || '',
-                    },
-                    eventElements: parsedFormData?.elements ? Object.keys(parsedFormData.elements).filter(key => parsedFormData.elements[key] === true) : [],
-                    eventLevel: ev.eventLevel !== undefined && ev.eventLevel !== null ? `Level ${ev.eventLevel}` : 'N/A',
-                    createdBy: ev.createdBy || 'N/A',
-                    createdByUser: parsedFormData?.createdByUser || null,
                     eventStatus: ev.eventStatus || 'N/A',
                     startTime: ev.startTime || 'N/A',
                     endTime: ev.endTime || 'N/A',
                     setupTime: ev.setupTime || 'N/A',
+                    eventLevel: ev.eventLevel !== undefined ? `Level ${ev.eventLevel}` : 'N/A',
+                    createdBy: ev.createdBy || 'N/A',
+                    createdByUser: parsedFormData?.createdByUser || null,
                     organization_ids: parsedFormData?.organization_id || [],
-                    // Element nested data
-                    food: parsedFormData?.form_data?.food || null,
-                    alcohol: parsedFormData?.form_data?.alcohol || null,
-                    minors: parsedFormData?.form_data?.minors || null,
-                    movies: parsedFormData?.form_data?.movies || null,
-                    raffles: parsedFormData?.form_data?.raffles || null,
-                    fire: parsedFormData?.form_data?.fire || null,
-                    sorc_games: parsedFormData?.form_data?.sorc_games || null,
-                    // Vendors data
-                    vendors: parsedFormData?.form_data?.vendors || [],
-                    // Location nests
-                    onCampus: parsedFormData?.form_data?.location || null,
-                    offCampus: {
-                        off_campus_address: parsedFormData?.form_data?.location?.off_campus_address || '',
-                        google_maps_link: parsedFormData?.form_data?.location?.google_maps_link || '',
-                        travel_type: parsedFormData?.form_data?.travel?.type || '',
-                        transportation: parsedFormData?.form_data?.travel?.transportation || '',
-                        trip_leader: parsedFormData?.form_data?.travel?.trip_leader || '',
-                        trip_leader_emergency_contact: parsedFormData?.form_data?.travel?.trip_leader_emergency_contact || null,
-                        lodging: parsedFormData?.form_data?.travel?.lodging || '',
-                        eap_file: parsedFormData?.form_data?.travel?.eap_file || '',
+
+                    // 2. LOCATION & TRAVEL
+                    location: {
+                        name: ev.location || '',
+                        type: formatLocationType(ev.locationType || ''),
+                        selected: ev.location || '',
+                        room_type: parsedFormData?.location?.room_type || '',
+                        virtual_link: parsedFormData?.location?.virtual_link || parsedFormData?.form_data?.location?.virtual_link || '',
                     },
+                    onCampus: parsedFormData?.form_data?.location || parsedFormData?.location || null,
+
+                    // 3. THE "EVERYTHING" NESTED DATA (Matches your Budget JSX paths)
+                    form_data: {
+                        // Location & Travel
+                        location: parsedFormData?.form_data?.location || parsedFormData?.location || {},
+                        travel: parsedFormData?.form_data?.travel || parsedFormData?.travel || {},
+
+                        // Elements
+                        food: parsedFormData?.form_data?.food || parsedFormData?.food || {},
+                        fire: parsedFormData?.form_data?.fire || parsedFormData?.fire || {},
+
+                        // Budget & Vendors (New Fields Added Here)
+                        level0_confirmed: parsedFormData?.form_data?.level0_confirmed ?? parsedFormData?.level0_confirmed,
+                        vendors: parsedFormData?.form_data?.vendors || parsedFormData?.vendors || [],
+                        vendors_notice_acknowledged: parsedFormData?.form_data?.vendors_notice_acknowledged ?? parsedFormData?.vendors_notice_acknowledged,
+
+                        // Non-Vendor Services
+                        non_vendor_services: parsedFormData?.form_data?.non_vendor_services || parsedFormData?.non_vendor_services || {},
+                        non_vendor_services_notes: parsedFormData?.form_data?.non_vendor_services_notes || parsedFormData?.non_vendor_services_notes || '',
+                        non_vendor_services_acknowledged: parsedFormData?.form_data?.non_vendor_services_acknowledged ?? parsedFormData?.non_vendor_services_acknowledged,
+
+                        // Funding
+                        funding: parsedFormData?.form_data?.funding || parsedFormData?.funding || {
+                            account_number: parsedFormData?.account || '', // Fallback to legacy field
+                            funding_source: ''
+                        },
+                    },
+
+                    // 4. FLATTENED ELEMENTS (For the Event Elements Card)
+                    food: parsedFormData?.form_data?.food || parsedFormData?.food || null,
+                    alcohol: parsedFormData?.form_data?.alcohol || parsedFormData?.alcohol || null,
+                    minors: parsedFormData?.form_data?.minors || parsedFormData?.minors || null,
+                    movies: parsedFormData?.form_data?.movies || parsedFormData?.movies || null,
+                    raffles: parsedFormData?.form_data?.raffles || parsedFormData?.raffles || null,
+                    fire: parsedFormData?.form_data?.fire || parsedFormData?.fire || null,
+                    sorc_games: parsedFormData?.form_data?.sorc_games || parsedFormData?.sorc_games || null,
+
+                    // 5. TOP-LEVEL BUDGET (For the Stat boxes at the top)
+                    vendors: parsedFormData?.form_data?.vendors || parsedFormData?.vendors || [],
+                    budget: parsedFormData?.budget?.total_purchase || parsedFormData?.estimatedCost || '',
+                    account: parsedFormData?.budget?.account_code || parsedFormData?.form_data?.budget?.account_number || '',
+                    vendor: parsedFormData?.budget?.vendor_needed === true ? 'yes' : 'no',
                 };
                 setFormData(mapped);
             }
             return;
         }
+
 
         // No `id` provided: fallback to previous localStorage behavior
         const dataLs = localStorage.getItem("eventFormData");
@@ -198,6 +215,81 @@ export function EventOverviewContent() {
             setFormData(JSON.parse(dataLs));
         }
     }, [eventId, data, loading]);
+
+    // Helper function to render fields with consistent styling and handle empty values
+    const renderField = (
+        label: string,
+        value: any,
+        options?: {
+            preserveWhitespace?: boolean;
+            transform?: (val: any) => React.ReactNode;
+        }
+    ) => {
+        if (
+            value === undefined ||
+            value === null ||
+            value === "" ||
+            (Array.isArray(value) && value.length === 0)
+        ) {
+            return null;
+        }
+
+        const displayValue = options?.transform
+            ? options.transform(value)
+            : Array.isArray(value)
+                ? value.join(", ")
+                : value;
+
+        return (
+            <div style={{ marginBottom: 16 }}>
+                <Title level={5}>{label}</Title>
+                <Paragraph
+                    style={{
+                        whiteSpace: options?.preserveWhitespace ? "pre-wrap" : "normal"
+                    }}
+                >
+                    {displayValue}
+                </Paragraph>
+            </div>
+        );
+    };
+
+    // If there's a trip leader ID in the form data, fetch their user data to display their name instead of just the ID
+    const tripLeaderId = formData?.form_data?.travel?.trip_leader_id;
+    const { data: tripLeaderData } = useGetUserQuery({
+        variables: { id: tripLeaderId as string },
+        skip: !tripLeaderId
+    });
+    const tripLeader = tripLeaderData?.user || null;
+
+    // Pretty labels for SORC game types
+    const gameLabels: Record<string, string> = {
+        mechanical_bull: "Mechanical Bull",
+        velcro_wall: "Velcro Wall",
+        human_hamster_balls: "Human Hamster Balls",
+        giant_slide: "Giant Slide",
+        obstacle_course: "Obstacle Course",
+        dunk_tank: "Dunk Tank",
+        bungee_run: "Bungee Run",
+        jousting_arena: "Jousting Arena",
+        giant_connect_four: "Giant Connect Four",
+        giant_jenga: "Giant Jenga",
+        carnival_game_booths: "Carnival Game Booths",
+        casino_tables: "Casino Tables",
+        photo_booth: "Photo Booth",
+        inflatable_sports_games: "Inflatable Sports Games",
+    };
+
+    // Pretty labels for non-vendor service types
+    const nonVendorServiceLabels: Record<string, string> = {
+        av_support: "A/V Support",
+        custodial_safety: "Custodial & Safety",
+        public_safety: "Public Safety",
+        facilities: "Facilities/Custodial",
+        parking: "Parking Services",
+        signage: "Signage & Wayfinding",
+        furniture_rental: "University Furniture Rental"
+    };
 
     // Create refs for each section
     const eventDetailsRef = useRef<HTMLDivElement>(null);
@@ -322,450 +414,742 @@ export function EventOverviewContent() {
                         <Statistic className="stat-card-gray-border" title="Estimated Attendees" value={formData?.event?.attendees || "N/A"} />
                         <Statistic className="stat-card-gray-border" title="Location Type" value={formData?.location?.type || "N/A"} />
                     </div>
+
                     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                         {/* EVENT DETAILS SECTION */}
-                        <Card id="section-0" ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", marginTop: "1rem", scrollMarginTop: "2rem" }}>
+                        <Card id="section-1" ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Event Details</Title>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Event Name</Title>
-                                <Paragraph>{formData?.event?.name || "N/A"}</Paragraph>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Description</Title>
-                                <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData?.event?.description || "N/A"}</Paragraph>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Expected Attendees</Title>
-                                <Paragraph>{formData?.event?.attendees || "N/A"}</Paragraph>
-                            </div>
-                            {formData?.organization_ids && formData.organization_ids.length > 0 && (
-                                <div style={{ marginBottom: 16 }}>
-                                    <Title level={5}>Co-hosting Organizations</Title>
-                                    <Paragraph>{Array.isArray(formData.organization_ids) ? formData.organization_ids.join(", ") : "N/A"}</Paragraph>
-                                </div>
-                            )}
+
+                            {renderField("Event Name", formData?.event?.name)}
+                            {renderField("Description", formData?.event?.description, {
+                                preserveWhitespace: true
+                            })}
+                            {renderField("Attendees", formData?.event?.attendees)}
                         </Card>
 
                         {/* DATE & LOCATION SECTION */}
-                        <Card id="section-1" ref={dateLocationRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-2" ref={dateLocationRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Date & Location</Title>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Location Type</Title>
-                                <Paragraph>{formData?.location?.type || "N/A"}</Paragraph>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Event Date</Title>
-                                <Paragraph>{formatDateMDY(formData?.event?.dateRange?.[0]) || "N/A"}</Paragraph>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Start Time</Title>
-                                <Paragraph>{formatTime(formData?.startTime) || "N/A"}</Paragraph>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>End Time</Title>
-                                <Paragraph>{formatTime(formData?.endTime) || "N/A"}</Paragraph>
-                            </div>
-                            <div style={{ marginBottom: 16 }}>
-                                <Title level={5}>Setup Time</Title>
-                                <Paragraph>{formatDuration(formData?.setupTime) || "N/A"}</Paragraph>
-                            </div>
 
-                            {/* ON-CAMPUS SECTION */}
-                            {formData?.location?.type === 'On Campus' && formData?.onCampus && (
-                                <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>On-Campus Details</Title>
-                                    {formData.onCampus.selected && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Campus Space:</Text>
-                                            <Paragraph>{formData.onCampus.selected}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.room_type && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Room Type:</Text>
-                                            <Paragraph>{formData.onCampus.room_type}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.room_title && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Room Title/Number:</Text>
-                                            <Paragraph>{formData.onCampus.room_title}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.special_space_alignment && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Special Space Alignment:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.onCampus.special_space_alignment}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.rain_location && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Rain Plan:</Text>
-                                            <Paragraph>{formData.onCampus.rain_location}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.room_setup && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Room Setup:</Text>
-                                            <Paragraph>{formData.onCampus.room_setup}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.furniture && Array.isArray(formData.onCampus.furniture) && formData.onCampus.furniture.length > 0 && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Furniture:</Text>
-                                            {formData.onCampus.furniture.map((f: any, idx: number) => (
-                                                <Paragraph key={idx}>{f.type} x{f.quantity}</Paragraph>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {formData.onCampus.av && Array.isArray(formData.onCampus.av) && formData.onCampus.av.length > 0 && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>A/V Equipment:</Text>
-                                            <Paragraph>{formData.onCampus.av.join(", ")}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.utilities?.power_required && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Power Required:</Text>
-                                            <Paragraph>Yes {formData.onCampus.utilities.power_details ? `(${formData.onCampus.utilities.power_details})` : ""}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.onCampus.utilities?.water_required && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Water Access Required:</Text>
-                                            <Paragraph>Yes</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
+                            {renderField("Location Type", formData?.location?.type)}
+                            {renderField("Event Date", formatDateMDY(formData?.event?.dateRange?.[0]))}
+                            {renderField("Start Time", formatTime(formData?.startTime))}
+                            {renderField("End Time", formatTime(formData?.endTime))}
+                            {renderField("Setup Time", formatDuration(formData?.setupTime))}
+
+                            {/* IF EVENT WAS VIRTUAL */}
+
+                            {formData?.location?.type === "Virtual" && (
+                                renderField("Virtual Event Link", formData?.location?.virtual_link)
                             )}
 
-                            {/* OFF-CAMPUS SECTION */}
-                            {formData?.location?.type === 'Off Campus' && formData?.offCampus && (
-                                <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+                            {/* IF EVENT WAS ON CAMPUS  */}
+
+                            {formData?.location?.type === "On Campus" && formData?.onCampus && (
+                                <>
+                                    {renderField("On Campus Location", formData?.location?.selected)}
+                                    {renderField("Room Type", formData?.location?.room_type)}
+                                    {renderField("Room Title/Number", formData.onCampus.room_title)}
+
+                                    {renderField(
+                                        "Special Space Alignment",
+                                        formData.onCampus.special_space_alignment,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {renderField("Rain Plan", formData.onCampus.rain_location)}
+
+                                    {renderField("Room Setup", formData.onCampus.room_setup)}
+
+                                    {/* Furniture (array of objects — needs custom render) */}
+                                    {Array.isArray(formData.onCampus.furniture) &&
+                                        formData.onCampus.furniture.length > 0 && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <Title level={5}>Furniture</Title>
+                                                {formData.onCampus.furniture.map((f: any, idx: number) => (
+                                                    <Paragraph key={idx}>
+                                                        {f.type} × {f.quantity}
+                                                    </Paragraph>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                    {renderField("A/V Equipment", formData.onCampus.av)}
+
+                                    {/* Utilities */}
+                                    {formData.onCampus.utilities?.power_required &&
+                                        renderField(
+                                            "Power Required",
+                                            formData.onCampus.utilities.power_details
+                                                ? `Yes (${formData.onCampus.utilities.power_details})`
+                                                : "Yes"
+                                        )}
+
+                                    {formData.onCampus.utilities?.water_required &&
+                                        renderField("Water Access Required", "Yes")}
+                                </>
+                            )}
+
+                            {/* IF EVENT WAS OFF CAMPUS */}
+                            {formData?.location?.type === "Off Campus" && (
+                                <div
+                                    style={{
+                                        marginTop: 24,
+                                        paddingTop: 16,
+                                        borderTop: "1px solid #f0f0f0"
+                                    }}
+                                >
                                     <Title level={4}>Off-Campus Details</Title>
-                                    {formData.offCampus.off_campus_address && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Address:</Text>
-                                            <Paragraph>{formData.offCampus.off_campus_address}</Paragraph>
-                                        </div>
+
+                                    {renderField(
+                                        "Address",
+                                        formData?.form_data?.location?.off_campus_address
                                     )}
-                                    {formData.offCampus.google_maps_link && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Google Maps Link:</Text>
-                                            <Paragraph>
-                                                <Link href={formData.offCampus.google_maps_link} target="_blank">
-                                                    View on Maps
-                                                </Link>
-                                            </Paragraph>
-                                        </div>
+
+                                    {formData?.form_data?.location?.google_maps_link &&
+                                        renderField(
+                                            "Google Maps Link",
+                                            formData.form_data.location.google_maps_link,
+                                            {
+                                                transform: (val) => (
+                                                    <Link href={val} target="_blank">
+                                                        View on Maps
+                                                    </Link>
+                                                )
+                                            }
+                                        )}
+
+                                    {renderField(
+                                        "Travel Type",
+                                        formData?.form_data?.travel?.type
                                     )}
-                                    {formData.offCampus.travel_type && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Travel Type:</Text>
-                                            <Paragraph>{formData.offCampus.travel_type}</Paragraph>
-                                        </div>
+
+                                    {renderField(
+                                        "Transportation",
+                                        formData?.form_data?.travel?.transportation
                                     )}
-                                    {formData.offCampus.transportation && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Transportation:</Text>
-                                            <Paragraph>{formData.offCampus.transportation}</Paragraph>
-                                        </div>
+
+                                    {renderField(
+                                        "Trip Leader",
+                                        tripLeader
+                                            ? `${tripLeader.firstName || ""} ${tripLeader.lastName || ""} (@${tripLeader.username})`.trim()
+                                            : null
                                     )}
-                                    {formData.offCampus.trip_leader && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Trip Leader:</Text>
-                                            <Paragraph>{formData.offCampus.trip_leader}</Paragraph>
-                                        </div>
+
+                                    {/* Emergency Contact */}
+                                    {formData?.form_data?.travel?.trip_leader_emergency_contact &&
+                                        renderField(
+                                            "Emergency Contact",
+                                            formData.form_data.travel.trip_leader_emergency_contact,
+                                            {
+                                                transform: (contact) =>
+                                                    contact?.name
+                                                        ? contact.phone
+                                                            ? `${contact.name} - ${contact.phone}`
+                                                            : contact.name
+                                                        : null
+                                            }
+                                        )}
+
+                                    {renderField(
+                                        "Lodging",
+                                        formData?.form_data?.travel?.lodging,
+                                        { preserveWhitespace: true }
                                     )}
-                                    {formData.offCampus.trip_leader_emergency_contact && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Emergency Contact:</Text>
-                                            <Paragraph>
-                                                {formData.offCampus.trip_leader_emergency_contact.name}
-                                                {formData.offCampus.trip_leader_emergency_contact.phone && ` - ${formData.offCampus.trip_leader_emergency_contact.phone}`}
-                                            </Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.offCampus.lodging && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Lodging:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.offCampus.lodging}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.offCampus.eap_file && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Emergency Action Plan:</Text>
-                                            <Paragraph>{typeof formData.offCampus.eap_file === 'string' ? formData.offCampus.eap_file : formData.offCampus.eap_file?.name || "Uploaded"}</Paragraph>
-                                        </div>
-                                    )}
+
+                                    {formData?.form_data?.travel?.eap_file &&
+                                        renderField(
+                                            "Emergency Action Plan",
+                                            formData.form_data.travel.eap_file,
+                                            {
+                                                transform: (file) =>
+                                                    typeof file === "string"
+                                                        ? file
+                                                        : file?.name || "Uploaded"
+                                            }
+                                        )}
                                 </div>
                             )}
                         </Card>
 
                         {/* EVENT ELEMENTS SECTION */}
-                        <Card id="section-2" ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-3" ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Event Elements</Title>
-
-                            {/* Food Element */}
-                            {formData?.food && (
-                                <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>🍽️ Food</Title>
-                                    <div style={{ marginBottom: 12 }}>
-                                        <Text strong>Type:</Text>
-                                        <Paragraph>{formData.food.type || "N/A"}</Paragraph>
-                                    </div>
-                                    {formData.food.estimated_cost && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Estimated Cost:</Text>
-                                            <Paragraph>${formData.food.estimated_cost}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.food.vendor && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Vendor/Restaurant:</Text>
-                                            <Paragraph>{formData.food.vendor}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Alcohol Element */}
-                            {formData?.alcohol && (
-                                <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>🍷 Alcohol</Title>
-                                    {formData.alcohol.vendor && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Vendor:</Text>
-                                            <Paragraph>{formData.alcohol.vendor}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.alcohol.event_type && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Event Type:</Text>
-                                            <Paragraph>{formData.alcohol.event_type}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.alcohol.faculty_staff && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Faculty/Staff Present:</Text>
-                                            <div style={{ marginLeft: 16 }}>
-                                                <Paragraph>Name: {formData.alcohol.faculty_staff.name || "N/A"}</Paragraph>
-                                                <Paragraph>Title: {formData.alcohol.faculty_staff.title || "N/A"}</Paragraph>
-                                                <Paragraph>Email: {formData.alcohol.faculty_staff.email || "N/A"}</Paragraph>
-                                                <Paragraph>Phone: {formData.alcohol.faculty_staff.phone || "N/A"}</Paragraph>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {formData.alcohol.guests_under_21 && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Guests Under 21:</Text>
-                                            <Paragraph>{formData.alcohol.guests_under_21}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.alcohol.id_procedure && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>ID Checking Procedure:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.alcohol.id_procedure}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.alcohol.food_description && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Food Description:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.alcohol.food_description}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.alcohol.signature_name && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Signed By:</Text>
-                                            <Paragraph>{formData.alcohol.signature_name}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Minors Element */}
-                            {formData?.minors && (
-                                <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>👶 Minors Present</Title>
-                                    {formData.minors.age_range && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Age Range:</Text>
-                                            <Paragraph>{formData.minors.age_range}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.minors.supervision && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Supervision Details:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.minors.supervision}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.minors.liability && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Liability Insurance:</Text>
-                                            <Paragraph>{formData.minors.liability}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Movies Element */}
-                            {formData?.movies && (
-                                <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>🎬 Movies/Media</Title>
-                                    {formData.movies.title && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Movie/Media Title:</Text>
-                                            <Paragraph>{formData.movies.title}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.movies.licensing && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Licensing/Rights:</Text>
-                                            <Paragraph>{formData.movies.licensing}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.movies.estimated_attendees && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Expected Attendees:</Text>
-                                            <Paragraph>{formData.movies.estimated_attendees}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Raffles Element */}
-                            {formData?.raffles && (
-                                <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>🎁 Raffles/Prizes</Title>
-                                    {formData.raffles.prize_description && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Prize Description:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.raffles.prize_description}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.raffles.total_value && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Total Prize Value:</Text>
-                                            <Paragraph>${formData.raffles.total_value}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.raffles.how_distributed && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>How Distributed:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.raffles.how_distributed}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Fire Safety Element */}
-                            {formData?.fire && (
-                                <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                    <Title level={4}>🔥 Fire Safety</Title>
-                                    {formData.fire.type && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Type:</Text>
-                                            <Paragraph>{formData.fire.type}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.fire.location && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Location:</Text>
-                                            <Paragraph>{formData.fire.location}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.fire.safety_measures && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Safety Measures:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.fire.safety_measures}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.fire.permit_details && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Permit Details:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.fire.permit_details}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* SORC Games Element */}
-                            {formData?.sorc_games && (
-                                <div style={{ marginBottom: 24 }}>
-                                    <Title level={4}>🎮 SORC Games</Title>
-                                    {formData.sorc_games.type && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Game Type:</Text>
-                                            <Paragraph>{formData.sorc_games.type}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.sorc_games.details && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Details:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.sorc_games.details}</Paragraph>
-                                        </div>
-                                    )}
-                                    {formData.sorc_games.equipment && (
-                                        <div style={{ marginBottom: 12 }}>
-                                            <Text strong>Equipment:</Text>
-                                            <Paragraph style={{ whiteSpace: 'pre-wrap' }}>{formData.sorc_games.equipment}</Paragraph>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
+                            {/* NONE */}
                             {!formData?.food && !formData?.alcohol && !formData?.minors && !formData?.movies && !formData?.raffles && !formData?.fire && !formData?.sorc_games && (
                                 <Paragraph>No special elements selected</Paragraph>
                             )}
+
+                            {/* FOOD SECTION */}
+
+                            {renderField(
+                                "Food Option",
+                                formData?.food?.type === "potluck"
+                                    ? "Potluck-style event (closed event for 50 or less organization members only)"
+                                    : formData?.form_data?.food?.type === "under_500_dragonlink"
+                                        ? "Under $500 - Purchase request through DragonLink (not Chestnut Street)"
+                                        : formData?.form_data?.food?.type === "over_500_chestnut"
+                                            ? "Over $500 - Ordering through Chestnut Street Catering"
+                                            : formData?.form_data?.food?.type === "over_500_exception"
+                                                ? "Over $500 - Requesting catering exception"
+                                                : formData?.form_data?.food?.type === "offcampus_restaurant"
+                                                    ? "Off-campus restaurant or food service establishment"
+                                                    : undefined
+                            )}
+
+                            {formData?.food?.vendor &&
+                                renderField(
+                                    "Vendor / Restaurant",
+                                    formData?.food?.vendor
+                                )}
+
+                            {formData?.food?.estimated_cost != null &&
+                                renderField(
+                                    "Estimated Cost",
+                                    `$${Number(
+                                        formData?.food?.estimated_cost
+                                    ).toLocaleString()}`
+                                )}
+
+                            {/* ALCOHOL SECTION */}
+
+                            {formData?.alcohol && (
+                                <div style={{ marginTop: 24 }}>
+                                    <Title level={4}>Alcohol Details</Title>
+
+                                    {renderField(
+                                        "Alcohol Vendor",
+                                        formData?.alcohol?.vendor
+                                    )}
+
+                                    {renderField(
+                                        "Event Type",
+                                        formData?.alcohol?.event_type === "drexel_only"
+                                            ? "Drexel Students Only Event - No guests"
+                                            : formData?.alcohol?.event_type === "date_party"
+                                                ? "Date Party / Invitation Only Event"
+                                                : formData?.alcohol?.event_type === "multiple_org"
+                                                    ? "Multiple Organization Event"
+                                                    : formData?.alcohol?.event_type === "alumni"
+                                                        ? "Alumni Event"
+                                                        : undefined
+                                    )}
+
+                                    {/* Faculty / Staff */}
+                                    {formData?.alcohol?.faculty_staff && (
+                                        <>
+                                            {renderField(
+                                                "Faculty/Staff Name",
+                                                formData?.alcohol?.faculty_staff?.name
+                                            )}
+
+                                            {renderField(
+                                                "Faculty/Staff Title",
+                                                formData?.alcohol?.faculty_staff?.title
+                                            )}
+
+                                            {renderField(
+                                                "Faculty/Staff Email",
+                                                formData?.alcohol?.faculty_staff?.email
+                                            )}
+
+                                            {renderField(
+                                                "Faculty/Staff Phone",
+                                                formData?.alcohol?.faculty_staff?.phone
+                                            )}
+                                        </>
+                                    )}
+
+                                    {renderField(
+                                        "Guests Under 21",
+                                        formData?.alcohol?.guests_under_21 === "yes"
+                                            ? "Yes"
+                                            : formData?.alcohol?.guests_under_21 === "no"
+                                                ? "No"
+                                                : undefined
+                                    )}
+
+                                    {renderField(
+                                        "ID Checking Procedure",
+                                        formData?.alcohol?.id_procedure,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {renderField(
+                                        "Food Available at Event",
+                                        formData?.alcohol?.food_description,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {/* Agreement Checklist */}
+                                    {formData?.alcohol?.checklist && (
+                                        <div style={{ marginTop: 16 }}>
+                                            <Title level={5}>Alcohol Policy Agreements</Title>
+
+                                            {renderField(
+                                                "ID Check Procedure Defined",
+                                                formData?.alcohol?.checklist?.id_check ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "Approved Vendor Providing Service",
+                                                formData?.alcohol?.checklist?.approved_vendor ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "Hard Liquor Charged to Individual",
+                                                formData?.alcohol?.checklist?.hard_liquor_charge ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "No Drinking Games",
+                                                formData?.alcohol?.checklist?.no_drinking_games ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "No Liquor with University Funds",
+                                                formData?.alcohol?.checklist?.no_liquor_university_funds ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "Food Available Throughout Event",
+                                                formData?.alcohol?.checklist?.food_available ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "Non-Salty Options Available",
+                                                formData?.alcohol?.checklist?.non_salty_options ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "Heavy Appetizers Minimum",
+                                                formData?.alcohol?.checklist?.heavy_appetizers ? "Agreed" : null
+                                            )}
+
+                                            {renderField(
+                                                "Alcohol Cutoff Policy",
+                                                formData?.alcohol?.checklist?.cutoff_time ? "Agreed" : null
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {renderField(
+                                        "Electronic Signature",
+                                        formData?.alcohol?.signature_name
+                                    )}
+                                </div>
+                            )}
+
+
+                            {/* MINORS SECTION */}
+
+                            {formData?.minors && (
+                                <div style={{ marginTop: 24 }}>
+                                    <Title level={4}>Minors Information</Title>
+
+                                    {renderField(
+                                        "Student Point of Contact",
+                                        userData?.users?.find(
+                                            (u) => u.id === formData?.minors?.student_contact_id
+                                        )
+                                            ? `${userData.users.find(
+                                                (u) => u.id === formData?.minors?.student_contact_id
+                                            )?.firstName || ""} ${userData.users.find(
+                                                (u) => u.id === formData?.minors?.student_contact_id
+                                            )?.lastName || ""
+                                            } (@${userData.users.find(
+                                                (u) => u.id === formData?.minors?.student_contact_id
+                                            )?.username || ""
+                                            })`
+                                            : null
+                                    )}
+
+                                    {renderField(
+                                        "External Partners",
+                                        formData?.minors?.external_partners,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {renderField(
+                                        "Intended Audience & Recruitment",
+                                        formData?.minors?.audience_recruitment,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {(formData?.minors?.count_early_childhood ||
+                                        formData?.minors?.count_elementary ||
+                                        formData?.minors?.count_middle_school ||
+                                        formData?.minors?.count_high_school) && (
+                                            <div style={{ marginTop: 16 }}>
+                                                <Title level={5}>Expected Number of Minors</Title>
+
+                                                {renderField(
+                                                    "Early Childhood (infant - Pre-K)",
+                                                    formData?.minors?.count_early_childhood
+                                                )}
+
+                                                {renderField(
+                                                    "Elementary (K-5)",
+                                                    formData?.minors?.count_elementary
+                                                )}
+
+                                                {renderField(
+                                                    "Middle School (6-8)",
+                                                    formData?.minors?.count_middle_school
+                                                )}
+
+                                                {renderField(
+                                                    "High School (9-12)",
+                                                    formData?.minors?.count_high_school
+                                                )}
+
+                                                {renderField(
+                                                    "Total Minors",
+                                                    (Number(formData?.minors?.count_early_childhood || 0) +
+                                                        Number(formData?.minors?.count_elementary || 0) +
+                                                        Number(formData?.minors?.count_middle_school || 0) +
+                                                        Number(formData?.minors?.count_high_school || 0)) || null
+                                                )}
+                                            </div>
+                                        )}
+
+                                    {renderField(
+                                        "Overnight Housing Required",
+                                        formData?.minors?.overnight_housing === true
+                                            ? "Yes"
+                                            : formData?.minors?.overnight_housing === false
+                                                ? "No"
+                                                : null
+                                    )}
+
+                                    {renderField(
+                                        "Drexel Transportation Required",
+                                        formData?.minors?.drexel_transportation === true
+                                            ? "Yes"
+                                            : formData?.minors?.drexel_transportation === false
+                                                ? "No"
+                                                : null
+                                    )}
+
+                                    {renderField(
+                                        "Parent/Guardian Attendance Required",
+                                        formData?.minors?.parent_attendance_required === true
+                                            ? "Yes"
+                                            : formData?.minors?.parent_attendance_required === false
+                                                ? "No"
+                                                : null
+                                    )}
+
+                                    {renderField(
+                                        "Minors Documentation Uploaded",
+                                        formData?.minors?.file ? "File Uploaded" : null
+                                    )}
+                                </div>
+                            )}
+
+                            {/* MOVIES SECTION */}
+
+                            {formData?.movies && (
+                                <div style={{ marginTop: 24 }}>
+                                    <Title level={4}>Movie Permissions</Title>
+
+                                    {renderField(
+                                        "Permission Type",
+                                        formData?.movies?.option_type === "option_1_written_permission"
+                                            ? "Option 1: Written Copyright Permission"
+                                            : formData?.movies?.option_type === "option_2_vendor"
+                                                ? "Option 2: Purchased Rights Through Vendor"
+                                                : formData?.movies?.option_type === "option_3_educational"
+                                                    ? "Option 3: Educational Lecture"
+                                                    : formData?.movies?.option_type === "option_4_closed_event"
+                                                        ? "Option 4: Closed Event (50 or less attendees)"
+                                                        : null
+                                    )}
+
+                                    {/* OPTION 1 */}
+                                    {formData?.movies?.option_type === "option_1_written_permission" && (
+                                        <>
+                                            <Title level={5} style={{ marginTop: 16 }}>
+                                                Organization Obtains Written Permission
+                                            </Title>
+
+                                            {renderField("Movie Name", formData?.movies?.option_1?.movie_name)}
+
+                                            {renderField("Company/Individual Name", formData?.movies?.option_1?.company_name)}
+
+                                            {renderField(
+                                                "Contact Name",
+                                                formData?.movies?.option_1?.contact_first_name ||
+                                                    formData?.movies?.option_1?.contact_last_name
+                                                    ? `${formData?.movies?.option_1?.contact_first_name || ""} ${formData?.movies?.option_1?.contact_last_name || ""
+                                                    }`
+                                                    : null
+                                            )}
+
+                                            {renderField("Email", formData?.movies?.option_1?.email)}
+
+                                            {renderField("Phone", formData?.movies?.option_1?.phone)}
+
+                                            {renderField("Mailing Address", formData?.movies?.option_1?.mailing_address)}
+
+                                            {renderField(
+                                                "Written Permission Documentation",
+                                                formData?.movies?.option_1?.permission_file
+                                                    ? "File Uploaded"
+                                                    : null
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* OPTION 2 */}
+                                    {formData?.movies?.option_type === "option_2_vendor" && (
+                                        <>
+                                            <Title level={5} style={{ marginTop: 16 }}>
+                                                Organization Purchases Rights
+                                            </Title>
+
+                                            {renderField("Company/Individual Name", formData?.movies?.option_2?.company_name)}
+
+                                            {renderField(
+                                                "Contact Name",
+                                                formData?.movies?.option_2?.contact_first_name ||
+                                                    formData?.movies?.option_2?.contact_last_name
+                                                    ? `${formData?.movies?.option_2?.contact_first_name || ""} ${formData?.movies?.option_2?.contact_last_name || ""
+                                                    }`
+                                                    : null
+                                            )}
+
+                                            {renderField("Email", formData?.movies?.option_2?.email)}
+
+                                            {renderField("Phone", formData?.movies?.option_2?.phone)}
+
+                                            {renderField(
+                                                "Purchase Documentation",
+                                                formData?.movies?.option_2?.purchase_documentation
+                                                    ? "File Uploaded"
+                                                    : null
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* OPTION 3 */}
+                                    {formData?.movies?.option_type === "option_3_educational" && (
+                                        <>
+                                            <Title level={5} style={{ marginTop: 16 }}>
+                                                Educational Lecture
+                                            </Title>
+
+                                            {renderField("Movie Name", formData?.movies?.option_3?.movie_name)}
+
+                                            {renderField("Facilitator Name", formData?.movies?.option_3?.facilitator_name)}
+
+                                            {renderField("Facilitator Email", formData?.movies?.option_3?.facilitator_email)}
+
+                                            {renderField("Facilitator Title", formData?.movies?.option_3?.facilitator_title)}
+
+                                            {renderField("Facilitator Department", formData?.movies?.option_3?.facilitator_department)}
+
+                                            {renderField(
+                                                "Discussion Questions",
+                                                formData?.movies?.option_3?.discussion_questions,
+                                                { preserveWhitespace: true }
+                                            )}
+
+                                            {renderField(
+                                                "Educational Relationship to Organization",
+                                                formData?.movies?.option_3?.educational_relation,
+                                                { preserveWhitespace: true }
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* OPTION 4 */}
+                                    {formData?.movies?.option_type === "option_4_closed_event" && (
+                                        <>
+                                            <Title level={5} style={{ marginTop: 16 }}>
+                                                Closed Event (50 or Less)
+                                            </Title>
+
+                                            {renderField("Movie Name", formData?.movies?.option_4?.movie_name)}
+                                        </>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* RAFFLES SECTION */}
+
+                            {formData?.raffles && (
+                                <div style={{ marginTop: 24 }}>
+                                    <Title level={4}>Raffle Information</Title>
+
+                                    {renderField(
+                                        "Items Being Given Away & Purchase Plan",
+                                        formData?.raffles?.items_and_purchase_plan,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {renderField(
+                                        "How Prizes Will Be Awarded",
+                                        formData?.raffles?.award_method,
+                                        { preserveWhitespace: true }
+                                    )}
+
+                                    {renderField(
+                                        "Estimated Cost",
+                                        formData?.raffles?.estimated_cost !== undefined &&
+                                            formData?.raffles?.estimated_cost !== null
+                                            ? `$${Number(formData?.raffles?.estimated_cost).toFixed(2)}`
+                                            : null
+                                    )}
+                                </div>
+                            )}
+
+
+                            {/* FIRE SECTION */}
+
+                            {renderField(
+                                "Fire Source Type",
+                                formData?.form_data?.fire?.type
+                            )}
+
+                            {formData?.form_data?.fire?.type === "fire_pit_package" &&
+                                renderField(
+                                    "Fire Pit Package Agreement",
+                                    formData?.form_data?.fire?.fire_pit_agreement
+                                )
+                            }
+
+                            {renderField(
+                                "Fire Safety Plan",
+                                formData?.form_data?.fire?.safety_plan
+                            )}
+
+
+                            {/* SORC GAMES SECTION */}
+
+                            {renderField(
+                                "SORC Games Selected",
+                                formData?.sorc_games?.selected?.length
+                                    ? formData.sorc_games.selected
+                                        .map((g: string) => gameLabels[g] || g)
+                                        .join(", ")
+                                    : undefined
+                            )}
+
+                            {renderField(
+                                "Games Setup Location",
+                                formData?.sorc_games?.location
+                            )}
+
+                            {renderField(
+                                "SORC Staff Present",
+                                formData?.sorc_games?.staff_present === "yes"
+                                    ? "Yes"
+                                    : formData?.sorc_games?.staff_present === "no"
+                                        ? "No"
+                                        : undefined
+                            )}
+
                         </Card>
 
                         {/* BUDGET & PURCHASE SECTION */}
-                        <Card id="section-3" ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-4" ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
                             <Title level={3}>Budget & Purchase</Title>
 
-                            {/* Budget Overview */}
-                            <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
-                                <Title level={4}>Budget Overview</Title>
-                                <div style={{ marginBottom: 12 }}>
-                                    <Text strong>Total Estimated Cost:</Text>
-                                    <Paragraph>
-                                        {(() => {
-                                            const cost = calculateEstimatedCost(formData);
-                                            return cost === 'N/A' ? 'N/A' : `$${cost}`;
-                                        })()}
-                                    </Paragraph>
-                                </div>
-                                {formData?.account && (
-                                    <div style={{ marginBottom: 12 }}>
-                                        <Text strong>Account Code:</Text>
-                                        <Paragraph>{formData.account}</Paragraph>
-                                    </div>
-                                )}
-                                {formData?.vendor && (
-                                    <div style={{ marginBottom: 12 }}>
-                                        <Text strong>Vendor Needed:</Text>
-                                        <Paragraph>{formData.vendor === 'yes' ? 'Yes' : 'No'}</Paragraph>
-                                    </div>
-                                )}
-                            </div>
+                            {renderField(
+                                "Level 0 Event",
+                                formData?.form_data?.level0_confirmed ? "Yes" : "No"
+                            )}
 
-                            {/* Vendors List */}
-                            {formData?.vendors && Array.isArray(formData.vendors) && formData.vendors.length > 0 && (
-                                <div>
-                                    <Title level={4}>Vendors/Contracts</Title>
-                                    {formData.vendors.map((vendor: any, index: number) => (
-                                        <div key={index} style={{ marginBottom: 16, paddingLeft: 16, borderLeft: '3px solid #1890ff' }}>
-                                            <Title level={5}>Vendor {index + 1}</Title>
-                                            {vendor.type && <Paragraph><Text strong>Type:</Text> {vendor.type}</Paragraph>}
-                                            {vendor.companyName && <Paragraph><Text strong>Company:</Text> {vendor.companyName}</Paragraph>}
-                                            {vendor.contactPersonName && <Paragraph><Text strong>Contact Person:</Text> {vendor.contactPersonName}</Paragraph>}
-                                            {vendor.contactEmail && <Paragraph><Text strong>Email:</Text> {vendor.contactEmail}</Paragraph>}
-                                            {vendor.phone && <Paragraph><Text strong>Phone:</Text> {vendor.phone}</Paragraph>}
-                                            {vendor.amount && <Paragraph><Text strong>Estimated Cost:</Text> ${vendor.amount}</Paragraph>}
-                                            {vendor.contractType && <Paragraph><Text strong>Contract Type:</Text> {vendor.contractType}</Paragraph>}
-                                        </div>
-                                    ))}
+                            {formData?.form_data?.vendors?.map((vendor: any, index: number) => (
+                                <div key={index} style={{ marginBottom: 16 }}>
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Type`,
+                                        vendor?.type
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Company Name`,
+                                        vendor?.companyName
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Contact Person`,
+                                        vendor?.contactPersonName
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Contact Email`,
+                                        vendor?.contactEmail
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Contact Phone`,
+                                        vendor?.contactPhone
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Worked With Before`,
+                                        vendor?.workedBefore
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Drexel Student`,
+                                        vendor?.isDrexelStudent
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Amount`,
+                                        vendor?.amount
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Description`,
+                                        vendor?.description
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Org Providing`,
+                                        vendor?.org_providing
+                                    )}
+
                                 </div>
+                            ))}
+
+                            {renderField(
+                                "Vendor Letter Notice Acknowledged",
+                                formData?.form_data?.vendors_notice_acknowledged ? "Yes" : "No"
+                            )}
+
+                            {/* NON VENDOR */}
+
+                            {renderField(
+                                "Non-Vendor Services Selected",
+                                Object.entries(formData?.form_data?.non_vendor_services || {})
+                                    .filter(([_, value]) => value === true)
+                                    .map(([key]) => nonVendorServiceLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+                                    .join(", ")
+                            )}
+
+                            {renderField(
+                                "Non-Vendor Services Notes",
+                                formData?.form_data?.non_vendor_services_notes
+                            )}
+
+                            {renderField(
+                                "Non-Vendor Charges Acknowledged",
+                                formData?.non_vendor_services_acknowledged ? "Yes" : "No"
+                            )}
+
+                            {renderField(
+                                "Funding Source",
+                                formData?.form_data?.budget?.source
+                            )}
+
+                            {renderField(
+                                "Account Number",
+                                formData?.form_data?.budget?.account_number
                             )}
                         </Card>
                     </div>

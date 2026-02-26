@@ -325,7 +325,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                     />
 
                     {/* Upload Quote */}
-                    <Controller
+                    {/* <Controller
                         name={`form_data.vendors.${index}.quote_file`}
                         control={control}
                         render={({ field }) => (
@@ -348,7 +348,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                 </Upload>
                             </div>
                         )}
-                    />
+                    /> */}
 
                     {/* Description of what vendor is doing */}
                     <Controller

@@ -278,7 +278,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
             )}
 
             {/* Emergency Action Plan Upload - Show only for regional and domestic_overnight */}
-            {(travelType === "regional" || travelType === "domestic_overnight") && (
+            {/* {(travelType === "regional" || travelType === "domestic_overnight") && (
                 <Controller
                     name="form_data.travel.eap_file"
                     control={control}
@@ -307,7 +307,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
                         </div>
                     )}
                 />
-            )}
+            )} */}
         </div>
     );
 }
