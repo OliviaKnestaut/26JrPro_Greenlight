@@ -10,7 +10,7 @@ type Props = {
 
 export default function RafflesSection({ control }: Props) {
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
 
             {/* R1 — What are you planning on giving away */}
             <Controller
@@ -75,7 +75,7 @@ export default function RafflesSection({ control }: Props) {
                             {...field}
                             min={0}
                             precision={2}
-                            style={{ display: "block", marginTop: 8, width: "100%" }}
+                            style={{ marginTop: 8, width: "100%" }}
                             prefix="$"
                             status={fieldState.error ? "error" : ""}
                         />

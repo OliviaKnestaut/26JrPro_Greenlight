@@ -10,7 +10,7 @@ type Props = {
 
 export default function SORCGamesSection({ control }: Props) {
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
 
             {/* SG1 - Multi-Select Games */}
             <Controller

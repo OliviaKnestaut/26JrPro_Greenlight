@@ -12,9 +12,10 @@ const { Option } = Select;
 type Props = {
   control: any;
   watch: any;
+  setValue: any;
 };
 
-export default function EventDetailsSection({ control, watch }: Props) {
+export default function EventDetailsSection({ control, watch, setValue }: Props) {
   const { user } = useAuth();
   const { data: orgsData, loading: orgsLoading } = useGetOrganizationsQuery({
     variables: { limit: 1000 }
@@ -35,13 +36,34 @@ export default function EventDetailsSection({ control, watch }: Props) {
         rules={{ required: "Event image is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <FieldLabel required>Upload a high-resolution cover photo for your event (1300px × 780px) under 5MB</FieldLabel>
+            <FieldLabel required>Upload a high-resolution cover photo for your event (1300px × 780px) under 2MB</FieldLabel>
             <Upload
-              beforeUpload={() => false} // prevent auto-upload
+              beforeUpload={() => false}
               maxCount={1}
               onChange={(info) => {
                 const file = info.fileList[0]?.originFileObj;
+                if (!file) return;
+
+                // Store actual file
                 field.onChange(file);
+
+                // Store helper fields for review page
+                const previewUrl = URL.createObjectURL(file);
+
+                // IMPORTANT: you must receive setValue from props
+                // (see note below)
+                setValue("event_img_name", file.name);
+                setValue("event_img_preview", previewUrl);
+              }}
+              onRemove={() => {
+                // Clear RHF value
+                field.onChange(null);
+
+                // Clear helper fields
+                setValue("event_img_name", "");
+                setValue("event_img_preview", "");
+
+                return true; // required for Ant Upload
               }}
               style={{ marginTop: 8 }}
             >
@@ -102,10 +124,11 @@ export default function EventDetailsSection({ control, watch }: Props) {
         control={control}
         render={({ field }) => (
           <div style={{ marginBottom: 24 }}>
-            <FieldLabel>Are you co-hosting with another organization?</FieldLabel>
-            <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
-              Optional - Leave blank if not applicable
-            </Text>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+              <FieldLabel>Are you co-hosting with another organization?</FieldLabel>
+              <Text type="secondary" style={{}}>(Optional)</Text>
+            </div>
+
             <Select
               {...field}
               mode="multiple"
@@ -146,7 +169,7 @@ export default function EventDetailsSection({ control, watch }: Props) {
               placeholder="Ex: 50"
               min={1}
               status={fieldState.error ? "error" : ""}
-              style={{ marginTop: 8, width: 200 }}
+              style={{ marginTop: 8, width: "100%" }}
             />
             {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
           </div>

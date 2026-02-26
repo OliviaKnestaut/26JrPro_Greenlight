@@ -15,7 +15,7 @@ export default function FireSafetySection({ control }: Props) {
     });
 
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
 
             {/* FS1 - Fire Source Type */}
             <Controller
@@ -30,26 +30,16 @@ export default function FireSafetySection({ control }: Props) {
                             {...field}
                             style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
                         >
-                            <Radio value="sorc_fire_pit">
-                                <div>
-                                    <Text>SORC-provided fire pit</Text>
-                                    <div>
-                                        <Text type="secondary">
-                                            Fire pit provided and managed by SORC staff
-                                        </Text>
-                                    </div>
-                                </div>
+                            <Radio value="fire_pit_package">
+                                We would like to use the Fire Pit Package!
                             </Radio>
 
-                            <Radio value="personal_grill" style={{ marginTop: 8 }}>
-                                <div>
-                                    <Text>Personal grill</Text>
-                                    <div>
-                                        <Text type="secondary">
-                                            Privately owned grill brought by organization
-                                        </Text>
-                                    </div>
-                                </div>
+                            <Radio value="personal_fire_pit" style={{ marginTop: 8 }}>
+                                We will be providing our own approved fire pits, lighting agents, and will be lighting and extinguishing the fire ourselves.
+                            </Radio>
+
+                            <Radio value="grill_closed_event" style={{ marginTop: 8 }}>
+                                We will not be having fire pits but will be using grills for a closed event for 50 or less organization members
                             </Radio>
                         </Radio.Group>
 
@@ -62,16 +52,19 @@ export default function FireSafetySection({ control }: Props) {
                 )}
             />
 
-            {/* FS1b - SORC Fire Pit Agreement */}
-            {fireType === "sorc_fire_pit" && (
+            {/* FS1b - Fire Pit Package Agreement */}
+            {fireType === "fire_pit_package" && (
                 <Controller
-                    name="form_data.fire.sorc_agreement"
+                    name="form_data.fire.fire_pit_agreement"
                     control={control}
-                    rules={{ required: "You must agree to the additional charge to use the SORC fire pit" }}
+                    rules={{
+                        required: "You must agree to any charges for using the Fire Pit Package",
+                        validate: (value) => value === "yes" || "You must select a different fire source"
+                    }}
                     render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
                             <FieldLabel required>
-                                If you select SORC fire pit, there will be an additional charge added to your organization's account. Do you agree to this if the event is approved?
+                                If you select the Fire Pit Package, there may be additional charges added to your organization's account. Do you agree to proceed?
                             </FieldLabel>
 
                             <Radio.Group

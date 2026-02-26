@@ -21,13 +21,13 @@ export default function MinorsSection({ control }: Props) {
     const users = usersData?.users || [];
 
     return (
-        <div style={{ marginTop: 24 }}>
-                <Text strong style={{ display: "block", marginBottom: 8 }}>
-                    Student Point of Contact 
-                </Text>
-                <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
-                    Select a student to be included on emails to HR regarding this event
-                </Text>
+        <div >
+            <Text strong style={{ display: "block", marginBottom: 8 }}>
+                Student Point of Contact
+            </Text>
+            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+                Select a student to be included on emails to HR regarding this event
+            </Text>
 
             {/* Student Contact (from roster) */}
             <div style={{ marginBottom: 24 }}>
@@ -174,7 +174,10 @@ export default function MinorsSection({ control }: Props) {
             <Controller
                 name="form_data.minors.overnight_housing"
                 control={control}
-                rules={{ required: "Please select Yes or No" }}
+                rules={{
+                    validate: (value) =>
+                        value === true || value === false || "Please select Yes or No"
+                }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
                         <FieldLabel required>Does the activity require overnight housing?</FieldLabel>
@@ -197,7 +200,10 @@ export default function MinorsSection({ control }: Props) {
             <Controller
                 name="form_data.minors.drexel_transportation"
                 control={control}
-                rules={{ required: "Please select Yes or No" }}
+                rules={{
+                    validate: (value) =>
+                        value === true || value === false || "Please select Yes or No"
+                }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
                         <FieldLabel required>Does the activity require Drexel Transportation?</FieldLabel>
@@ -220,7 +226,10 @@ export default function MinorsSection({ control }: Props) {
             <Controller
                 name="form_data.minors.parent_attendance_required"
                 control={control}
-                rules={{ required: "Please select Yes or No" }}
+                rules={{
+                    validate: (value) =>
+                        value === true || value === false || "Please select Yes or No"
+                }}
                 render={({ field, fieldState }) => (
                     <div style={{ marginBottom: 16 }}>
                         <FieldLabel required>Will the activity require each minor's parent or guardian to attend the whole time?</FieldLabel>

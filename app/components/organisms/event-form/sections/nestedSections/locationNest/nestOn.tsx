@@ -184,7 +184,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
     const isIndoor = !isOutdoor;
 
     return (
-        <div style={{ marginTop: 24 }}>
+        <div >
             {/* Q10: Campus Space */}
             <Controller
                 name="form_data.location.selected"
@@ -229,8 +229,11 @@ export default function OnCampusSection({ control, setValue }: Props) {
                         control={control}
                         render={({ field, fieldState }) => (
                             <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                                <FieldLabel>What kind of room do you want to use?</FieldLabel>
-                                <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Helps narrow down room options</Text>
+                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                    <FieldLabel>What kind of room do you want to use?</FieldLabel>
+                                    <Text type="secondary" style={{}}>(Optional)</Text>
+                                </div>
+
                                 <Select
                                     {...field}
                                     value={field.value}
@@ -281,7 +284,8 @@ export default function OnCampusSection({ control, setValue }: Props) {
                 <Controller
                     name="form_data.location.special_space_alignment"
                     control={control}
-                    render={({ field }) => (
+                    rules={{ required: "Campus space alignment explanation is required" }}
+                    render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
                             <FieldLabel>You have selected a special space. Please explain how your event aligns with the values of the space.</FieldLabel>
                             <TextArea
@@ -290,6 +294,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 placeholder="Explain how your event aligns with the values of the space."
                                 style={{ marginTop: 8 }}
                             />
+                            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                         </div>
                     )}
                 />
@@ -300,10 +305,12 @@ export default function OnCampusSection({ control, setValue }: Props) {
                 <Controller
                     name="form_data.location.rain_location"
                     control={control}
-                    render={({ field }) => (
+                    rules={{ required: "Rain plan is required for outdoor events" }}
+                    render={({ field, fieldState }) => (
                         <div style={{ marginBottom: 16 }}>
                             <FieldLabel>You have selected an outdoor space. Please provide a backup plan/location in case of rain.</FieldLabel>
                             <Input {...field} placeholder="What is your backup plan?" style={{ marginTop: 8 }} />
+                            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                         </div>
                     )}
                 />
@@ -317,6 +324,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     render={({ field }) => (
                         <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                             <FieldLabel>Will your room need any additional setup?</FieldLabel>
+                            <Text type="secondary" style={{}}>(Optional)</Text>
                             <Select {...field} value={field.value} placeholder="Select room setup" style={{ width: 300, marginTop: 8 }}>
                                 {indoorRoomOptions.map((opt) => (
                                     <Option key={opt} value={opt}>{opt}</Option>
@@ -330,15 +338,17 @@ export default function OnCampusSection({ control, setValue }: Props) {
             {/* Q14: Furniture Repeater */}
             {isIndoor && (
                 <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                    <FieldLabel>Will your event require any additional furniture?</FieldLabel>
-                    <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Add furniture items if needed</Text>
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                        <FieldLabel>Will your event require any additional furniture?</FieldLabel>
+                        <Text type="secondary" style={{}}>(Optional)</Text>
+                    </div>
                     {furnitureFields.map((f, index) => (
                         <div key={f.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
                             <Controller
                                 name={`form_data.location.furniture.${index}.type`}
                                 control={control}
                                 render={({ field }) => (
-                                    <Select {...field} value={field.value} placeholder="Furniture Type" style={{ width: 180 }}>
+                                    <Select {...field} value={field.value} placeholder="Furniture Type" style={{ width: "25%" }}>
                                         {furnitureOptions.map((opt) => (
                                             <Option key={opt} value={opt}>{opt}</Option>
                                         ))}
@@ -353,7 +363,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                         {...field}
                                         min={1}
                                         placeholder="Qty"
-                                        style={{ width: 90 }}
+                                        style={{ width: "12.5%" }}
                                     />
                                 )}
                             />
@@ -365,9 +375,9 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     <Button
                         type="dashed"
                         onClick={() => append({ type: undefined, quantity: 1 })}
-                        style={{ marginTop: 8, width: "fit-content" }}
+                        style={{ marginTop: 8, width: "50%" }}
                     >
-                        Add Furniture
+                        + Add Furniture
                     </Button>
                 </div>
             )}
@@ -379,8 +389,11 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     control={control}
                     render={({ field }) => (
                         <div style={{ marginBottom: 16 }}>
-                            <FieldLabel>What A/V equipment will you need?</FieldLabel>
-                            <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>Optional - Select all that apply</Text>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                <FieldLabel>What A/V equipment will you need?</FieldLabel>
+                                <Text type="secondary" style={{}}>(Optional)</Text>
+                            </div>
+                            <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>Select all that apply</Text>
                             <Checkbox.Group
                                 options={avOptions}
                                 value={field.value}

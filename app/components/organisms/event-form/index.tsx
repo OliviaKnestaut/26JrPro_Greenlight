@@ -24,9 +24,10 @@ import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
 import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
 import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
 
-const { Title, Link } = Typography;
+const { Title, Link, Paragraph } = Typography;
 const { Panel } = Collapse;
 
+// Define the branching logic for nested panels based on form values
 const formBranching = [
     { when: "location_type", is: "On-Campus", key: "onCampus", parent: "dateLocation", header: "On-Campus Details", component: OnCampusSection, indent: 32 },
     { when: "location_type", is: "Off-Campus", key: "offCampus", parent: "dateLocation", header: "Off-Campus Details", component: OffCampusSection, indent: 32 },
@@ -39,6 +40,7 @@ const formBranching = [
     { when: "form_data.elements.sorc_games", is: true, key: "sorc_games", parent: "eventElements", header: "SORC Games Details", component: SORCGamesSection, indent: 32 },
 ];
 
+// Recursively render nested panels based on branching logic and current form values
 const formNesting = (parentKey: string, isSelected: Record<string, any>, control: any, setValue: any) => {
     return formBranching.filter((panel) => panel.parent === parentKey).map((panel) => {
         const fieldPath = panel.when.split('.');
@@ -56,6 +58,7 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
     });
 };
 
+// Main EventForm component
 export function EventForm() {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -72,28 +75,31 @@ export function EventForm() {
         variables: { id: id ?? '' },
         skip: !id,
     });
-    const { control, handleSubmit, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm({ mode: "onChange" });
+    const { control, getValues, reset, watch, setValue, trigger, formState: { errors } } = useForm({ mode: "onChange" });
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
-    const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>();
+    const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
     const allowNavigationRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
+    // Block navigation if there are unsaved changes
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
         if (allowNavigationRef.current) return false;
         return currentLocation.pathname !== nextLocation.pathname;
     });
 
+    // When blocker state changes to "blocked", show the discard confirmation modal
     useEffect(() => {
         if (blocker.state === "blocked") {
             setPendingNavigation(
                 `${blocker.location.pathname}${blocker.location.search}${blocker.location.hash}`
             );
-            setIsExplicitDiscard(false); // Navigation attempt, not explicit discard
+            setIsExplicitDiscard(false);
             setIsDiscardModalOpen(true);
         }
     }, [blocker]);
 
+    // On mount, check for existing draft in localStorage and load it. Also handle loading existing event data if editing.
     useEffect(() => {
         const loadDraft = async () => {
             try {
@@ -106,9 +112,9 @@ export function EventForm() {
             } catch (err) {
                 console.error("❌ Error accessing editingSection from localStorage:", err);
             }
-            
+
             if (id) return;
-            
+
             try {
                 const savedFormData = localStorage.getItem("eventFormData");
                 if (savedFormData) {
@@ -123,6 +129,7 @@ export function EventForm() {
         loadDraft();
     }, [id, setValue]);
 
+    // Warn user if they try to close the tab/window with unsaved changes
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (!allowNavigationRef.current) {
@@ -134,6 +141,7 @@ export function EventForm() {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, []);
 
+    // When existing event data is loaded for editing, populate the form fields
     useEffect(() => {
         if (existingEventData?.event && !loadingEvent) {
             const ev = existingEventData.event;
@@ -167,6 +175,7 @@ export function EventForm() {
         }
     }, [existingEventData, loadingEvent, setValue]);
 
+    // Auto-save form data to localStorage on change, but only if not currently editing an existing draft (to avoid conflicts)
     useEffect(() => {
         const subscription = watch((data) => {
             if (!draftId) {
@@ -185,46 +194,99 @@ export function EventForm() {
         return () => subscription.unsubscribe();
     }, [watch, draftId]);
 
-    // Auto-open nested panels when conditions are met
-    useEffect(() => {
-        const data = isSelected;
-        const panelsToOpen: string[] = [];
-        const parentPanelsToOpen: string[] = [];
 
-        // Check each formBranching rule to see if its condition is met
+    // When the form values that control branching logic change, automatically open the relevant nested panels
+    const prevSelectedRef = useRef<any>(null);
+
+    useEffect(() => {
+        const current = isSelected;
+        const previous = prevSelectedRef.current;
+
+        if (!previous) {
+            prevSelectedRef.current = current;
+            return;
+        }
+
+        const keysToOpen: string[] = [];
+
         formBranching.forEach((panel) => {
-            const fieldPath = panel.when.split('.');
-            let currentValue: any = data;
-            for (const key of fieldPath) {
-                currentValue = currentValue?.[key];
+            const path = panel.when.split('.');
+
+            let currVal: any = current;
+            let prevVal: any = previous;
+
+            for (const key of path) {
+                currVal = currVal?.[key];
+                prevVal = prevVal?.[key];
             }
-            const shouldDisplay = Array.isArray(currentValue) 
-                ? currentValue.includes(panel.is) 
-                : currentValue === panel.is;
-            
-            if (shouldDisplay) {
-                panelsToOpen.push(panel.key);
-                // Also ensure parent panel is open
-                if (panel.parent && !parentPanelsToOpen.includes(panel.parent)) {
-                    parentPanelsToOpen.push(panel.parent);
-                }
+
+            const wasTrue = Array.isArray(prevVal)
+                ? prevVal?.includes(panel.is)
+                : prevVal === panel.is;
+
+            const isNowTrue = Array.isArray(currVal)
+                ? currVal?.includes(panel.is)
+                : currVal === panel.is;
+
+            if (!wasTrue && isNowTrue) {
+                keysToOpen.push(panel.parent); // ensure parent is open
+                keysToOpen.push(panel.key);    // open nested panel
             }
         });
 
-        // Add nested panel keys and their parent keys to active keys
-        const allPanelsToOpen = [...parentPanelsToOpen, ...panelsToOpen];
-        if (allPanelsToOpen.length > 0) {
+        if (keysToOpen.length > 0) {
             setActiveCollapseKey((prevKeys) => {
-                const newKeys = [...prevKeys];
-                allPanelsToOpen.forEach((key) => {
-                    if (!newKeys.includes(key)) {
-                        newKeys.push(key);
+                const next = [...prevKeys];
+                keysToOpen.forEach((key) => {
+                    if (!next.includes(key)) {
+                        next.push(key);
                     }
                 });
-                return newKeys;
+                return next;
             });
         }
+
+        prevSelectedRef.current = current;
+
     }, [isSelected]);
+
+    // Scroll to and open a specific section when currentEditingSection changes (e.g. when user clicks on a step in the ProgressTimeline)
+    useEffect(() => {
+        if (!currentEditingSection) return;
+
+        // Open the corresponding collapse panel first
+        setActiveCollapseKey([currentEditingSection]);
+
+        // Wait for Collapse animation + DOM layout
+        setTimeout(() => {
+            const mainContent = document.querySelector('main');
+            const el = document.getElementById(`panel-${currentEditingSection}`);
+
+            if (!mainContent || !el) return;
+
+            const targetTop = el.offsetTop - 16;
+
+            const duration = 400;
+            const start = mainContent.scrollTop;
+            const startTime = performance.now();
+
+            const animateScroll = (currentTime: number) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+
+                const scrollTo = start + (targetTop - start) * easeOutCubic;
+                mainContent.scrollTop = scrollTo;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            };
+
+            requestAnimationFrame(animateScroll);
+        }, 50);
+
+    }, [currentEditingSection]);
 
     // Resize an image File on the client to fit within max dimensions.
     const resizeImageFile = async (file: File, maxWidth = 1300, maxHeight = 780, quality = 0.85): Promise<File> => {
@@ -267,16 +329,133 @@ export function EventForm() {
         }
     };
 
+    // Helper: upload image to server endpoint and return the public url and filename
+    const uploadImage = async (file: File, desiredName?: string) => {
+        const fd = new FormData();
+        fd.append('event_img', file);
+        if (desiredName) fd.append('desired_name', desiredName);
+        const getUploadUrl = () => {
+            if (import.meta.env.DEV) {
+                return '/~ojk25/graphql/upload_event_image.php';
+            } else {
+                return '/~ojk25/graphql/upload_event_image.php';
+            }
+        };
+
+        const resp = await fetch(getUploadUrl(), {
+            method: 'POST',
+            body: fd
+        });
+
+
+        const text = await resp.text();
+        // Try to parse JSON response from server, otherwise include raw text
+        let parsed: any = null;
+        try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+
+        if (!resp.ok) {
+            if (parsed && parsed.error) {
+                const parts = [parsed.error];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
+                if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
+                throw new Error(parts.join(' | '));
+            }
+            throw new Error(`Upload failed: ${resp.status} ${text}`);
+        }
+
+        if (parsed) {
+            if (!parsed.success) {
+                const parts = [parsed.error || 'Upload endpoint returned an error'];
+                if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
+                throw new Error(parts.join(' | '));
+            }
+            return parsed; // { success, url, filename, path }
+        }
+
+        // If we couldn't parse JSON but status is OK, throw with raw text
+        throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
+    };
+
+    // Generate a URL-friendly slug from the event title for use in image filenames
+    const slugify = (str: string) => {
+        return (str || 'event')
+            .toString()
+            .normalize('NFKD')
+            .replace(/\s+/g, '_')
+            .replace(/[^A-Za-z0-9_-]/g, '')
+            .toLowerCase()
+            .substring(0, 120);
+    };
+
+    // Resolve the event image from various possible input formats (string filename, Ant Upload object, or File), handle resizing and uploading if necessary, and return the stored filename or URL.
+    const resolveEventImage = async (
+        rawValue: any,
+        desiredName: string
+    ): Promise<string | undefined> => {
+
+        if (!rawValue) return undefined;
+
+        // Already a stored filename
+        if (typeof rawValue === "string") {
+            return rawValue;
+        }
+
+        // Ant Upload object
+        if (rawValue?.originFileObj instanceof File) {
+            rawValue = rawValue.originFileObj;
+        }
+
+        // Direct File
+        if (rawValue instanceof File) {
+            let fileToUpload = rawValue;
+            try {
+                fileToUpload = await resizeImageFile(fileToUpload);
+            } catch { }
+            const uploadResp = await uploadImage(fileToUpload, desiredName);
+            return uploadResp.filename || uploadResp.url || uploadResp.path;
+        }
+
+        return undefined;
+    };
+
+    // Prepare the input for create/update mutation by processing form data, handling image upload, and enforcing schema requirements. This function ensures that the event image is properly handled whether it's a new upload or an existing filename, and constructs the final input object for the GraphQL mutation.
+    const prepareMutationInput = async (
+        data: any,
+        status: "DRAFT" | "REVIEW",
+        id?: string
+    ) => {
+        const safeData = { ...data };
+
+        const desired = id
+            ? `${id}_${slugify(data.title || "")}`
+            : `${slugify(data.title || "")}_${Date.now()}`;
+
+        const filename = await resolveEventImage(data.event_img, desired);
+
+        safeData.event_img = filename;
+
+        const input = buildMutationInput(safeData, status, !!id);
+
+        // Final schema enforcement
+        if (typeof input.eventImg !== "string") {
+            delete input.eventImg;
+        }
+
+        return input;
+    };
+
+    // Build the mutation input object from form data, converting times to 24-hour format, mapping location details, calculating event level, and including necessary metadata. This function centralizes all the logic for transforming the raw form data into the shape expected by the create/update event mutations, ensuring consistency and correctness in how event data is processed before being sent to the server.
     const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
         }
-        
+
         const convert12to24Hour = (time12h: any): string => {
             if (!time12h || typeof time12h !== 'string') return '';
             const trimmed = time12h.trim();
             if (!trimmed) return '';
-            
+
             // Check if already in 24-hour format (HH:mm:ss or HH:mm)
             const time24Match = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
             if (time24Match && !trimmed.match(/AM|PM/i)) {
@@ -285,7 +464,7 @@ export function EventForm() {
                 const seconds = time24Match[3] || '00';
                 return `${hours}:${minutes}:${seconds}`;
             }
-            
+
             // Parse 12-hour format (HH:mm AM/PM)
             const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
             if (!match) {
@@ -345,6 +524,8 @@ export function EventForm() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
+                event_img_name: data.event_img_name,
                 createdByUser: {
                     username: user.username,
                     firstName: user.firstName,
@@ -360,7 +541,9 @@ export function EventForm() {
             mutationInput.createdBy = user.username;
         }
 
-        if (data.event_img) mutationInput.eventImg = data.event_img;
+        if (typeof data.event_img === "string") {
+            mutationInput.eventImg = data.event_img;
+        }
         if (convertedStartTime) mutationInput.startTime = convertedStartTime;
         if (convertedEndTime) mutationInput.endTime = convertedEndTime;
         if (convertedSetupTime) mutationInput.setupTime = convertedSetupTime;
@@ -370,162 +553,43 @@ export function EventForm() {
         return mutationInput;
     };
 
+    // Helper to allow navigation after confirming discard of changes, ensuring that the blocker is properly bypassed and the user is taken to the intended destination without being stuck in a navigation loop or having to click multiple times. This function centralizes the logic for safely navigating away from the form after handling unsaved changes, providing a smooth user experience.
     const navigateSafely = (path: string) => {
         allowNavigationRef.current = true;
         navigate(path);
     };
 
+    // Handle saving the draft by preparing the mutation input, uploading the image if necessary, and calling either create or update mutation based on whether we're editing an existing draft. This function also manages the state of the draft ID and shows appropriate success or error messages to the user.
     const handleSaveDraft = async () => {
         if (!user) {
             message.error("You must be logged in to save a draft.");
             return;
         }
+
         const data = getValues();
 
-        // Helper: upload image to server endpoint and return the public url and filename
-            const uploadImage = async (file: File, desiredName?: string) => {
-                const fd = new FormData();
-                fd.append('event_img', file);
-                if (desiredName) fd.append('desired_name', desiredName);
-                const resp = await fetch('/~ojk25/graphql/upload_event_image.php', { method: 'POST', body: fd });
-
-                const text = await resp.text();
-                // Try to parse JSON response from server, otherwise include raw text
-                let parsed: any = null;
-                try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
-
-                if (!resp.ok) {
-                    if (parsed && parsed.error) {
-                        const parts = [parsed.error];
-                        if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
-                        if (parsed.upload_max_filesize) parts.push(`upload_max_filesize:${parsed.upload_max_filesize}`);
-                        if (parsed.post_max_size) parts.push(`post_max_size:${parsed.post_max_size}`);
-                        throw new Error(parts.join(' | '));
-                    }
-                    throw new Error(`Upload failed: ${resp.status} ${text}`);
-                }
-
-                if (parsed) {
-                    if (!parsed.success) {
-                        const parts = [parsed.error || 'Upload endpoint returned an error'];
-                        if (parsed.upload_error_code) parts.push(`code:${parsed.upload_error_code}`);
-                        throw new Error(parts.join(' | '));
-                    }
-                    return parsed; // { success, url, filename, path }
-                }
-
-                // If we couldn't parse JSON but status is OK, throw with raw text
-                throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
-        };
-
-        const slugify = (str: string) => {
-            return (str || 'event')
-                .toString()
-                .normalize('NFKD')
-                .replace(/\s+/g, '_')
-                .replace(/[^A-Za-z0-9_-]/g, '')
-                .toLowerCase()
-                .substring(0, 120);
-        };
-
-        // If event_img is a File object (from Upload), handle upload specially.
-        if (data.event_img && data.event_img instanceof File) {
-            // Use a local id variable to ensure we pass a string to the mutation
-            let idToUse: string | null = draftId;
-
-            // If we don't yet have a draftId (new create), create the draft first without eventImg
-            if (!idToUse) {
-                try {
-                    const createInput = buildMutationInput({ ...data, event_img: undefined }, "DRAFT", false);
-                    // Ensure we are not sending a File to createEvent
-                    delete createInput.eventImg;
-                    message.loading({ content: 'Creating draft...', key: 'draft' });
-                    const { data: createResult } = await createEvent({ variables: { input: createInput } });
-                    const newId = createResult?.createEvent?.id;
-                    if (!newId) throw new Error('Failed to create draft before image upload');
-                    idToUse = newId;
-                    setDraftId(newId);
-                    setDraftAlertMessage('created');
-                    setTimeout(() => setDraftAlertMessage(''), 3000);
-                    message.success({ content: 'Draft created', key: 'draft', duration: 1 });
-                } catch (err) {
-                    console.error('❌ Failed to create draft before image upload:', err);
-                    message.error('Failed to create draft before uploading image. Please try again.');
-                    return;
-                }
-            }
-
-                // Now we have an idToUse; upload using desired name: {eventId}_{slugifiedTitle}
-            try {
-                if (!idToUse) {
-                    throw new Error('Missing draft id for image upload');
-                }
-                message.loading({ content: 'Uploading image...', key: 'upload' });
-                const desired = `${idToUse}_${slugify(data.title || '')}`;
-                    // Resize image client-side to meet server limits before uploading
-                    let fileToUpload: File = data.event_img as File;
-                    try {
-                        fileToUpload = await resizeImageFile(fileToUpload, 1300, 780, 0.85);
-                    } catch (e) {
-                        console.warn('Image resize failed, proceeding with original file', e);
-                    }
-                    const uploadResp = await uploadImage(fileToUpload, desired);
-                // Write the stored filename (not the File object) to DB
-                const filenameToSave = uploadResp.filename || uploadResp.url || uploadResp.path;
-                // Update the event with the filename
-                try {
-                    const updateInput = buildMutationInput({ ...data, event_img: filenameToSave }, "DRAFT", true);
-                    // Ensure eventImg is a string filename
-                    updateInput.eventImg = filenameToSave;
-                    message.loading({ content: 'Saving image reference...', key: 'save' });
-                    const { data: updateResult } = await updateEvent({ variables: { id: idToUse, input: updateInput } });
-                    if (updateResult?.updateEvent?.id) {
-                        message.success({ content: 'Image uploaded and saved', key: 'upload', duration: 1 });
-                        message.success({ content: 'Draft updated', key: 'save', duration: 1 });
-                    }
-                } catch (err) {
-                    console.error('❌ Failed to update event with image filename:', err);
-                    message.error('Uploaded image but failed to save filename to event.');
-                    return;
-                }
-            } catch (err) {
-                console.error('❌ Image upload failed:', err);
-                message.error('Image upload failed. Please try again.');
-                return;
-            }
-
-            // At this point the draft exists and has the image filename saved; nothing more to do below for create path
-            return;
-        }
-
-        const mutationInput = buildMutationInput(data, "DRAFT", !!draftId);
-        console.log("💾 SAVING DRAFT:", mutationInput);
-
         try {
+            const input = await prepareMutationInput(data, "DRAFT", draftId || undefined);
+
             if (draftId) {
-                console.log(`🔄 Updating draft ${draftId}`);
-                const { data: result } = await updateEvent({ variables: { id: draftId, input: mutationInput } });
-                if (result?.updateEvent?.id) {
-                    console.log("✅ Draft updated successfully");
-                    setDraftAlertMessage('updated');
-                    setTimeout(() => setDraftAlertMessage(''), 3000);
-                }
+                await updateEvent({ variables: { id: draftId, input } });
+                setDraftAlertMessage('updated');
             } else {
-                console.log("✨ Creating new draft");
-                const { data: result } = await createEvent({ variables: { input: mutationInput } });
+                const { data: result } = await createEvent({ variables: { input } });
                 if (result?.createEvent?.id) {
-                    console.log("✅ Draft created successfully:", result.createEvent.id);
                     setDraftId(result.createEvent.id);
                     setDraftAlertMessage('created');
-                    setTimeout(() => setDraftAlertMessage(''), 3000);
                 }
             }
+
+            setTimeout(() => setDraftAlertMessage(''), 3000);
         } catch (err) {
             console.error("❌ Error saving draft:", err);
-            message.error("Failed to save draft. Please try again.");
+            message.error("Failed to save draft.");
         }
     };
 
+    // Handle discarding the draft by deleting it from the database if it exists, clearing localStorage, and navigating away. This function ensures that all traces of the draft are removed and that the user is properly navigated away from the form after confirming their intent to discard changes.
     const handleDiscard = async () => {
         if (draftId) {
             console.log("🗑️ Deleting saved draft from DB:", draftId);
@@ -541,20 +605,20 @@ export function EventForm() {
             console.log("📝 Discarding unsaved localStorage draft");
         }
         reset();
-        
+
         try {
             localStorage.removeItem("eventFormData");
             localStorage.removeItem("eventFormReview");
         } catch (err) {
             console.error("❌ Error clearing localStorage:", err);
         }
-        
+
         setDraftId(null);
         setIsDiscardModalOpen(false);
         message.success("Draft discarded");
-        
+
         allowNavigationRef.current = true;
-        
+
         if (blocker.state === "blocked") {
             blocker.proceed();
         } else if (pendingNavigation) {
@@ -565,20 +629,21 @@ export function EventForm() {
         }
     };
 
+    //  Handle leaving the form without discarding changes by simply clearing localStorage and allowing navigation, without deleting any existing draft from the database. This provides a way for users to exit the form while keeping their draft intact for future editing, while also ensuring that they won't be prompted about unsaved changes again until they return to the form.
     const handleLeaveWithoutDiscarding = () => {
         // Keep the draft saved in DB, just clear localStorage and navigate
         console.log("✅ Leaving without discarding saved draft");
-        
+
         try {
             localStorage.removeItem("eventFormData");
             localStorage.removeItem("eventFormReview");
         } catch (err) {
             console.error("❌ Error clearing localStorage:", err);
         }
-        
+
         setIsDiscardModalOpen(false);
         allowNavigationRef.current = true;
-        
+
         if (blocker.state === "blocked") {
             blocker.proceed();
         } else if (pendingNavigation) {
@@ -589,17 +654,18 @@ export function EventForm() {
         }
     };
 
+    // Handle the review action by first triggering validation on all form fields, then checking for errors and automatically opening the relevant panel with the first error if validation fails, and finally navigating to the review page if validation passes. This function ensures that users are guided to fix any issues in their form before proceeding to review, providing a smoother and more user-friendly experience.
     const handleReviewForm = async () => {
         // Trigger validation on all fields
         const isValid = await trigger();
-        
+
         if (!isValid) {
             // Find the first error field
             const errorFields = Object.keys(errors);
-            
+
             if (errorFields.length > 0) {
                 const firstErrorField = errorFields[0];
-                
+
                 // Map field names to their corresponding panel keys
                 const fieldToPanelMap: Record<string, string> = {
                     'title': 'eventDetails',
@@ -612,7 +678,7 @@ export function EventForm() {
                     'setup_time': 'dateLocation',
                     'location_type': 'dateLocation',
                 };
-                
+
                 // Map form_data sub-keys to their corresponding panel keys
                 const formDataFieldToPanelMap: Record<string, string> = {
                     // eventElements panel
@@ -639,7 +705,7 @@ export function EventForm() {
 
                 // Check if error is in form_data (nested fields)
                 let panelToOpen = 'eventDetails'; // default
-                
+
                 if (firstErrorField === 'form_data') {
                     const formDataErrors = errors.form_data as any;
                     const firstFormDataErrorKey = Object.keys(formDataErrors || {})[0];
@@ -649,20 +715,20 @@ export function EventForm() {
                 } else {
                     panelToOpen = fieldToPanelMap[firstErrorField] || 'eventDetails';
                 }
-                
+
                 // Open the panel with the error
                 setActiveCollapseKey([panelToOpen]);
                 setCurrentEditingSection(panelToOpen);
-                
+
                 // Show error message
                 message.error('Please complete all required fields before proceeding to review.');
-                
+
                 // Scroll to top after a brief delay to allow panel to open
                 setTimeout(() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 100);
             }
-            
+
             return;
         }
 
@@ -678,8 +744,9 @@ export function EventForm() {
         }
     };
 
+    // Render the form with collapsible sections, progress timeline, and action buttons, along with modals and alerts for user interactions. This JSX structure defines the layout and interactive elements of the event form, ensuring that users have a clear and intuitive interface for entering their event details, navigating between sections, and managing their draft.
     return (
-        <div className="container mx-auto p-8">
+        <div className="container">
             <Title level={5}>
                 <Link onClick={() => {
                     setIsExplicitDiscard(false); // Navigating back, not explicit discard
@@ -689,69 +756,88 @@ export function EventForm() {
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: 24 }}>
                 <h2 style={{ margin: 0 }}>Event Form</h2>
                 <p>Provide your event information for review and approval.</p>
+                <p> All required fields are marked with an asterisk (<span style={{ color: 'var(--red-6)' }}>*</span>). You must complete all required fields before proceeding to review.</p>
             </div>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
-                <ProgressTimeline getValues={getValues} currentEditingSection={currentEditingSection} />
+                <ProgressTimeline getValues={getValues} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
             </div>
             <div className={styles.collapseWrapper}>
                 <Form layout="vertical">
-                    <Collapse 
+                    <Collapse
                         activeKey={activeCollapseKey}
                         onChange={(keys) => {
                             const keyArray = Array.isArray(keys) ? keys : [keys];
-                            const majorSectionKeys = ["eventDetails", "dateLocation", "eventElements", "budgetPurchase"];
 
-                            // Determine which major sections have just been opened or closed
-                            const newlyOpenedMajors = majorSectionKeys.filter(
-                                (key) => keyArray.includes(key) && !activeCollapseKey.includes(key)
-                            );
-                            const justClosedMajors = majorSectionKeys.filter(
-                                (key) => activeCollapseKey.includes(key) && !keyArray.includes(key)
-                            );
+                            const majorSectionKeys = [
+                                "eventDetails",
+                                "dateLocation",
+                                "eventElements",
+                                "budgetPurchase"
+                            ];
 
-                            // When a major section is closed, also close its nested children
-                            const nestedKeysToClose: string[] = [];
-                            justClosedMajors.forEach((closedKey) => {
-                                formBranching.forEach((branch) => {
-                                    if (branch.parent === closedKey) {
-                                        nestedKeysToClose.push(branch.key);
-                                    }
-                                });
+                            // Build nested → parent map dynamically
+                            const nestedToParentMap: Record<string, string> = {};
+                            formBranching.forEach(panel => {
+                                nestedToParentMap[panel.key] = panel.parent;
                             });
 
-                            const finalKeys = keyArray.filter((k) => !nestedKeysToClose.includes(k));
+                            let finalKeys = [...keyArray];
+
+                            // 🔥 Ensure parent auto-opens if nested panel is clicked
+                            keyArray.forEach((key) => {
+                                if (!majorSectionKeys.includes(key)) {
+                                    const parent = nestedToParentMap[key];
+                                    if (parent && !finalKeys.includes(parent)) {
+                                        finalKeys.push(parent);
+                                    }
+                                }
+                            });
+
+                            // 🎯 Only allow ONE major section open at a time
+                            const openMajorSections = finalKeys.filter(k => majorSectionKeys.includes(k));
+                            if (openMajorSections.length > 1) {
+                                const mostRecentMajor = openMajorSections[openMajorSections.length - 1];
+                                finalKeys = finalKeys.filter(
+                                    k =>
+                                        !majorSectionKeys.includes(k) ||
+                                        k === mostRecentMajor
+                                );
+                            }
 
                             setActiveCollapseKey(finalKeys);
 
-                            // Update the current editing section based on open majors
-                            let nextEditingSection = currentEditingSection;
-
-                            if (newlyOpenedMajors.length > 0) {
-                                // Prefer the most recently opened major section
-                                nextEditingSection = newlyOpenedMajors[newlyOpenedMajors.length - 1];
-                            } else if (!nextEditingSection || !finalKeys.includes(nextEditingSection)) {
-                                // Fall back to any open major section, if current is no longer valid
-                                const openMajorSection = majorSectionKeys.find((key) => finalKeys.includes(key));
-                                nextEditingSection = openMajorSection;
+                            const activeMajor = finalKeys.find(k => majorSectionKeys.includes(k));
+                            if (activeMajor) {
+                                setCurrentEditingSection(activeMajor);
                             }
-
-                            setCurrentEditingSection(nextEditingSection || undefined);
                         }}
                         expandIconPosition="end"
                     >
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
-                            <EventDetailsSection control={control} watch={watch} />
+                            <div id="panel-eventDetails">
+                                <EventDetailsSection
+                                    control={control}
+                                    watch={watch}
+                                    setValue={setValue}
+                                />
+                            </div>
                         </Panel>
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
-                            <DateLocationSection control={control} />
+                            <div id="panel-dateLocation">
+                                <DateLocationSection control={control} />
+                            </div>
                         </Panel>
                         {formNesting("dateLocation", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Elements</h4>} key="eventElements">
-                            <EventElementsSection control={control} setValue={setValue} />
+                            <div id="panel-eventElements">
+                                <EventElementsSection control={control} setValue={setValue} />
+                            </div>
                         </Panel>
                         {formNesting("eventElements", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Budget & Purchases</h4>} key="budgetPurchase">
-                            <BudgetPurchaseSection control={control} setValue={setValue} />
+                            <div id="panel-budgetPurchase">
+                                <BudgetPurchaseSection control={control} setValue={setValue} />
+                            </div>
                         </Panel>
                     </Collapse>
                     <div style={{ marginTop: 24, display: "flex", justifyContent: "space-between" }}>
@@ -763,7 +849,7 @@ export function EventForm() {
                                 Save as Draft
                             </Button>
                         </div>
-                        <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)"  }} onClick={() => {
+                        <Button style={{ backgroundColor: "transparent", borderColor: "transparent", color: "var(--sea-green-9)" }} onClick={() => {
                             setIsExplicitDiscard(true); // Explicit discard action
                             setIsDiscardModalOpen(true);
                         }}>
@@ -784,22 +870,22 @@ export function EventForm() {
                     />
                 </div>
             )}
-            <DiscardModal 
+            <DiscardModal
                 open={isDiscardModalOpen}
                 title={!isExplicitDiscard && draftId ? "Leave Event Form?" : "Discard Event Form?"}
-                message={!isExplicitDiscard && draftId 
-                    ? "Your draft has been saved. Do you want to leave this page?" 
+                message={!isExplicitDiscard && draftId
+                    ? "Your draft has been saved. Do you want to leave this page?"
                     : draftId
                         ? "Are you sure you want to discard this saved draft? This action cannot be undone."
                         : "Are you sure you want to discard this event form? All unsaved changes will be lost."}
                 cancelButtonText={!isExplicitDiscard && draftId ? "Stay" : "Cancel"}
                 discardButtonText={!isExplicitDiscard && draftId ? "Leave" : "Discard"}
-                onDiscardClick={!isExplicitDiscard && draftId ? handleLeaveWithoutDiscarding : handleDiscard} 
+                onDiscardClick={!isExplicitDiscard && draftId ? handleLeaveWithoutDiscarding : handleDiscard}
                 onCancelClick={() => {
                     setIsDiscardModalOpen(false);
                     setPendingNavigation(null);
                     if (blocker.state === "blocked") blocker.reset();
-                }} 
+                }}
             />
             <ScrollToTop />
         </div>

@@ -45,3 +45,42 @@ export const formatTime = (s?: string) => {
     }
     return s;
 };
+
+export const formatDuration = (minutes?: number | string): string => {
+    if (minutes == null) return '';
+
+    const totalMinutes = typeof minutes === 'string' ? parseInt(minutes, 10) : minutes;
+    if (isNaN(totalMinutes) || totalMinutes < 0) return '';
+
+    if (totalMinutes < 60) {
+        return `${totalMinutes} minute${totalMinutes === 1 ? '' : 's'}`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+
+    if (remainingMinutes === 0) {
+        return `${hours} hour${hours === 1 ? '' : 's'}`;
+    }
+
+    return `${hours} hour${hours === 1 ? '' : 's'} ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'}`;
+};
+
+
+export const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+
+    const area = digits.slice(0, 3);
+    const middle = digits.slice(3, 6);
+    const last = digits.slice(6, 10);
+
+    if (digits.length > 6) {
+        return `(${area}) ${middle}-${last}`;
+    } else if (digits.length > 3) {
+        return `(${area}) ${middle}`;
+    } else if (digits.length > 0) {
+        return `(${area}`;
+    }
+
+    return "";
+};
