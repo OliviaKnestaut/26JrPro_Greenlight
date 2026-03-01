@@ -35,7 +35,7 @@ const NavMini: React.FC<NavMiniProps> = ({ links }) => {
                         title: <a onClick={(e) => handleAnchorClick(e as any, link)}>{link.title}</a>,
                     };
                 })}
-                offsetTop={60}
+                offsetTop={20}
             />
         </div>
     );

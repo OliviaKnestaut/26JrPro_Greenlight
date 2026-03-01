@@ -41,6 +41,10 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
           validate: (file) => {
             if (!file) return "Event image is required";
 
+            // If it's a string, it's an existing filename from the DB, so it's valid
+            if (typeof file === "string") return true;
+
+            // Only run file-specific checks if it's a new upload (File object)
             const validTypes = ["image/jpeg", "image/jpg", "image/png"];
             if (!validTypes.includes(file.type)) {
               return "Only JPG and PNG images are allowed";
@@ -61,16 +65,25 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
 
             <Upload
               maxCount={1}
+              fileList={
+                field.value
+                  ? [{
+                    uid: '-1',
+                    name: getValues("event_img_name") || 'Current Image',
+                    status: 'done',
+                    url: getValues("event_img_preview"),
+                  }]
+                  : []
+              }
               beforeUpload={(file) => {
+                if (!file.type) return false;
+
                 const validTypes = ["image/jpeg", "image/jpg", "image/png"];
                 const isValidType = validTypes.includes(file.type);
                 const isUnder5MB = file.size <= 5 * 1024 * 1024;
 
                 if (!isValidType) {
-                  setError("event_img", {
-                    type: "manual",
-                    message: "Only JPG and PNG images are allowed",
-                  });
+                  setError("event_img", { type: "manual", message: "Only JPG and PNG images are allowed" });
                   return Upload.LIST_IGNORE;
                 }
 
@@ -86,15 +99,23 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
                 return false;
               }}
               onChange={(info) => {
-                const file = info.fileList[0]?.originFileObj;
-                if (!file) return;
+                // Get the most recent file added
+                const fileItem = info.fileList[info.fileList.length - 1];
 
-                clearErrors("event_img");
-                field.onChange(file);
+                if (!fileItem) {
+                  field.onChange(null);
+                  return;
+                }
 
-                const previewUrl = URL.createObjectURL(file);
-                setValue("event_img_name", file.name);
-                setValue("event_img_preview", previewUrl);
+                // If it's a new upload, it has originFileObj
+                if (fileItem.originFileObj) {
+                  clearErrors("event_img");
+                  field.onChange(fileItem.originFileObj); // Update field with File object
+
+                  const previewUrl = URL.createObjectURL(fileItem.originFileObj);
+                  setValue("event_img_name", fileItem.originFileObj.name);
+                  setValue("event_img_preview", previewUrl);
+                }
               }}
               onRemove={() => {
                 field.onChange(null);
@@ -103,17 +124,6 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
                 return true;
               }}
               style={{ marginTop: 8 }}
-              defaultFileList={
-                field.value
-                  ? [{
-                      uid: '-1',
-                      name: getValues("event_img_name") || 'Current Image',
-                      status: 'done',
-                      url: getValues("event_img_preview"),
-                      originFileObj: undefined, // existing file, not a new File
-                    }]
-                  : []
-              }
             >
               <div>
                 <UploadOutlined /> Click to Upload

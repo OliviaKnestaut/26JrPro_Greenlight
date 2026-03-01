@@ -1,7 +1,7 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Radio, Input, Typography, InputNumber } from "antd";
 import FieldLabel from "../../../components/FieldLabel";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 const { Text } = Typography;
 
@@ -52,9 +52,15 @@ export default function FoodSection({ control, setValue }: Props) {
   const minCost = isOver500 ? 500 : 0;
   const maxCost = isUnder500 ? 500 : isOver500 ? 5000 : undefined;
 
-  // Reset cost when food type changes
+  // Clear estimated_cost only when the user actively changes the food type.
+  // Uses value comparison (not a boolean flag) so React StrictMode's double-
+  // invocation of effects doesn't wipe a pre-populated cost on initial mount.
+  const prevFoodTypeRef = useRef(foodType);
   useEffect(() => {
-    setValue("form_data.food.estimated_cost", undefined);
+    if (prevFoodTypeRef.current !== foodType) {
+      setValue("form_data.food.estimated_cost", undefined);
+    }
+    prevFoodTypeRef.current = foodType;
   }, [foodType, setValue]);
 
   // Centralized validation
@@ -86,7 +92,8 @@ export default function FoodSection({ control, setValue }: Props) {
   );
 
   const costRules = {
-    required: "Estimated cost is required",
+    // validateCost already returns the "required" message when value is null/undefined,
+    // so we don't add a separate `required` rule that could fire at different times.
     validate: validateCost,
   };
 

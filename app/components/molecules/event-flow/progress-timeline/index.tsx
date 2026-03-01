@@ -14,6 +14,7 @@ type ProgressTimelineProps = {
 	isSectionComplete?: (key: string, values: Record<string, any>) => boolean
 	currentEditingSection?: string 
 	onSectionClick?: (key: string) => void
+	errors?: Record<string, any>
 }
 
 const defaultSteps: ProgressStep[] = [
@@ -36,12 +37,13 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			if (values.location_type === "Virtual") {
 				return hasBasicFields && !!values.virtual_link;
 			}
-			// For On-Campus or Off-Campus, check if nested location details exist
+			// For On-Campus, check if a building/room has been selected
 			if (values.location_type === "On-Campus") {
 				return hasBasicFields && !!values.form_data?.location?.selected;
 			}
+			// For Off-Campus, field is stored at form_data.location.off_campus_address
 			if (values.location_type === "Off-Campus") {
-				return hasBasicFields && !!values.form_data?.offCampus?.address;
+				return hasBasicFields && !!values.form_data?.location?.off_campus_address;
 			}
 			return hasBasicFields;
 		case "eventElements":
@@ -65,12 +67,37 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 	}
 };
 
+// Top-level RHF error keys that belong to each section
+const sectionTopLevelErrorFields: Record<string, string[]> = {
+	eventDetails: ['event_img', 'title', 'description', 'attendees'],
+	dateLocation: ['event_date', 'start_time', 'end_time', 'location_type', 'virtual_link'],
+	eventElements: [],
+	budgetPurchase: [],
+};
+
+// form_data sub-keys whose errors belong to each section
+const sectionFormDataErrorKeys: Record<string, string[]> = {
+	dateLocation: ['location', 'travel'],
+	eventElements: ['elements', 'level0_confirmed', 'food', 'alcohol', 'minors', 'movies', 'raffles', 'fire', 'sorc_games'],
+	budgetPurchase: ['budget', 'vendors', 'vendors_notice_acknowledged', 'non_vendor_services', 'non_vendor_services_notes', 'non_vendor_services_acknowledged'],
+	eventDetails: [],
+};
+
+const hasSectionErrors = (sectionKey: string, errors: Record<string, any>): boolean => {
+	const topLevel = sectionTopLevelErrorFields[sectionKey] || [];
+	if (topLevel.some(f => !!errors[f])) return true;
+	const formDataKeys = sectionFormDataErrorKeys[sectionKey] || [];
+	const formDataErrors = errors?.form_data as any;
+	return formDataKeys.some(k => !!formDataErrors?.[k]);
+};
+
 export default function ProgressTimeline({
 	getValues,
 	steps = defaultSteps,
 	isSectionComplete = defaultIsSectionComplete,
 	currentEditingSection,
 	onSectionClick,
+	errors = {},
 }: ProgressTimelineProps) {
 	// Safely get values and handle null/undefined cases
 	let values: Record<string, any> = {};
@@ -121,16 +148,17 @@ export default function ProgressTimeline({
 					let status: "finish" | "process" | "wait" | "error" = "wait";
 					
 					try {
-						const isComplete = isSectionComplete(step.key, values);
+						const hasErrors = hasSectionErrors(step.key, errors);
+						const isComplete = isSectionComplete(step.key, values) && !hasErrors;
 						const isCurrent = currentEditingSection === step.key;
-						
-						if (isComplete) {
+
+						if (hasErrors) {
+							// Always show the X icon when a section has active validation errors
+							status = "error";
+						} else if (isComplete) {
 							status = "finish";
 						} else if (isCurrent) {
 							status = "process";
-						} else if (!isComplete && index < activeStep) {
-							// Past sections that aren't complete should show as error
-							status = "error";
 						}
 					} catch (err) {
 						console.warn(`Error calculating status for section ${step.key}:`, err);
