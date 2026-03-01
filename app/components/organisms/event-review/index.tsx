@@ -636,7 +636,7 @@ export function EventReview() {
                 >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <Title level={3}>Date & Location</Title>
-                        <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('eventDetails')} />
+                        <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('dateLocation')} />
                     </div>
 
                     {renderField("Location Type", formData?.location?.type)}
