@@ -445,36 +445,18 @@ export function EventForm() {
 
         if (typeof rawValue === "string") return rawValue;
 
-        if (rawValue?.originFileObj instanceof File) {
-            rawValue = rawValue.originFileObj;
-        }
+        const fileToUpload = rawValue?.originFileObj instanceof File
+            ? rawValue.originFileObj
+            : rawValue;
 
-        let fileToUpload = rawValue;
-        if (rawValue?.originFileObj instanceof File) {
-            fileToUpload = rawValue.originFileObj;
-        }
+        if (!(fileToUpload instanceof File)) return undefined;
 
-        // Only upload if it's a real File object
-        if (fileToUpload instanceof File) {
-            // Skip actual upload in dev — the PHP endpoint isn't available locally
-            if (import.meta.env.DEV) {
-                console.warn("💡 DEV mode: skipping image upload, returning placeholder filename");
-                return `${desiredName}.jpg`;
-            }
-            const uploadResp = await uploadImage(fileToUpload, desiredName);
-            return uploadResp.filename || uploadResp.url || uploadResp.path;
+        if (import.meta.env.DEV) {
+            console.warn("💡 DEV mode: skipping image upload, returning placeholder filename");
+            return `${desiredName}.jpg`;
         }
-
-        if (rawValue instanceof File) {
-            if (import.meta.env.DEV) {
-                console.warn("💡 Skipping image upload in DEV, returning local filename");
-                return `${desiredName}.jpg`; // or just rawValue.name
-            }
-            const uploadResp = await uploadImage(rawValue, desiredName);
-            return uploadResp.filename || uploadResp.url || uploadResp.path;
-        }
-
-        return undefined;
+        const uploadResp = await uploadImage(fileToUpload, desiredName);
+        return uploadResp.filename || uploadResp.url || uploadResp.path;
     };
 
     // Prepare the input for create/update mutation by processing form data, handling image upload, and enforcing schema requirements. This function ensures that the event image is properly handled whether it's a new upload or an existing filename, and constructs the final input object for the GraphQL mutation.

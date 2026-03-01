@@ -177,7 +177,7 @@ export default function ProgressTimeline({
 							status = "error";
 						} else if (isComplete) {
 							status = "finish";
-						} else if (isCurrent) {
+						} else if (index === activeStep) {
 							status = "process";
 						}
 					} catch (err) {
