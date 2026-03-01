@@ -968,19 +968,7 @@ export function EventReview() {
 
                             {renderField(
                                 "Student Point of Contact",
-                                userData?.users?.find(
-                                    (u) => u.id === formData?.minors?.student_contact_id
-                                )
-                                    ? `${userData.users.find(
-                                        (u) => u.id === formData?.minors?.student_contact_id
-                                    )?.firstName || ""} ${userData.users.find(
-                                        (u) => u.id === formData?.minors?.student_contact_id
-                                    )?.lastName || ""
-                                    } (@${userData.users.find(
-                                        (u) => u.id === formData?.minors?.student_contact_id
-                                    )?.username || ""
-                                    })`
-                                    : null
+                                formData?.minors?.student_contact_id || null
                             )}
 
                             {renderField(
