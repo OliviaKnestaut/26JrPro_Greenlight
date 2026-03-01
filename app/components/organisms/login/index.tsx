@@ -1,9 +1,9 @@
-import React from "react";
 import { Form, Input, Button, Typography, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from '../../../auth/AuthProvider';
 import heroImg from "../../assets/login-hero.jpg";
+import LoginLogo from "../../assets/LoginLogo.svg";
 
 const { Title, Paragraph, Link } = Typography;
 
@@ -20,7 +20,6 @@ export function LoginContent() {
                 const success = await auth.login(username, password);
                 if (success) {
                     messageApi.success('Signed in');
-                    // redirect back to the original location (if provided)
                     const from = (location.state as any)?.from?.pathname || '/';
                     navigate(from, { replace: true });
                 } else {
@@ -35,7 +34,14 @@ export function LoginContent() {
     return (
         <>
         {contextHolder}
-        <div className="flex flex-col md:flex-row-reverse min-h-screen">
+        <div className="relative flex flex-col md:flex-row-reverse min-h-screen">
+
+        {/* large screens: logo pinned to top-left */}
+        <img
+            className="hidden md:block absolute top-8 left-8 h-12 w-auto z-50"
+            src={LoginLogo}
+            alt="GreenLight logo"
+        />
             <div
                 className="md:w-1/2 w-full h-56 md:h-auto"
                 style={{
@@ -45,8 +51,18 @@ export function LoginContent() {
                 }}
             />
 
-            <div className="md:w-1/2 w-full flex items-center justify-center bg-white">
+            <div className="md:w-1/2 w-full flex items-center justify-center">
                 <div className="w-full max-w-md p-8">
+
+                    {/* small/medium screens: centered logo */}
+                    <div className="block md:hidden mt-6 mb-12 flex justify-center">
+                        <img
+                            src={LoginLogo}
+                            alt="GreenLight logo"
+                            className="h-12 w-auto"
+                        />
+                    </div>
+
                     <div className="pb-4">
                         <Title level={1} >Welcome Back</Title>
                         <Title level={5} className="regular">Sign in to continue to your account.</Title>

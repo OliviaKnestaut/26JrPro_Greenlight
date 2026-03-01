@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Button, Typography, Input, Tag } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router";
+import { Button, Typography, Input } from "antd";
+import { SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { NavLink, Outlet, useLocation } from "react-router";
-/*app\components\organisms\event-submissions\index.tsx to pull the search in*/ 
+const { Title, Paragraph, Link } = Typography;
 
 export function BrainstormContent() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [query, setQuery] = useState("");
 
     let title = "Brainstorm";
@@ -21,7 +23,14 @@ export function BrainstormContent() {
 
     return (
         <div >
-            <h1 className="text-2xl font-bold">{title}</h1>
+            <div className="container">
+                <Title level={5}>
+                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
+                </Title>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem", width: "100%" }}>
+                <Title level={2} style={{ margin: 0 }}>{title}</Title>
+            </div>
 
             <div className="brainstorm-nav">
                 <nav className="mt-4 space-x-4 toggle-nav w-full">

@@ -80,28 +80,28 @@ export function BudgetContent() {
                         </Button>
                     </div>
                     {/* Use negative margins + inner padding for gutters so 4x 25% fits without wrapping */}
-                    <div className="flex flex-wrap -mx-2 w-full gap-y-4">
-                        <div className="px-2 w-1/2 lg:w-1/4">
+                    <div className="flex flex-wrap w-full">
+                        <div className="w-1/2 lg:w-1/4 p-2">
                             <Statistic title="Total Year-Round Budget" value={`$${totalAllocated.toLocaleString()}`} />
                         </div>
-                        <div className="px-2 w-1/2 lg:w-1/4">
+                        <div className="w-1/2 lg:w-1/4 p-2">
                             <Statistic title="Total Budget Per Term" value={`$${totalPerTerm.toLocaleString()}`} />
                         </div>
-                        <div className="px-2 w-1/2 lg:w-1/4">
+                        <div className="w-1/2 lg:w-1/4 p-2">
                             <Statistic title="Remaining" value={`$${totalRemaining.toLocaleString()}`} />
                         </div>
-                        <div className="px-2 w-1/2 lg:w-1/4">
+                        <div className="w-1/2 lg:w-1/4 p-2">
                             <Statistic title="Budget Utilization" value={`${utilization}%`} />
                         </div>
                     </div>
-                    <div className="flex flex-col lg:flex-row -mx-2 w-full mt-4 gap-y-4">
-                        <div className="px-2 w-full lg:w-1/2">
+                    <div className="flex flex-col lg:flex-row">
+                        <div className="w-full lg:w-1/2 p-2">
                             <Card>
                                 <Title level={4}>Total Spent</Title>
                                 <img src={spentGraph} alt="Total Spent Graph" style={{ width: '100%' }} />
                             </Card>
                         </div>
-                        <div className="px-2 w-full lg:w-1/2">
+                        <div className="w-full lg:w-1/2 p-2">
                             <Card>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Title level={4} style={{ margin: 0 }}>Money Spent</Title>
@@ -112,72 +112,75 @@ export function BudgetContent() {
                         </div>
                     </div>
                 </div>
+                <div className="container w-full p-2 pt-4">
+                    <Card className="mt-4">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                            <Title level={4} style={{ margin: 0 }}>Purchase Requests</Title>
+                            <Button icon={<FilterOutlined />}>Filter</Button>
+                            <Button 
+                                type="link" 
+                                style={{ marginLeft: 'auto', padding: 0 }}
+                                onClick={() => setViewAll(v => !v)}
+                            >
+                                {viewAll ? 'View Less' : 'View All'}
+                            </Button>
+                        </div>
+                        <div style={{ marginTop: 12 }}>
+                            {(() => {
+                                if (!orgUsername) return <div>No organization associated with your account.</div>;
+                                const eventMap = new Map<string, string>((eventsData?.eventsByOrganization ?? []).map((e: any) => [e.id, e.title]));
+                                const rows = (purchasesData?.purchasesByOrganization ?? []).map((p: any) => ({
+                                    key: p.id,
+                                    date: p.dateSubmitted,
+                                    title: p.itemTitle,
+                                    categories: p.itemCategory,
+                                    eventId: p.eventId,
+                                    eventTitle: eventMap.get(p.eventId) ?? null,
+                                    status: p.orderStatus,
+                                    cost: p.itemCost,
+                                }));
+                                const columns: ColumnsType<any> = [
+                                    { title: 'Date', dataIndex: 'date', key: 'date', width: 120, ellipsis: true, render: (d: string) => formatDateMDY(d) },
+                                    { title: 'Title', dataIndex: 'title', key: 'title', width: 300, ellipsis: true },
+                                    { title: 'Categories', dataIndex: 'categories', key: 'categories', width: 160, ellipsis: true },
+                                    { title: 'Event', dataIndex: 'eventTitle', key: 'event', width: 180, ellipsis: true, render: (t: any, row: any) => t ? t : row.eventId ? `#${row.eventId}` : '-' },
+                                    {
+                                        title: 'Status', dataIndex: 'status', key: 'status', width: 140, ellipsis: true,
+                                        render: (s: string) => {
+                                            const styles: Record<string, React.CSSProperties> = {
+                                                approved:    { backgroundColor: 'var(--green-2)', color: 'var(--green-9)' },
+                                                denied:      { backgroundColor: 'var(--red-2)', color: 'var(--red-10)' },
+                                                'in-draft':  { backgroundColor: 'var(--sea-green-2)', color: 'var(--sea-green-10)' },
+                                                'in-review': { backgroundColor: 'var(--gold-2)', color: 'var(--gold-10)' },
+                                            };
+                                            const style = styles[s] ?? { backgroundColor: '#F0F0F0', color: '#595959' };
+                                            return (
+                                                <Tag style={{ borderRadius: 20, border: 'none', padding: '4px 0', minWidth: 70, textAlign: 'center', display: 'inline-block', ...style }}>
+                                                    {s}
+                                                </Tag>
+                                            );
+                                        }
+                                    },
+                                    { title: 'Cost', dataIndex: 'cost', key: 'cost', width: 120, ellipsis: true, render: (c: number) => c == null ? '-' : `$${Number(c).toFixed(2)}` },
+                                ];
+                                return (
+                                        <div style={{ maxHeight: 360, overflow: 'auto' }}>
+                                        <Table 
+                                            columns={columns} 
+                                            dataSource={rows} 
+                                            loading={purchasesLoading} 
+                                            pagination={viewAll ? false : { pageSize: 5 }} 
+                                            tableLayout="fixed"
+                                            scroll={{ x: 900 }}
+                                        />
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    </Card>
 
-                <Card className="mt-4">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                        <Title level={4} style={{ margin: 0 }}>Purchase Requests</Title>
-                        <Button icon={<FilterOutlined />}>Filter</Button>
-                        <Button 
-                            type="link" 
-                            style={{ marginLeft: 'auto', padding: 0 }}
-                            onClick={() => setViewAll(v => !v)}
-                        >
-                            {viewAll ? 'View Less' : 'View All'}
-                        </Button>
-                    </div>
-                    <div style={{ marginTop: 12 }}>
-                        {(() => {
-                            if (!orgUsername) return <div>No organization associated with your account.</div>;
-                            const eventMap = new Map<string, string>((eventsData?.eventsByOrganization ?? []).map((e: any) => [e.id, e.title]));
-                            const rows = (purchasesData?.purchasesByOrganization ?? []).map((p: any) => ({
-                                key: p.id,
-                                date: p.dateSubmitted,
-                                title: p.itemTitle,
-                                categories: p.itemCategory,
-                                eventId: p.eventId,
-                                eventTitle: eventMap.get(p.eventId) ?? null,
-                                status: p.orderStatus,
-                                cost: p.itemCost,
-                            }));
-                            const columns: ColumnsType<any> = [
-                                { title: 'Date', dataIndex: 'date', key: 'date', width: 120, ellipsis: true, render: (d: string) => formatDateMDY(d) },
-                                { title: 'Title', dataIndex: 'title', key: 'title', width: 300, ellipsis: true },
-                                { title: 'Categories', dataIndex: 'categories', key: 'categories', width: 160, ellipsis: true },
-                                { title: 'Event', dataIndex: 'eventTitle', key: 'event', width: 180, ellipsis: true, render: (t: any, row: any) => t ? t : row.eventId ? `#${row.eventId}` : '-' },
-                                {
-                                    title: 'Status', dataIndex: 'status', key: 'status', width: 140, ellipsis: true,
-                                    render: (s: string) => {
-                                        const styles: Record<string, React.CSSProperties> = {
-                                            approved:    { backgroundColor: 'var(--green-2)', color: 'var(--green-9)' },
-                                            denied:      { backgroundColor: 'var(--red-2)', color: 'var(--red-10)' },
-                                            'in-draft':  { backgroundColor: 'var(--sea-green-2)', color: 'var(--sea-green-10)' },
-                                            'in-review': { backgroundColor: 'var(--gold-2)', color: 'var(--gold-10)' },
-                                        };
-                                        const style = styles[s] ?? { backgroundColor: '#F0F0F0', color: '#595959' };
-                                        return (
-                                            <Tag style={{ borderRadius: 20, border: 'none', padding: '4px 0', minWidth: 70, textAlign: 'center', display: 'inline-block', ...style }}>
-                                                {s}
-                                            </Tag>
-                                        );
-                                    }
-                                },
-                                { title: 'Cost', dataIndex: 'cost', key: 'cost', width: 120, ellipsis: true, render: (c: number) => c == null ? '-' : `$${Number(c).toFixed(2)}` },
-                            ];
-                            return (
-                                    <div style={{ maxHeight: 360, overflow: 'auto' }}>
-                                    <Table 
-                                        columns={columns} 
-                                        dataSource={rows} 
-                                        loading={purchasesLoading} 
-                                        pagination={viewAll ? false : { pageSize: 5 }} 
-                                        tableLayout="fixed"
-                                        scroll={{ x: 900 }}
-                                    />
-                                </div>
-                            );
-                        })()}
-                    </div>
-                </Card>
+                </div>
+
             </div>
         );
 }

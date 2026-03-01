@@ -108,7 +108,8 @@ export function EventSubmissionsContent() {
         const statusParam = searchParams.get('status');
         const pastParam = searchParams.get('past');
         setQuery(q);
-        setSelectedStatuses(statusParam ? statusParam.split(',').filter(Boolean) : []);
+        // remove 'in-review' from incoming status params because in-review is shown separately
+        setSelectedStatuses(statusParam ? statusParam.split(',').filter(Boolean).filter(s => s !== 'in-review') : []);
         const isPast = pastParam === '1' || pastParam === 'true';
         setMainTab(isPast ? 'past' : 'upcoming');
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -168,12 +169,12 @@ export function EventSubmissionsContent() {
                         style={{borderRadius: 0, border: 0, width: '46px', boxShadow: 'none', height: 40}} />
                     </Space.Compact>
                         <Popover
+                            placement="bottom"
                             style={{ borderRadius: 0 }}
                             content={
                                 <div style={{ padding: 8, width: 120 }} onClick={e => e.stopPropagation()}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                         <Checkbox checked={pendingStatuses.includes('draft')} onChange={() => toggleStatus('draft')}>In-Draft</Checkbox>
-                                        <Checkbox checked={pendingStatuses.includes('in-review')} onChange={() => toggleStatus('in-review')}>In-Review</Checkbox>
                                         <Checkbox checked={pendingStatuses.includes('approved')} onChange={() => toggleStatus('approved')}>Approved</Checkbox>
                                         <Checkbox checked={pendingStatuses.includes('cancelled')} onChange={() => toggleStatus('cancelled')}>Cancelled</Checkbox>
                                         {/* removed 'Past' from filter options per request */}
@@ -313,10 +314,13 @@ export function EventSubmissionsContent() {
                         </div>
                     ))
                 ) : (() => {
-                    const withParsed = events.map((e: any) => ({
-                        ...e,
-                        parsedDate: e.eventDate ? new Date(e.eventDate) : null,
-                    }));
+                    // Exclude 'in-review' events from the general listing; they are shown in the dedicated In-Review collapse above
+                    const withParsed = events
+                        .filter((e: any) => serverToUi(e.eventStatus) !== 'in-review')
+                        .map((e: any) => ({
+                            ...e,
+                            parsedDate: e.eventDate ? new Date(e.eventDate) : null,
+                        }));
                     const today = new Date();
                     today.setHours(0,0,0,0);
                         const sorted = withParsed.sort((a: any, b: any) => {
