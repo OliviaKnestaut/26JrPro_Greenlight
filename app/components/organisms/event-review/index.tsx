@@ -225,9 +225,13 @@ export function EventReview() {
 
     const handleEditSection = (sectionKey: string) => {
         try {
+            // Keep EventForm compatible by updating the existing localStorage key
+            // that it reads to determine which section to pre-open.
+            localStorage.setItem("editingSection", sectionKey);
+
             navigate(`/event-form${id ? `/${id}` : ''}`, {
                 state: { editingSection: sectionKey }
-            })
+            });
         }
         catch (err) {
             console.error("Error navigating to edit section:", err);
@@ -636,13 +640,23 @@ export function EventReview() {
                 >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <Title level={3}>Date & Location</Title>
-                        <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('eventDetails')} />
+                        <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('dateLocation')} />
                     </div>
 
                     {renderField("Location Type", formData?.location?.type)}
                     {renderField("Event Date", formatDateMDY(formData?.event?.dateRange?.[0]))}
-                    {renderField("Start Time", formatTime(formData?.startTime))}
-                    {renderField("End Time", formatTime(formData?.endTime))}
+                    {renderField(
+                        "Start Time",
+                        formData?.startTime && /am|pm/i.test(formData.startTime)
+                            ? formData.startTime
+                            : formatTime(formData?.startTime)
+                    )}
+                    {renderField(
+                        "End Time",
+                        formData?.endTime && /am|pm/i.test(formData.endTime)
+                            ? formData.endTime
+                            : formatTime(formData?.endTime)
+                    )}
                     {renderField("Setup Time", formatDuration(formData?.setupTime))}
 
                     {/* IF EVENT WAS VIRTUAL */}
@@ -968,19 +982,7 @@ export function EventReview() {
 
                             {renderField(
                                 "Student Point of Contact",
-                                userData?.users?.find(
-                                    (u) => u.id === formData?.minors?.student_contact_id
-                                )
-                                    ? `${userData.users.find(
-                                        (u) => u.id === formData?.minors?.student_contact_id
-                                    )?.firstName || ""} ${userData.users.find(
-                                        (u) => u.id === formData?.minors?.student_contact_id
-                                    )?.lastName || ""
-                                    } (@${userData.users.find(
-                                        (u) => u.id === formData?.minors?.student_contact_id
-                                    )?.username || ""
-                                    })`
-                                    : null
+                                formData?.minors?.student_contact_id || null
                             )}
 
                             {renderField(
@@ -1360,7 +1362,7 @@ export function EventReview() {
 
                     {renderField(
                         "Non-Vendor Charges Acknowledged",
-                        formData?.non_vendor_services_acknowledged ? "Yes" : "No"
+                        formData?.form_data?.non_vendor_services_acknowledged ? "Yes" : "No"
                     )}
 
                     {renderField(

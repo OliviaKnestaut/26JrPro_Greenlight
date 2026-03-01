@@ -35,7 +35,7 @@ export default function FireSafetySection({ control }: Props) {
                             </Radio>
 
                             <Radio value="personal_fire_pit" style={{ marginTop: 8 }}>
-                                Personal Grill, Fire Pitt or Other Open Flame (must be approved by the University and meet all safety requirements)
+                                Personal Grill, Fire Pit or Other Open Flame (must be approved by the University and meet all safety requirements)
                             </Radio>
 
                             <Radio value="grill_closed_event" style={{ marginTop: 8 }}>
