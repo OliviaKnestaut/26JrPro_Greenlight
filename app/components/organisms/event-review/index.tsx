@@ -1358,7 +1358,7 @@ export function EventReview() {
 
                     {renderField(
                         "Non-Vendor Charges Acknowledged",
-                        formData?.non_vendor_services_acknowledged ? "Yes" : "No"
+                        formData?.form_data?.non_vendor_services_acknowledged ? "Yes" : "No"
                     )}
 
                     {renderField(
