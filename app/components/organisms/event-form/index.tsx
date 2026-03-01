@@ -416,6 +416,18 @@ export function EventForm() {
         throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
     };
 
+    // Helper: delete a previously-uploaded event image from the server
+    const deleteEventImage = async (filename: string) => {
+        if (!filename || import.meta.env.DEV) return;
+        try {
+            const fd = new FormData();
+            fd.append('filename', filename);
+            await fetch('/~ojk25/graphql/delete_event_image.php', { method: 'POST', body: fd });
+        } catch (err) {
+            console.warn('⚠️ Could not delete event image from server:', err);
+        }
+    };
+
     // Generate a URL-friendly slug from the event title for use in image filenames
     const slugify = (str: string) => {
         return (str || 'event')
@@ -641,6 +653,11 @@ export function EventForm() {
         if (draftId) {
             console.log("🗑️ Deleting saved draft from DB:", draftId);
             try {
+                // Delete the uploaded image from the server before removing the DB record
+                const currentImg = getValues('event_img');
+                if (typeof currentImg === 'string' && currentImg) {
+                    await deleteEventImage(currentImg);
+                }
                 await deleteEvent({ variables: { id: draftId } });
                 console.log("✅ Draft deleted from DB");
             } catch (err) {

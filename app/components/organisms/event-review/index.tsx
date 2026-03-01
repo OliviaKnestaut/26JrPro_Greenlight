@@ -467,8 +467,26 @@ export function EventReview() {
         }
     };
 
+    const deleteEventImage = async (filename: string) => {
+        if (!filename || import.meta.env.DEV) return;
+        try {
+            const fd = new FormData();
+            fd.append('filename', filename);
+            await fetch('/~ojk25/graphql/delete_event_image.php', { method: 'POST', body: fd });
+        } catch (err) {
+            console.warn('⚠️ Could not delete event image from server:', err);
+        }
+    };
+
     const handleDiscard = async () => {
-        if (id) await deleteEvent({ variables: { id } });
+        if (id) {
+            // Delete the uploaded image from the server before removing the DB record
+            const imgFilename = rawFormData?.event_img;
+            if (typeof imgFilename === 'string' && imgFilename) {
+                await deleteEventImage(imgFilename);
+            }
+            await deleteEvent({ variables: { id } });
+        }
 
         try {
             clearFormData();
