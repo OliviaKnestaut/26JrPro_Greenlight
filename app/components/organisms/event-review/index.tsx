@@ -225,9 +225,13 @@ export function EventReview() {
 
     const handleEditSection = (sectionKey: string) => {
         try {
+            // Keep EventForm compatible by updating the existing localStorage key
+            // that it reads to determine which section to pre-open.
+            localStorage.setItem("editingSection", sectionKey);
+
             navigate(`/event-form${id ? `/${id}` : ''}`, {
                 state: { editingSection: sectionKey }
-            })
+            });
         }
         catch (err) {
             console.error("Error navigating to edit section:", err);
