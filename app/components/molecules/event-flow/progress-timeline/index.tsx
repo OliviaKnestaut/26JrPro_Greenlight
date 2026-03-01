@@ -14,6 +14,8 @@ type ProgressTimelineProps = {
 	isSectionComplete?: (key: string, values: Record<string, any>) => boolean
 	currentEditingSection?: string 
 	onSectionClick?: (key: string) => void
+	errors?: Record<string, any>
+	visitedSections?: string[]
 }
 
 const defaultSteps: ProgressStep[] = [
@@ -36,12 +38,13 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			if (values.location_type === "Virtual") {
 				return hasBasicFields && !!values.virtual_link;
 			}
-			// For On-Campus or Off-Campus, check if nested location details exist
+			// For On-Campus, check if a building/room has been selected
 			if (values.location_type === "On-Campus") {
 				return hasBasicFields && !!values.form_data?.location?.selected;
 			}
+			// For Off-Campus, field is stored at form_data.location.off_campus_address
 			if (values.location_type === "Off-Campus") {
-				return hasBasicFields && !!values.form_data?.offCampus?.address;
+				return hasBasicFields && !!values.form_data?.location?.off_campus_address;
 			}
 			return hasBasicFields;
 		case "eventElements":
@@ -54,15 +57,40 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			// Complete if user selected elements OR explicitly said no elements
 			return hasElements || hasNoElements;
 		case "budgetPurchase":
-			// Budget section is optional but always complete since it's informational
+			// Budget section is optional but always complete since it's informational.
+			// The level-0 / visited gate is handled inside the component where visitedSections is in scope.
 			return true;
 		case "review":
-			// All previous sections must be completed
-			return defaultIsSectionComplete("eventDetails", values) &&
-				defaultIsSectionComplete("dateLocation", values);
+			// Never auto-complete — this step only becomes active when the user is
+			// actually on the review page (currentEditingSection="review" drives the UI).
+			return false;
 		default:
 			return false;
 	}
+};
+
+// Top-level RHF error keys that belong to each section
+const sectionTopLevelErrorFields: Record<string, string[]> = {
+	eventDetails: ['event_img', 'title', 'description', 'attendees'],
+	dateLocation: ['event_date', 'start_time', 'end_time', 'location_type', 'virtual_link'],
+	eventElements: [],
+	budgetPurchase: [],
+};
+
+// form_data sub-keys whose errors belong to each section
+const sectionFormDataErrorKeys: Record<string, string[]> = {
+	dateLocation: ['location', 'travel'],
+	eventElements: ['elements', 'level0_confirmed', 'food', 'alcohol', 'minors', 'movies', 'raffles', 'fire', 'sorc_games'],
+	budgetPurchase: ['budget', 'vendors', 'vendors_notice_acknowledged', 'non_vendor_services', 'non_vendor_services_notes', 'non_vendor_services_acknowledged'],
+	eventDetails: [],
+};
+
+const hasSectionErrors = (sectionKey: string, errors: Record<string, any>): boolean => {
+	const topLevel = sectionTopLevelErrorFields[sectionKey] || [];
+	if (topLevel.some(f => !!errors[f])) return true;
+	const formDataKeys = sectionFormDataErrorKeys[sectionKey] || [];
+	const formDataErrors = errors?.form_data as any;
+	return formDataKeys.some(k => !!formDataErrors?.[k]);
 };
 
 export default function ProgressTimeline({
@@ -71,6 +99,8 @@ export default function ProgressTimeline({
 	isSectionComplete = defaultIsSectionComplete,
 	currentEditingSection,
 	onSectionClick,
+	errors = {},
+	visitedSections,
 }: ProgressTimelineProps) {
 	// Safely get values and handle null/undefined cases
 	let values: Record<string, any> = {};
@@ -121,16 +151,34 @@ export default function ProgressTimeline({
 					let status: "finish" | "process" | "wait" | "error" = "wait";
 					
 					try {
-						const isComplete = isSectionComplete(step.key, values);
-						const isCurrent = currentEditingSection === step.key;
-						
-						if (isComplete) {
+						const hasErrors = hasSectionErrors(step.key, errors);
+				let baseComplete = isSectionComplete(step.key, values);
+				// If visitedSections explicitly includes this step, force it complete
+				// (e.g. "review" on the review page).
+				if (visitedSections?.includes(step.key)) {
+					baseComplete = true;
+				}
+
+				// Budget gate: auto-complete only once the user has explicitly selected
+				// non-level-0 elements. On a fresh form (nothing selected) or a confirmed
+				// level-0 event, the section stays incomplete until the user visits it.
+				if (step.key === "budgetPurchase" && baseComplete && visitedSections !== undefined) {
+					const elements = values.form_data?.elements || {};
+					const hasNonLevel0Elements = Object.keys(elements).some(
+						(k) => k !== "no_additional_elements" && elements[k] === true
+					);
+					if (!hasNonLevel0Elements && !visitedSections.includes("budgetPurchase")) {
+						baseComplete = false;
+					}
+				}
+				const isComplete = baseComplete && !hasErrors;
+						if (hasErrors) {
+							// Always show the X icon when a section has active validation errors
+							status = "error";
+						} else if (isComplete) {
 							status = "finish";
 						} else if (isCurrent) {
 							status = "process";
-						} else if (!isComplete && index < activeStep) {
-							// Past sections that aren't complete should show as error
-							status = "error";
 						}
 					} catch (err) {
 						console.warn(`Error calculating status for section ${step.key}:`, err);

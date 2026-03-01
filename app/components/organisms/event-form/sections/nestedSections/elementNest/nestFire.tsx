@@ -31,15 +31,15 @@ export default function FireSafetySection({ control }: Props) {
                             style={{ display: "flex", flexDirection: "column", marginTop: 8 }}
                         >
                             <Radio value="fire_pit_package">
-                                We would like to use the Fire Pit Package!
+                                University Provided Fire Pit Package
                             </Radio>
 
                             <Radio value="personal_fire_pit" style={{ marginTop: 8 }}>
-                                We will be providing our own approved fire pits, lighting agents, and will be lighting and extinguishing the fire ourselves.
+                                Personal Grill, Fire Pit or Other Open Flame (must be approved by the University and meet all safety requirements)
                             </Radio>
 
                             <Radio value="grill_closed_event" style={{ marginTop: 8 }}>
-                                We will not be having fire pits but will be using grills for a closed event for 50 or less organization members
+                                Grill ONLY for a closed event for 50 or less organization members
                             </Radio>
                         </Radio.Group>
 

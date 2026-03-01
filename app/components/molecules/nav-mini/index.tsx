@@ -47,7 +47,7 @@ const NavMini: React.FC<NavMiniProps> = ({ links }) => {
                         ),
                     };
                 })}
-                offsetTop={60}
+                offsetTop={20}
             />
         </div>
     );

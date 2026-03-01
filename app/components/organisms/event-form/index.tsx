@@ -6,6 +6,7 @@ import { useNavigate, useParams, useBlocker } from "react-router";
 import { useAuth } from "~/auth/AuthProvider";
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useGetOnCampusQuery, useGetEventByIdQuery } from "~/lib/graphql/generated";
 import { calculateEventLevel } from "~/vendor/calendar/components/utils";
+import { useEventForm } from "~/context/eventFormContext";
 import styles from "./eventform.module.css";
 import EventDetailsSection from "../event-form/sections/EventDetailsSection";
 import DateLocationSection from "../event-form/sections/DateLocationSection";
@@ -24,6 +25,7 @@ import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
 import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
 import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
 import moment from "moment";
+import dayjs from "dayjs";
 
 const { Title, Link, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -76,11 +78,14 @@ export function EventForm() {
         variables: { id: id ?? '' },
         skip: !id,
     });
-    const { control, getValues, reset, watch, setValue, trigger, formState: { errors }, clearErrors, setError } = useForm({ mode: "onChange" });
+    const { control, getValues, reset, watch, setValue, trigger, formState: { errors }, clearErrors, setError } = useForm({ mode: "onChange", shouldUnregister: false });
+    const { setFormData: setContextFormData } = useEventForm();
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
+    const [visitedSections, setVisitedSections] = useState<string[]>([]);
     const allowNavigationRef = useRef(false);
+    const hasPopulatedRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
     // Block navigation if there are unsaved changes
@@ -89,6 +94,14 @@ export function EventForm() {
         return currentLocation.pathname !== nextLocation.pathname;
     });
 
+    const formatTimeSafe = (timeStr: string | null | undefined) => {
+        if (!timeStr) return null;
+        // Try parsing standard 24h format from DB, then 12h as a fallback
+        const m = moment(timeStr, "HH:mm:ss", true).isValid()
+            ? moment(timeStr, "HH:mm:ss")
+            : moment(timeStr, "hh:mm A");
+        return m.isValid() ? m : null;
+    };
     // When blocker state changes to "blocked", show the discard confirmation modal
     useEffect(() => {
         if (blocker.state === "blocked") {
@@ -142,9 +155,13 @@ export function EventForm() {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, []);
 
-    // When existing event data is loaded for editing, populate the form fields
+    // When existing event data is loaded for editing, populate the form fields.
+    // Guard with hasPopulatedRef so that a subsequent Apollo cache update (e.g. after
+    // updateEvent returns and merges partial fields) does not re-fire reset() and wipe
+    // any changes the user made since the initial load.
     useEffect(() => {
-        if (existingEventData?.event && !loadingEvent) {
+        if (existingEventData?.event && !loadingEvent && !hasPopulatedRef.current) {
+            hasPopulatedRef.current = true;
             const ev = existingEventData.event;
             console.log("📥 Loading existing event for editing:", ev);
 
@@ -158,33 +175,39 @@ export function EventForm() {
             const formDataToLoad: Record<string, any> = {
                 title: ev.title,
                 description: ev.description,
-                // Convert to moment for AntD DatePicker
-                event_date: ev.eventDate ? moment(ev.eventDate) : null,
-                start_time: ev.startTime ? moment(ev.startTime, "HH:mm:ss") : null,
-                end_time: ev.endTime ? moment(ev.endTime, "HH:mm:ss") : null,
-                setup_time: ev.setupTime ? moment(ev.setupTime, "HH:mm:ss") : null,
+                // Store as "YYYY-MM-DD" string — what DatePicker reads/writes
+                event_date: ev.eventDate ? dayjs(ev.eventDate).format("YYYY-MM-DD") : null,
+                // Store as "h:mm A" string — what TimePicker reads/writes
+                start_time: ev.startTime ? dayjs(ev.startTime, "HH:mm:ss").format("h:mm A") : null,
+                end_time: ev.endTime ? dayjs(ev.endTime, "HH:mm:ss").format("h:mm A") : null,
+                setup_time: ev.setupTime ? dayjs(ev.setupTime, "HH:mm:ss").format("h:mm A") : null,
                 attendees: parsedFormData?.attendees || '',
-                location_type: ev.locationType,
+                // Reverse-transform the GraphQL LocationType enum to the form's display value
+                location_type: (
+                    { ON_CAMPUS: "On-Campus", OFF_CAMPUS: "Off-Campus", VIRTUAL: "Virtual" } as Record<string, string>
+                )[ev.locationType ?? ""] ?? ev.locationType ?? null,
+                virtual_link: parsedFormData?.virtual_link || null,
                 form_data: parsedFormData || {},
                 organization_id: parsedFormData?.organization_id || [],
-                // Preserve existing uploaded image filename for AntD Upload
+                event_img_name: parsedFormData?.event_img_name || 'Existing Image',
                 event_img: parsedFormData?.event_img || null,
-                event_img_name: parsedFormData?.event_img_name || '',
                 event_img_preview: parsedFormData?.event_img
-                    ? `${process.env.UPLOAD_BASE_URL || ''}/${parsedFormData.event_img}`
+                    ? `${import.meta.env.VITE_UPLOAD_BASE_URL || ''}/${parsedFormData.event_img}`
                     : '',
             };
 
-            Object.keys(formDataToLoad).forEach((key) => {
-                if (formDataToLoad[key] !== null && formDataToLoad[key] !== undefined) {
-                    setValue(key, formDataToLoad[key]);
-                }
-            });
+            // Use reset() so values land in RHF's defaultValues store.
+            // Controllers in collapsed (unmounted) panels will read the correct
+            // value when they first mount, fixing the location_type clearing bug.
+            reset(formDataToLoad);
+
+            // Clear ALL stale validation errors that may have persisted from a
+            // prior trigger() call or previous form session.
+            setTimeout(() => clearErrors(), 0);
 
             setDraftId(ev.id);
-            console.log("✅ Form populated with existing event data, including image preview");
         }
-    }, [existingEventData, loadingEvent, setValue]);
+    }, [existingEventData, loadingEvent, reset, clearErrors]);
 
     // Auto-save form data to localStorage on change, but only if not currently editing an existing draft (to avoid conflicts)
     useEffect(() => {
@@ -264,6 +287,11 @@ export function EventForm() {
     // Scroll to and open a specific section when currentEditingSection changes (e.g. when user clicks on a step in the ProgressTimeline)
     useEffect(() => {
         if (!currentEditingSection) return;
+
+        // Track which sections the user has actually opened
+        setVisitedSections(prev =>
+            prev.includes(currentEditingSection) ? prev : [...prev, currentEditingSection]
+        );
 
         // Open the corresponding collapse panel first
         setActiveCollapseKey([currentEditingSection]);
@@ -388,6 +416,18 @@ export function EventForm() {
         throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
     };
 
+    // Helper: delete a previously-uploaded event image from the server
+    const deleteEventImage = async (filename: string) => {
+        if (!filename || import.meta.env.DEV) return;
+        try {
+            const fd = new FormData();
+            fd.append('filename', filename);
+            await fetch('/~ojk25/graphql/delete_event_image.php', { method: 'POST', body: fd });
+        } catch (err) {
+            console.warn('⚠️ Could not delete event image from server:', err);
+        }
+    };
+
     // Generate a URL-friendly slug from the event title for use in image filenames
     const slugify = (str: string) => {
         return (str || 'event')
@@ -400,30 +440,37 @@ export function EventForm() {
     };
 
     // Resolve the event image from various possible input formats (string filename, Ant Upload object, or File), handle resizing and uploading if necessary, and return the stored filename or URL.
-    const resolveEventImage = async (
-        rawValue: any,
-        desiredName: string
-    ): Promise<string | undefined> => {
-
+    const resolveEventImage = async (rawValue: any, desiredName: string): Promise<string | undefined> => {
         if (!rawValue) return undefined;
 
-        // Already a stored filename
-        if (typeof rawValue === "string") {
-            return rawValue;
-        }
+        if (typeof rawValue === "string") return rawValue;
 
-        // Ant Upload object
         if (rawValue?.originFileObj instanceof File) {
             rawValue = rawValue.originFileObj;
         }
 
-        // Direct File
-        if (rawValue instanceof File) {
-            let fileToUpload = rawValue;
-            try {
-                fileToUpload = await resizeImageFile(fileToUpload);
-            } catch { }
+        let fileToUpload = rawValue;
+        if (rawValue?.originFileObj instanceof File) {
+            fileToUpload = rawValue.originFileObj;
+        }
+
+        // Only upload if it's a real File object
+        if (fileToUpload instanceof File) {
+            // Skip actual upload in dev — the PHP endpoint isn't available locally
+            if (import.meta.env.DEV) {
+                console.warn("💡 DEV mode: skipping image upload, returning placeholder filename");
+                return `${desiredName}.jpg`;
+            }
             const uploadResp = await uploadImage(fileToUpload, desiredName);
+            return uploadResp.filename || uploadResp.url || uploadResp.path;
+        }
+
+        if (rawValue instanceof File) {
+            if (import.meta.env.DEV) {
+                console.warn("💡 Skipping image upload in DEV, returning local filename");
+                return `${desiredName}.jpg`; // or just rawValue.name
+            }
+            const uploadResp = await uploadImage(rawValue, desiredName);
             return uploadResp.filename || uploadResp.url || uploadResp.path;
         }
 
@@ -535,6 +582,7 @@ export function EventForm() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                virtual_link: data.virtual_link || undefined,
                 event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
                 event_img_name: data.event_img_name,
                 createdByUser: {
@@ -605,6 +653,11 @@ export function EventForm() {
         if (draftId) {
             console.log("🗑️ Deleting saved draft from DB:", draftId);
             try {
+                // Delete the uploaded image from the server before removing the DB record
+                const currentImg = getValues('event_img');
+                if (typeof currentImg === 'string' && currentImg) {
+                    await deleteEventImage(currentImg);
+                }
                 await deleteEvent({ variables: { id: draftId } });
                 console.log("✅ Draft deleted from DB");
             } catch (err) {
@@ -665,114 +718,149 @@ export function EventForm() {
         }
     };
 
-    // Handle the review action by first triggering validation on all form fields, then checking for errors and automatically opening the relevant panel with the first error if validation fails, and finally navigating to the review page if validation passes. This function ensures that users are guided to fix any issues in their form before proceeding to review, providing a smoother and more user-friendly experience.
+    // Handle the review action by first validating all form fields, then ensuring a draft exists (creating one if necessary), and finally navigating to the review page with the event ID. This function centralizes all the logic for transitioning from the form to the review step, including error handling and user feedback to ensure a smooth experience.
     const handleReviewForm = async () => {
-        // Trigger validation on all fields
+        // 1️⃣ Trigger validation on all fields
         const isValid = await trigger();
 
         if (!isValid) {
-            // Find the first error field
-            const errorFields = Object.keys(errors);
+            // Maps top-level RHF field → major collapse panel key
+            const fieldToPanelMap: Record<string, string> = {
+                'title': 'eventDetails',
+                'description': 'eventDetails',
+                'attendees': 'eventDetails',
+                'organization_id': 'eventDetails',
+                'event_img': 'eventDetails',
+                'event_date': 'dateLocation',
+                'start_time': 'dateLocation',
+                'end_time': 'dateLocation',
+                'setup_time': 'dateLocation',
+                'location_type': 'dateLocation',
+                'virtual_link': 'dateLocation',
+            };
 
-            if (errorFields.length > 0) {
-                const firstErrorField = errorFields[0];
+            // Maps form_data sub-key → major collapse panel key
+            const formDataFieldToPanelMap: Record<string, string> = {
+                'elements': 'eventElements',
+                'level0_confirmed': 'eventElements',
+                'food': 'eventElements',
+                'alcohol': 'eventElements',
+                'minors': 'eventElements',
+                'movies': 'eventElements',
+                'raffles': 'eventElements',
+                'fire': 'eventElements',
+                'sorc_games': 'eventElements',
+                'location': 'dateLocation',
+                'travel': 'dateLocation',
+                'budget': 'budgetPurchase',
+                'vendors': 'budgetPurchase',
+                'vendors_notice_acknowledged': 'budgetPurchase',
+                'non_vendor_services': 'budgetPurchase',
+                'non_vendor_services_notes': 'budgetPurchase',
+                'non_vendor_services_acknowledged': 'budgetPurchase',
+            };
 
-                // Map field names to their corresponding panel keys
-                const fieldToPanelMap: Record<string, string> = {
-                    'title': 'eventDetails',
-                    'description': 'eventDetails',
-                    'attendees': 'eventDetails',
-                    'organization_id': 'eventDetails',
-                    'event_date': 'dateLocation',
-                    'start_time': 'dateLocation',
-                    'end_time': 'dateLocation',
-                    'setup_time': 'dateLocation',
-                    'location_type': 'dateLocation',
-                };
+            // Maps form_data sub-key → nested collapse panel key (if one exists)
+            const currentLocationType = getValues('location_type');
+            const formDataFieldToNestedPanelMap: Record<string, string> = {
+                'food': 'food',
+                'alcohol': 'alcohol',
+                'minors': 'minors',
+                'movies': 'movies',
+                'raffles': 'raffles',
+                'fire': 'fire',
+                'sorc_games': 'sorc_games',
+                'travel': 'offCampus',
+                'location': currentLocationType === 'On-Campus' ? 'onCampus'
+                          : currentLocationType === 'Off-Campus' ? 'offCampus'
+                          : '',
+            };
 
-                // Map form_data sub-keys to their corresponding panel keys
-                const formDataFieldToPanelMap: Record<string, string> = {
-                    // eventElements panel
-                    'elements': 'eventElements',
-                    'level0_confirmed': 'eventElements',
-                    'food': 'eventElements',
-                    'alcohol': 'eventElements',
-                    'minors': 'eventElements',
-                    'movies': 'eventElements',
-                    'raffles': 'eventElements',
-                    'fire': 'eventElements',
-                    'sorc_games': 'eventElements',
-                    // dateLocation panel
-                    'location': 'dateLocation',
-                    'travel': 'dateLocation',
-                    // budgetPurchase panel
-                    'budget': 'budgetPurchase',
-                    'vendors': 'budgetPurchase',
-                    'vendors_notice_acknowledged': 'budgetPurchase',
-                    'non_vendor_services': 'budgetPurchase',
-                    'non_vendor_services_notes': 'budgetPurchase',
-                    'non_vendor_services_acknowledged': 'budgetPurchase',
-                };
+            // Collect ALL panels that have errors (major + nested) so every
+            // broken section is visible at once instead of one at a time.
+            const keysToOpen = new Set<string>();
 
-                // Check if error is in form_data (nested fields)
-                let panelToOpen = 'eventDetails'; // default
-
-                if (firstErrorField === 'form_data') {
+            Object.keys(errors).forEach((errorField) => {
+                if (errorField === 'form_data') {
                     const formDataErrors = errors.form_data as any;
-                    const firstFormDataErrorKey = Object.keys(formDataErrors || {})[0];
-                    if (firstFormDataErrorKey) {
-                        panelToOpen = formDataFieldToPanelMap[firstFormDataErrorKey] || 'eventDetails';
-                    }
+                    Object.keys(formDataErrors || {}).forEach((subKey) => {
+                        const major = formDataFieldToPanelMap[subKey];
+                        const nested = formDataFieldToNestedPanelMap[subKey];
+                        if (major) keysToOpen.add(major);
+                        if (nested) keysToOpen.add(nested);
+                    });
                 } else {
-                    panelToOpen = fieldToPanelMap[firstErrorField] || 'eventDetails';
+                    const major = fieldToPanelMap[errorField];
+                    if (major) keysToOpen.add(major);
                 }
+            });
 
-                // Open the panel with the error
-                setActiveCollapseKey([panelToOpen]);
-                setCurrentEditingSection(panelToOpen);
-
-                // Show error message
-                message.error('Please complete all required fields before proceeding to review.');
-
-                // Scroll to top after a brief delay to allow panel to open
-                setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 100);
+            if (keysToOpen.size > 0) {
+                setActiveCollapseKey([...keysToOpen]);
+                // Set the editing section to the first major section found
+                const majorSections = ['eventDetails', 'dateLocation', 'eventElements', 'budgetPurchase'];
+                const firstMajor = majorSections.find(s => keysToOpen.has(s)) || 'eventDetails';
+                setCurrentEditingSection(firstMajor);
             }
 
+            message.error('Please complete all required fields before proceeding to review.');
+            setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100);
             return;
         }
 
-        // If validation passes, proceed to review
+        // 2️⃣ Validation passed — ensure a draft exists
         try {
             const data = getValues();
+            let idToUse = draftId;
+
+            // If no draft exists yet, create one
+            if (!idToUse) {
+                const input = await prepareMutationInput(data, "DRAFT");
+                const { data: result } = await createEvent({ variables: { input } });
+
+                if (!result?.createEvent?.id) {
+                    message.error("Failed to create draft for review.");
+                    return;
+                }
+
+                idToUse = result.createEvent.id;
+                setDraftId(idToUse);
+            }
+
+            // Push form data into context so the review page receives it immediately,
+            // instead of relying on the one-time localStorage hydration in EventFormProvider.
+            setContextFormData(data);
+
+            // Save review snapshot locally (optional)
             localStorage.setItem("eventFormReview", JSON.stringify(data));
             setCurrentEditingSection(undefined);
-            navigateSafely(`/event-review${draftId ? `/${draftId}` : ''}`);
+
+            // Navigate to review page with a guaranteed event ID
+            navigateSafely(`/event-review/${idToUse}`);
         } catch (err) {
-            console.error("❌ Error saving review data to localStorage:", err);
-            message.error("Failed to save form data");
+            console.error("❌ Error preparing event for review:", err);
+            message.error("Failed to proceed to review.");
         }
     };
 
     // Render the form with collapsible sections, progress timeline, and action buttons, along with modals and alerts for user interactions. This JSX structure defines the layout and interactive elements of the event form, ensuring that users have a clear and intuitive interface for entering their event details, navigating between sections, and managing their draft.
     return (
-        <div className="container">
+        <div className="container"  >
             <Title level={5}>
                 <Link onClick={() => {
                     setIsExplicitDiscard(false); // Navigating back, not explicit discard
                     setIsDiscardModalOpen(true);
                 }}><ArrowLeftOutlined /> Back </Link>
             </Title>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: 24 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: 24, padding: "0 8rem" }}>
                 <h2 style={{ margin: 0 }}>Event Form</h2>
-                <p>Provide your event information for review and approval.</p>
-                <p> All required fields are marked with an asterisk (<span style={{ color: 'var(--red-6)' }}>*</span>). You must complete all required fields before proceeding to review.</p>
+                <p style={{ margin: "0", padding: "0" }}>Provide your event information for review and approval.</p>
+                <p style={{ margin: "0", padding: "0" }}> All required fields are marked with an asterisk (<span style={{ color: 'var(--red-6)' }}>*</span>). You must complete all required fields before proceeding to review.</p>
             </div>
-            <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
-                <ProgressTimeline getValues={getValues} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
+            <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", padding: "1rem 0rem" }}>
+                <ProgressTimeline getValues={getValues} errors={errors} visitedSections={visitedSections} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
             </div>
-            <div className={styles.collapseWrapper}>
+            <div style={{ padding: "0 8rem" }} className={styles.collapseWrapper}>
                 <Form layout="vertical">
                     <Collapse
                         activeKey={activeCollapseKey}

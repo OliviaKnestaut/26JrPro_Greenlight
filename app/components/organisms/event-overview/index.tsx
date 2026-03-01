@@ -29,41 +29,36 @@ export function EventOverviewContent() {
         let total = 0;
         let hasCosts = false;
 
-        // Add vendor costs
+        // Add non-food vendor costs.
+        // Food-type vendors are excluded because the food section's estimated_cost
+        // already captures that spend — counting both would double the food cost.
         if (formData?.vendors && Array.isArray(formData.vendors)) {
             formData.vendors.forEach((vendor: any) => {
-                if (vendor.amount) {
-                    const cost = parseFloat(vendor.amount);
-                    if (!isNaN(cost)) {
-                        total += cost;
-                        hasCosts = true;
-                    }
+                if (vendor.type === "food") return; // skip — covered by food section
+                const cost = parseFloat(vendor.estimatedCost);
+                if (!isNaN(cost) && cost > 0) {
+                    total += cost;
+                    hasCosts = true;
                 }
             });
         }
 
-        // Add food cost
+        // Add food section cost
         if (formData?.food?.estimated_cost) {
             const cost = parseFloat(formData.food.estimated_cost);
-            if (!isNaN(cost)) {
+            if (!isNaN(cost) && cost > 0) {
                 total += cost;
                 hasCosts = true;
             }
         }
 
-        // Add raffle prize value
-        if (formData?.raffles?.total_value) {
-            const cost = parseFloat(formData.raffles.total_value);
-            if (!isNaN(cost)) {
+        // Add raffle prize cost (field is raffles.estimated_cost)
+        if (formData?.raffles?.estimated_cost) {
+            const cost = parseFloat(formData.raffles.estimated_cost);
+            if (!isNaN(cost) && cost > 0) {
                 total += cost;
                 hasCosts = true;
             }
-        }
-
-        // Add budget total purchase (if not already counted in vendors)
-        if (formData?.budget && typeof formData.budget === 'number') {
-            total += formData.budget;
-            hasCosts = true;
         }
 
         return hasCosts ? total.toFixed(2) : 'N/A';
@@ -296,6 +291,7 @@ export function EventOverviewContent() {
     const dateLocationRef = useRef<HTMLDivElement>(null);
     const eventElementsRef = useRef<HTMLDivElement>(null);
     const budgetPurchaseRef = useRef<HTMLDivElement>(null);
+    
     return (
         <div className="container m-8 w-auto">
             <div className="container">
@@ -319,7 +315,12 @@ export function EventOverviewContent() {
             }
 
             <section style={{ display: "flex", flexDirection: "row", marginTop: "2rem", gap: "2rem" }}>
-                <section>
+                <section style={{
+                    position: "sticky",
+                    top: "1rem",
+                    height: "fit-content", 
+                    zIndex: 10
+                }}>
                     <NavMini links={[
                         { title: 'Event Details', ref: eventDetailsRef },
                         { title: 'Date & Location', ref: dateLocationRef },
@@ -401,7 +402,7 @@ export function EventOverviewContent() {
                         {formData?.location.name ? <Tag className="eventDetailTag" icon={<PushpinOutlined />}>{formData.location.name}</Tag> : null}
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem", }}>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "1.5rem", marginBottom: "2rem" }}>
                         <Statistic className="stat-card-gray-border" title="Event Level" value={formData?.eventLevel || "N/A"} />
                         <Statistic
                             className="stat-card-gray-border"
@@ -417,7 +418,7 @@ export function EventOverviewContent() {
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                         {/* EVENT DETAILS SECTION */}
-                        <Card id="section-1" ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-1" ref={eventDetailsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "4.5rem" }}>
                             <Title level={3}>Event Details</Title>
 
                             {renderField("Event Name", formData?.event?.name)}
@@ -428,7 +429,7 @@ export function EventOverviewContent() {
                         </Card>
 
                         {/* DATE & LOCATION SECTION */}
-                        <Card id="section-2" ref={dateLocationRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-2" ref={dateLocationRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "4.5rem" }}>
                             <Title level={3}>Date & Location</Title>
 
                             {renderField("Location Type", formData?.location?.type)}
@@ -573,7 +574,7 @@ export function EventOverviewContent() {
                         </Card>
 
                         {/* EVENT ELEMENTS SECTION */}
-                        <Card id="section-3" ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-3" ref={eventElementsRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "4.5rem" }}>
                             <Title level={3}>Event Elements</Title>
                             {/* NONE */}
                             {!formData?.food && !formData?.alcohol && !formData?.minors && !formData?.movies && !formData?.raffles && !formData?.fire && !formData?.sorc_games && (
@@ -1053,7 +1054,7 @@ export function EventOverviewContent() {
                         </Card>
 
                         {/* BUDGET & PURCHASE SECTION */}
-                        <Card id="section-4" ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "2rem" }}>
+                        <Card id="section-4" ref={budgetPurchaseRef} style={{ border: "solid", borderColor: "var(--color-border-default)", borderWidth: "1px", scrollMarginTop: "4.5rem" }}>
                             <Title level={3}>Budget & Purchase</Title>
 
                             {renderField(
