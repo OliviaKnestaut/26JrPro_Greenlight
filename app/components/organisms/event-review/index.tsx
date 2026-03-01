@@ -641,8 +641,18 @@ export function EventReview() {
 
                     {renderField("Location Type", formData?.location?.type)}
                     {renderField("Event Date", formatDateMDY(formData?.event?.dateRange?.[0]))}
-                    {renderField("Start Time", formatTime(formData?.startTime))}
-                    {renderField("End Time", formatTime(formData?.endTime))}
+                    {renderField(
+                        "Start Time",
+                        formData?.startTime && /am|pm/i.test(formData.startTime)
+                            ? formData.startTime
+                            : formatTime(formData?.startTime)
+                    )}
+                    {renderField(
+                        "End Time",
+                        formData?.endTime && /am|pm/i.test(formData.endTime)
+                            ? formData.endTime
+                            : formatTime(formData?.endTime)
+                    )}
                     {renderField("Setup Time", formatDuration(formData?.setupTime))}
 
                     {/* IF EVENT WAS VIRTUAL */}
