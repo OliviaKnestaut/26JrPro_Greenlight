@@ -532,7 +532,7 @@ export function EventReview() {
                 <p>Please review all details before submitting your event for approval.</p>
             </div>
             <div style={{ marginBottom: 24, marginTop: 24, display: "flex", justifyContent: "center" }}>
-                <ProgressTimeline getValues={getValues} currentEditingSection="review" />
+                <ProgressTimeline getValues={getValues} currentEditingSection="review" visitedSections={["eventDetails", "dateLocation", "eventElements", "budgetPurchase", "review"]} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {/* EVENT DETAILS SECTION */}

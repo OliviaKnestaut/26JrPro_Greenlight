@@ -83,6 +83,7 @@ export function EventForm() {
     const isSelected = useWatch({ control });
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
+    const [visitedSections, setVisitedSections] = useState<string[]>([]);
     const allowNavigationRef = useRef(false);
     const hasPopulatedRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
@@ -185,6 +186,7 @@ export function EventForm() {
                 location_type: (
                     { ON_CAMPUS: "On-Campus", OFF_CAMPUS: "Off-Campus", VIRTUAL: "Virtual" } as Record<string, string>
                 )[ev.locationType ?? ""] ?? ev.locationType ?? null,
+                virtual_link: parsedFormData?.virtual_link || null,
                 form_data: parsedFormData || {},
                 organization_id: parsedFormData?.organization_id || [],
                 event_img_name: parsedFormData?.event_img_name || 'Existing Image',
@@ -285,6 +287,11 @@ export function EventForm() {
     // Scroll to and open a specific section when currentEditingSection changes (e.g. when user clicks on a step in the ProgressTimeline)
     useEffect(() => {
         if (!currentEditingSection) return;
+
+        // Track which sections the user has actually opened
+        setVisitedSections(prev =>
+            prev.includes(currentEditingSection) ? prev : [...prev, currentEditingSection]
+        );
 
         // Open the corresponding collapse panel first
         setActiveCollapseKey([currentEditingSection]);
@@ -563,6 +570,7 @@ export function EventForm() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                virtual_link: data.virtual_link || undefined,
                 event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
                 event_img_name: data.event_img_name,
                 createdByUser: {
@@ -833,7 +841,7 @@ export function EventForm() {
                 <p style={{ margin: "0", padding: "0" }}> All required fields are marked with an asterisk (<span style={{ color: 'var(--red-6)' }}>*</span>). You must complete all required fields before proceeding to review.</p>
             </div>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", padding: "1rem 0rem" }}>
-                <ProgressTimeline getValues={getValues} errors={errors} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
+                <ProgressTimeline getValues={getValues} errors={errors} visitedSections={visitedSections} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
             </div>
             <div style={{ padding: "0 8rem" }} className={styles.collapseWrapper}>
                 <Form layout="vertical">

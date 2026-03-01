@@ -15,6 +15,7 @@ type ProgressTimelineProps = {
 	currentEditingSection?: string 
 	onSectionClick?: (key: string) => void
 	errors?: Record<string, any>
+	visitedSections?: string[]
 }
 
 const defaultSteps: ProgressStep[] = [
@@ -56,12 +57,13 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			// Complete if user selected elements OR explicitly said no elements
 			return hasElements || hasNoElements;
 		case "budgetPurchase":
-			// Budget section is optional but always complete since it's informational
+			// Budget section is optional but always complete since it's informational.
+			// The level-0 / visited gate is handled inside the component where visitedSections is in scope.
 			return true;
 		case "review":
-			// All previous sections must be completed
-			return defaultIsSectionComplete("eventDetails", values) &&
-				defaultIsSectionComplete("dateLocation", values);
+			// Never auto-complete — this step only becomes active when the user is
+			// actually on the review page (currentEditingSection="review" drives the UI).
+			return false;
 		default:
 			return false;
 	}
@@ -98,6 +100,7 @@ export default function ProgressTimeline({
 	currentEditingSection,
 	onSectionClick,
 	errors = {},
+	visitedSections,
 }: ProgressTimelineProps) {
 	// Safely get values and handle null/undefined cases
 	let values: Record<string, any> = {};
@@ -149,9 +152,26 @@ export default function ProgressTimeline({
 					
 					try {
 						const hasErrors = hasSectionErrors(step.key, errors);
-						const isComplete = isSectionComplete(step.key, values) && !hasErrors;
-						const isCurrent = currentEditingSection === step.key;
+				let baseComplete = isSectionComplete(step.key, values);
+				// If visitedSections explicitly includes this step, force it complete
+				// (e.g. "review" on the review page).
+				if (visitedSections?.includes(step.key)) {
+					baseComplete = true;
+				}
 
+				// Budget gate: auto-complete only once the user has explicitly selected
+				// non-level-0 elements. On a fresh form (nothing selected) or a confirmed
+				// level-0 event, the section stays incomplete until the user visits it.
+				if (step.key === "budgetPurchase" && baseComplete && visitedSections !== undefined) {
+					const elements = values.form_data?.elements || {};
+					const hasNonLevel0Elements = Object.keys(elements).some(
+						(k) => k !== "no_additional_elements" && elements[k] === true
+					);
+					if (!hasNonLevel0Elements && !visitedSections.includes("budgetPurchase")) {
+						baseComplete = false;
+					}
+				}
+				const isComplete = baseComplete && !hasErrors;
 						if (hasErrors) {
 							// Always show the X icon when a section has active validation errors
 							status = "error";
