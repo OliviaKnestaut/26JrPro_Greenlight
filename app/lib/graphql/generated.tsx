@@ -405,7 +405,7 @@ export type UpdateEventMutationVariables = Exact<{
 }>;
 
 
-export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus?: EventStatus | null } };
+export type UpdateEventMutation = { __typename?: 'Mutation', updateEvent: { __typename?: 'Event', id: string, title: string, eventDate?: any | null, eventStatus?: EventStatus | null, submittedAt?: any | null } };
 
 export type DeleteEventMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -420,7 +420,7 @@ export type ChangeEventStatusMutationVariables = Exact<{
 }>;
 
 
-export type ChangeEventStatusMutation = { __typename?: 'Mutation', changeEventStatus: { __typename?: 'Event', id: string, eventStatus?: EventStatus | null } };
+export type ChangeEventStatusMutation = { __typename?: 'Mutation', changeEventStatus: { __typename?: 'Event', id: string, eventStatus?: EventStatus | null, submittedAt?: any | null } };
 
 export type CreateOrganizationMutationVariables = Exact<{
   input: CreateOrganizationInput;
@@ -639,6 +639,7 @@ export const UpdateEventDocument = gql`
     title
     eventDate
     eventStatus
+    submittedAt
   }
 }
     `;
@@ -705,6 +706,7 @@ export const ChangeEventStatusDocument = gql`
   changeEventStatus(id: $id, status: $status) {
     id
     eventStatus
+    submittedAt
   }
 }
     `;

@@ -1,9 +1,22 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
 import { Radio, Input, Typography, InputNumber } from "antd";
-import FieldLabel from "../../../components/FieldLabel";
 import { useEffect, useMemo, useRef } from "react";
 
+// ─── Local ────────────────────────────────────────────────────────────────────
+import FieldLabel from "../../../components/FieldLabel";
+
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { Text } = Typography;
+
+// =============================================================================
+// FoodSection
+// Nested section inside EventElementsSection — shown when "Food / Catering"
+// is selected. Collects: food-service type and estimated cost, with conditional
+// vendor-name and cost fields depending on the selected option.
+// Cost range validation and field-clearing are handled reactively via
+// useEffect and useMemo to avoid re-running on initial mount.
+// =============================================================================
 
 type Props = {
   control: any;

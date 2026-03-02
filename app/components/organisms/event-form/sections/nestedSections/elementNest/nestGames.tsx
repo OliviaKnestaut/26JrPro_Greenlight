@@ -1,8 +1,19 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller } from "react-hook-form";
 import { Checkbox, Input, Radio, Typography } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../../../components/FieldLabel";
 
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { Text } = Typography;
+
+// =============================================================================
+// SORCGamesSection
+// Nested section inside EventElementsSection — shown when "SORC Games" is
+// selected. Collects: specific games/inflatables, setup location, and whether
+// SORC staff need to be present.
+// =============================================================================
 
 type Props = {
     control: any;

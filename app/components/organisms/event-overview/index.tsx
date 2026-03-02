@@ -1,18 +1,38 @@
+// ── React & Third-Party Libraries ──────────────────────────────────────────
 import React, { useRef, useState, useEffect } from "react";
 import { Typography, Statistic, Card, Tag, Avatar, Tooltip, Button } from "antd";
-const { Title, Paragraph, Link, Text } = Typography;
 import { ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined, PushpinOutlined, EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+
+// ── Internal: GraphQL & Utilities ──────────────────────────────────────────
 import { useGetEventByIdQuery, useGetUsersQuery, useGetUserQuery } from '~/lib/graphql/generated';
+import { formatTime, formatDateMDY, formatDuration } from '~/lib/formatters';
+
+// ── Internal: Components ────────────────────────────────────────────────────
 import NavMini from "../../molecules/nav-mini";
 import OptimizedImage from '../../atoms/OptimizedImage';
 import CommentInput from '../../molecules/comment-input';
 import ScrollToTop from '../../atoms/ScrollToTop';
-import { formatTime, formatDateMDY, formatDuration } from '~/lib/formatters';
 
+const { Title, Paragraph, Link } = Typography;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EventOverviewContent
+// Reads an event ID from the query string (?id=...), fetches the event and its
+// creator profile via GraphQL, maps the raw data into a flat display shape,
+// and renders a sticky-nav read-only overview of all event fields.  Falls back
+// to a localStorage snapshot when no ID is present.
+// ─────────────────────────────────────────────────────────────────────────────
 export function EventOverviewContent() {
+
+    // ── Router & State ─────────────────────────────────────────────────────
     const navigate = useNavigate();
     const [formData, setFormData] = useState<any>(null);
+
+    // ── Pure Display Helpers ────────────────────────────────────────────────
+    // These helpers are pure functions with no dependency on component state.
+
+    // Converts a raw locationType enum (e.g. "ON_CAMPUS") to a display string.
     const formatLocationType = (val?: string) => {
         if (!val) return '';
         const map: Record<string, string> = {
@@ -64,6 +84,8 @@ export function EventOverviewContent() {
         return hasCosts ? total.toFixed(2) : 'N/A';
     };
 
+    // Maps an event status string (and optional date) to a display label + CSS class name.
+    // Approved events whose date is in the past are shown as "past event".
     const getStatusDisplay = (status?: string, eventDate?: string) => {
         if (!status) return null;
         const statusUpper = status.toUpperCase();
@@ -94,21 +116,27 @@ export function EventOverviewContent() {
         }
         return { text: status.toLowerCase(), className: '' };
     };
-    // Read `id` strictly from the query string: /event-overview?id=11
-    const queryId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : null;
-    const eventId = queryId ?? null;
 
-    const { data, loading, error } = useGetEventByIdQuery({ variables: { id: eventId ?? '' }, skip: !eventId });
+    // ── Event ID (from query string) ────────────────────────────────────────
+    // Route: /event-overview?id=11 — ID lives in the query string, not the path.
+    const eventId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : null;
 
-    // Get the creator's username from the event data to query for their profile
+    // ── GraphQL Queries ─────────────────────────────────────────────────────
+
+    const { data, loading } = useGetEventByIdQuery({ variables: { id: eventId ?? '' }, skip: !eventId });
+
+    // Fetch the event creator's profile by username (used for the avatar display)
     const creatorUsername = data?.event?.createdBy;
-    const { data: userData, loading: userLoading } = useGetUsersQuery({
+    const { data: userData } = useGetUsersQuery({
         variables: { limit: 1, offset: 0, username: creatorUsername },
         skip: !creatorUsername || creatorUsername === 'N/A'
     });
 
     const creatorUser = userData?.users?.[0];
 
+    // ── Data Mapping Effect ─────────────────────────────────────────────────
+    // Maps raw Apollo data into the flat `formData` shape consumed by the render.
+    // Falls back to a localStorage snapshot when no eventId is present.
     useEffect(() => {
         // If an `eventId` is present, wait for the query to complete and only
         // set form data from the query result. Do NOT run the localStorage
@@ -211,7 +239,10 @@ export function EventOverviewContent() {
         }
     }, [eventId, data, loading]);
 
-    // Helper function to render fields with consistent styling and handle empty values
+    // ── Render Helpers ──────────────────────────────────────────────────────
+
+    // Renders a labelled read-only field row.  Returns null for empty / undefined
+    // values so callers can use it unconditionally without producing blank rows.
     const renderField = (
         label: string,
         value: any,
@@ -249,7 +280,9 @@ export function EventOverviewContent() {
         );
     };
 
-    // If there's a trip leader ID in the form data, fetch their user data to display their name instead of just the ID
+    // ── Sub-Data & Lookups ──────────────────────────────────────────────────
+
+    // Fetch the trip leader's full name when the event has off-campus travel
     const tripLeaderId = formData?.form_data?.travel?.trip_leader_id;
     const { data: tripLeaderData } = useGetUserQuery({
         variables: { id: tripLeaderId as string },
@@ -257,7 +290,7 @@ export function EventOverviewContent() {
     });
     const tripLeader = tripLeaderData?.user || null;
 
-    // Pretty labels for SORC game types
+    // Human-readable labels for SORC game type keys
     const gameLabels: Record<string, string> = {
         mechanical_bull: "Mechanical Bull",
         velcro_wall: "Velcro Wall",
@@ -275,7 +308,7 @@ export function EventOverviewContent() {
         inflatable_sports_games: "Inflatable Sports Games",
     };
 
-    // Pretty labels for non-vendor service types
+    // Human-readable labels for non-vendor service type keys
     const nonVendorServiceLabels: Record<string, string> = {
         av_support: "A/V Support",
         custodial_safety: "Custodial & Safety",
@@ -286,12 +319,13 @@ export function EventOverviewContent() {
         furniture_rental: "University Furniture Rental"
     };
 
-    // Create refs for each section
+    // ── Section Refs (sticky-nav scroll targets) ────────────────────────────
     const eventDetailsRef = useRef<HTMLDivElement>(null);
     const dateLocationRef = useRef<HTMLDivElement>(null);
     const eventElementsRef = useRef<HTMLDivElement>(null);
     const budgetPurchaseRef = useRef<HTMLDivElement>(null);
-    
+
+    // ── Render ─────────────────────────────────────────────────────────────
     return (
         <div className="container m-8 w-auto">
             <div className="container">

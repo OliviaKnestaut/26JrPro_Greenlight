@@ -1,10 +1,20 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
 import { Input, DatePicker, TimePicker, InputNumber, Radio, Typography } from "antd";
 import dayjs from "dayjs";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../components/FieldLabel";
 
-const { TextArea } = Input;
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { Text } = Typography;
+
+// =============================================================================
+// DateLocationSection
+// Form section 2 of the event flow.
+// Collects: event date, start/end times, optional setup time,
+//           location type, and (conditionally) a virtual event link.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -12,16 +22,19 @@ type Props = {
 };
 
 export default function DateLocationSection({ control, getValues }: Props) {
-    const locationType = useWatch({
-        control,
-        name: "location_type",
-    });
 
+    // ── Watched fields ───────────────────────────────────────────────────────
+    // Track location type so we can conditionally show the virtual link field
+    const locationType = useWatch({ control, name: "location_type" });
+
+    // ── Derived values ───────────────────────────────────────────────────────
+    // Used to prevent selecting past dates in the DatePicker
     const today = dayjs().startOf("day");
 
+    // ── Render ───────────────────────────────────────────────────────────────
     return (
         <>
-            {/* Q6: Event Date */}
+            {/* Q6 — Event Date --------------------------------------------- */}
             <Controller
                 name="event_date"
                 control={control}
@@ -67,7 +80,7 @@ export default function DateLocationSection({ control, getValues }: Props) {
                 )}
             />
 
-            {/* Q7: Start and End Time */}
+            {/* Q7 — Start & End Time -------------------------------------- */}
             <div style={{ marginBottom: 24 }}>
                 <FieldLabel required>
                     What is the start and end time of your event?
@@ -214,7 +227,7 @@ export default function DateLocationSection({ control, getValues }: Props) {
                 </div>
             </div>
 
-            {/* Q8: Setup/Takedown Time */}
+            {/* Q8 — Setup / Takedown Time (optional) ---------------------- */}
             <Controller
                 name="setup_time"
                 control={control}
@@ -254,7 +267,7 @@ export default function DateLocationSection({ control, getValues }: Props) {
                 )}
             />
 
-            {/* Q9: Location Type */}
+            {/* Q9 — Location Type ----------------------------------------- */}
             <Controller
                 name="location_type"
                 control={control}
@@ -297,7 +310,7 @@ export default function DateLocationSection({ control, getValues }: Props) {
                 )}
             />
 
-            {/* Conditional: Virtual Event Link */}
+            {/* Q9a — Virtual link (shown only when locationType === "Virtual") */}
             {locationType === "Virtual" && (
                 <Controller
                     name="virtual_link"

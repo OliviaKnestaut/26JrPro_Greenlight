@@ -1,13 +1,25 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { useState } from "react";
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
-import { Input, Button, Select, Typography, InputNumber, Radio, Upload, Checkbox, Alert, Popover, Divider } from "antd";
-import { PlusOutlined, MinusCircleOutlined, UploadOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { Input, Button, Select, Typography, InputNumber, Radio, Checkbox, Alert, Popover, Divider } from "antd";
+import { PlusOutlined, MinusCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../components/FieldLabel";
 import NonVendorCosts from "./nestedSections/NonVendorCosts";
 import { formatPhoneNumber } from "~/lib/formatters";
 
-const { Text } = Typography;
+// ─── Ant Design sub-components ────────────────────────────────────────────────
+const { Text }   = Typography;
 const { Option } = Select;
+
+// =============================================================================
+// BudgetPurchasesSection
+// Form section 4 of the event flow.
+// Covers: vendor contracts, payment details, vendor letter acknowledgement,
+//         special services / equipment, and account funding information.
+// Hidden entirely (replaced with an alert) if the event is Level 0.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -15,51 +27,36 @@ type Props = {
 };
 
 export default function BudgetPurchasesSection({ control, setValue }: Props) {
-    // Watch for vendors and elements to conditionally require fields
-    const vendorFields = useWatch({
-        control,
-        name: "form_data.vendors",
-    });
 
-    const selectedElements = useWatch({
-        control,
-        name: "form_data.elements",
-    });
+    // ── Watched Fields ───────────────────────────────────────────────────────
+    const vendorFields     = useWatch({ control, name: "form_data.vendors" });
+    const selectedElements = useWatch({ control, name: "form_data.elements" });
+    const level0Confirmed  = useWatch({ control, name: "form_data.level0_confirmed" });
+    const selectedServices = useWatch({ control, name: "form_data.non_vendor_services" });
 
-    // Watch for level 0 confirmation from event elements
-    const level0Confirmed = useWatch({
-        control,
-        name: "form_data.level0_confirmed",
-    });
-
-    // Watch for non-vendor services
-    const selectedServices = useWatch({
-        control,
-        name: "form_data.non_vendor_services",
-    });
-
-    // Determine if there are any vendors added
-    const hasVendors = vendorFields && vendorFields.length > 0;
-
-    // Determine if any elements are selected
+    // ── Derived State ────────────────────────────────────────────────────────
+    const hasVendors  = vendorFields && vendorFields.length > 0;
     const hasElements = selectedElements && Object.values(selectedElements).some(Boolean);
-
-    // Determine if any non-vendor services are selected
     const hasServices = selectedServices && Object.values(selectedServices).some(Boolean);
 
-    // Vendors repeater
+    // ── Vendor Repeater ──────────────────────────────────────────────────────
     const { fields, append: appendVendor, remove: removeVendor } = useFieldArray({
         control,
         name: "form_data.vendors",
     });
 
+    // ── Special Services Toggle ──────────────────────────────────────────────
+    // Revealed automatically when any vendor/element/service exists,
+    // or manually via the "Add special services" link.
     const [showSpecialServices, setShowSpecialServices] = useState(false);
-    const canRevealSpecialServices = hasVendors || hasElements || hasServices;
+    const canRevealSpecialServices  = hasVendors || hasElements || hasServices;
     const shouldShowSpecialServices = !level0Confirmed && (canRevealSpecialServices || showSpecialServices);
 
+    // ── Render ───────────────────────────────────────────────────────────────
     return (
         <div style={{ marginBottom: 24 }}>
-            {/* Level 0 Event Notice */}
+
+            {/* Level 0 alert — replaces entire section with an info notice */}
             {level0Confirmed && (
                 <Alert
                     message="Level 0 Event - No Purchases Allowed"
@@ -70,7 +67,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                 />
             )}
 
-            {/* Only show vendor section if NOT a level 0 event */}
+            {/* Section header — hidden for Level 0 events */}
             {!level0Confirmed && (
                 <>
                     <h5 style={{ display: "block", marginBottom: 8 }}>
@@ -81,10 +78,12 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                     </Text>
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                         <FieldLabel>What contracts requests (vendors) are you planning to use for your event?</FieldLabel>
-                        <Text type="secondary" style={{}}>(Optional)</Text>
+                        <Text type="secondary">(Optional)</Text>
                     </div>
                 </>
             )}
+
+            {/* ── Vendor Cards ─────────────────────────────────────────────── */}
 
             {fields.map((field, index) => (
                 <div key={field.id} style={{
@@ -324,33 +323,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                         )}
                     />
 
-                    {/* Upload Quote */}
-                    {/* <Controller
-                        name={`form_data.vendors.${index}.quote_file`}
-                        control={control}
-                        render={({ field }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                                    <FieldLabel>Please upload official quote from the vendor, if you have received one.</FieldLabel>
-                                    <Text type="secondary" style={{}}>(Optional)</Text>
-                                </div>
-                                <Upload
-                                    beforeUpload={() => false}
-                                    maxCount={1}
-                                    onChange={(info) => {
-                                        const file = info.fileList[0]?.originFileObj;
-                                        field.onChange(file);
-                                    }}
-                                >
-                                    <div style={{ cursor: "pointer" }}>
-                                        <UploadOutlined /> Click to Upload
-                                    </div>
-                                </Upload>
-                            </div>
-                        )}
-                    /> */}
-
-                    {/* Description of what vendor is doing */}
+                    {/* Vendor service description */}
                     <Controller
                         name={`form_data.vendors.${index}.description`}
                         control={control}
@@ -400,9 +373,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                 </div>
             ))}
 
-
-
-            {/* Only show Add Vendor button if NOT a level 0 event */}
+            {/* Add Vendor button — hidden for Level 0 events */}
             {!level0Confirmed && (
                 <Button
                     type="dashed"
@@ -426,7 +397,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                 </Button>
             )}
 
-            {/* Vendor Letter Notice - Single checkbox for all vendors */}
+            {/* Vendor letter acknowledgement — shown once at least one vendor exists */}
             {hasVendors && (
                 <Controller
                     name="form_data.vendors_notice_acknowledged"
@@ -450,6 +421,8 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                 />
             )}
 
+            {/* \u2500\u2500 Special Services \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
+            {/* "Add special services" link \u2014 lets users reveal the section manually */}
             {!level0Confirmed && !shouldShowSpecialServices && (
                 <Button type="link" onClick={() => setShowSpecialServices(true)} style={{ paddingLeft: 0 }}>
                     Add special services or equipment
@@ -465,12 +438,12 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                     <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
                         Select any non-vendor services or equipment that may incur fees.
                     </Text>
-                    {/* Non-Vendor Costs Section - Only show if NOT a level 0 event */}
                     <NonVendorCosts control={control} setValue={setValue} />
                 </>
             )}
 
-            {/* Only show funding questions if NOT a level 0 event and has vendors, elements, or services */}
+            {/* ── Account Funding ───────────────────────────────────────────── */}
+            {/* Shown when there are vendors/elements/services on a non-Level-0 event */}
             {(hasVendors || hasElements || hasServices) && !level0Confirmed && (
                 <>
                     <Divider style={{ borderColor: "var(--gray-5)", marginTop: 72, marginBottom: 45 }} />

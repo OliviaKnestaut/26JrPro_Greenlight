@@ -1,12 +1,24 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
+import { useEffect } from "react";
 import { Input, Checkbox, Typography, Alert, Collapse, Tag } from "antd";
 import { InfoCircleOutlined, WarningOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import FieldLabel from "../../components/FieldLabel";
-import { useEffect } from "react";
 
-const { Text } = Typography;
-const { Panel } = Collapse;
+// ─── Local ────────────────────────────────────────────────────────────────────
+import FieldLabel from "../../components/FieldLabel";
+
+// ─── Ant Design sub-components ────────────────────────────────────────────────
+const { Text }     = Typography;
+const { Panel }    = Collapse;
 const { TextArea } = Input;
+
+// =============================================================================
+// NonVendorCosts
+// Nested section inside BudgetPurchasesSection — renders a categorized list
+// of services that may incur charges without a vendor contract (e.g. SORC
+// equipment, A/V support, custodial/safety). Auto-selects services based on
+// other form choices and shows account acknowledgment when any are selected.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -412,7 +424,7 @@ export default function NonVendorCosts({ control, setValue }: Props) {
                             <div style={{ marginTop: 16, marginBottom: 16 }}>
                                 <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                                     <FieldLabel>Additional Notes or Special Requirements</FieldLabel>
-                                    <Text type="secondary" style={{}}>(Optional)</Text>
+                                    <Text type="secondary">(Optional)</Text>
                                 </div>
                                 <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>Provide any additional details about the services you need</Text>
                                 <TextArea

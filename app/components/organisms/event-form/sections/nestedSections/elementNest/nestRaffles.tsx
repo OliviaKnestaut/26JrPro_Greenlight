@@ -1,8 +1,18 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller } from "react-hook-form";
 import { Input, InputNumber, Typography } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../../../components/FieldLabel";
 
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { Text } = Typography;
+
+// =============================================================================
+// RafflesSection
+// Nested section inside EventElementsSection — shown when "Raffles/Giveaways"
+// is selected. Collects: prize description, award method, and estimated cost.
+// =============================================================================
 
 type Props = {
     control: any;

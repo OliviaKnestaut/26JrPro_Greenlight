@@ -1,13 +1,24 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller } from "react-hook-form";
 import { Input, Upload, Typography, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import { useAuth } from "../../../../auth/AuthProvider";
 import { useGetOrganizationsQuery } from "../../../../lib/graphql/generated";
 import FieldLabel from "../components/FieldLabel";
 
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { TextArea } = Input;
-const { Text } = Typography;
-const { Option } = Select;
+const { Text }    = Typography;
+const { Option }  = Select;
+
+// =============================================================================
+// EventDetailsSection
+// Form section 1 of the event flow.
+// Collects: cover image, title, operational description,
+//           co-hosting orgs (optional), and expected attendees.
+// =============================================================================
 
 type Props = {
   control: any;
@@ -18,21 +29,24 @@ type Props = {
 };
 
 export default function EventDetailsSection({ control, getValues, setValue, setError, clearErrors }: Props) {
+
+  // ── Auth & Data ──────────────────────────────────────────────────────────────
   const { user } = useAuth();
   const { data: orgsData, loading: orgsLoading } = useGetOrganizationsQuery({
-    variables: { limit: 1000 }
+    variables: { limit: 1000 },
   });
 
-  // Filter out current user's organization from the list
-  const currentOrgId = user?.organization?.id;
+  // ── Derived Data ─────────────────────────────────────────────────────────────
+  // Exclude the current user's own org from the co-host picker
+  const currentOrgId  = user?.organization?.id;
   const availableOrgs = orgsData?.organizations?.filter(
     (org: any) => org.id !== currentOrgId
-  ) || [];
+  ) ?? [];
 
-
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Q1: Event Image */}
+      {/* Q1 — Cover Image ---------------------------------------------------- */}
       <Controller
         name="event_img"
         control={control}
@@ -41,21 +55,20 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
           validate: (file) => {
             if (!file) return "Event image is required";
 
-            // If it's a string, it's an existing filename from the DB, so it's valid
+            // Existing DB filename (string) → always valid
             if (typeof file === "string") return true;
 
-            // Only run file-specific checks if it's a new upload (File object)
+            // New upload (File object) — check type + size
             const validTypes = ["image/jpeg", "image/jpg", "image/png"];
             if (!validTypes.includes(file.type)) {
               return "Only JPG and PNG images are allowed";
             }
-
             if (file.size > 5 * 1024 * 1024) {
               return "Image must be under 5MB";
             }
 
             return true;
-          }
+          },
         }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
@@ -68,38 +81,33 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               fileList={
                 field.value
                   ? [{
-                    uid: '-1',
-                    name: getValues("event_img_name") || 'Current Image',
-                    status: 'done',
-                    url: getValues("event_img_preview"),
-                  }]
+                      uid: '-1',
+                      name: getValues("event_img_name") || 'Current Image',
+                      status: 'done' as const,
+                      url: getValues("event_img_preview"),
+                    }]
                   : []
               }
               beforeUpload={(file) => {
                 if (!file.type) return false;
 
-                const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+                const validTypes  = ["image/jpeg", "image/jpg", "image/png"];
                 const isValidType = validTypes.includes(file.type);
-                const isUnder5MB = file.size <= 5 * 1024 * 1024;
+                const isUnder5MB  = file.size <= 5 * 1024 * 1024;
 
                 if (!isValidType) {
                   setError("event_img", { type: "manual", message: "Only JPG and PNG images are allowed" });
                   return Upload.LIST_IGNORE;
                 }
-
                 if (!isUnder5MB) {
-                  setError("event_img", {
-                    type: "manual",
-                    message: "Image must be under 5MB",
-                  });
+                  setError("event_img", { type: "manual", message: "Image must be under 5MB" });
                   return Upload.LIST_IGNORE;
                 }
 
                 clearErrors("event_img");
-                return false;
+                return false; // prevent automatic upload — handled on submit
               }}
               onChange={(info) => {
-                // Get the most recent file added
                 const fileItem = info.fileList[info.fileList.length - 1];
 
                 if (!fileItem) {
@@ -107,19 +115,19 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
                   return;
                 }
 
-                // If it's a new upload, it has originFileObj
+                // New upload carries originFileObj; existing entries don't
                 if (fileItem.originFileObj) {
                   clearErrors("event_img");
-                  field.onChange(fileItem.originFileObj); // Update field with File object
+                  field.onChange(fileItem.originFileObj);
 
                   const previewUrl = URL.createObjectURL(fileItem.originFileObj);
-                  setValue("event_img_name", fileItem.originFileObj.name);
+                  setValue("event_img_name",    fileItem.originFileObj.name);
                   setValue("event_img_preview", previewUrl);
                 }
               }}
               onRemove={() => {
                 field.onChange(null);
-                setValue("event_img_name", "");
+                setValue("event_img_name",    "");
                 setValue("event_img_preview", "");
                 return true;
               }}
@@ -131,14 +139,7 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
             </Upload>
 
             {fieldState.error && (
-              <Text
-                type="danger"
-                style={{
-                  display: "block",
-                  marginTop: 4,
-                  color: "var(--red-6)",
-                }}
-              >
+              <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
                 {fieldState.error.message}
               </Text>
             )}
@@ -146,7 +147,7 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
         )}
       />
 
-      {/* Q2: Event Title */}
+      {/* Q2 — Event Title ---------------------------------------------------- */}
       <Controller
         name="title"
         control={control}
@@ -160,19 +161,25 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               status={fieldState.error ? "error" : ""}
               style={{ marginTop: 8 }}
             />
-            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+            {fieldState.error && (
+              <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                {fieldState.error.message}
+              </Text>
+            )}
           </div>
         )}
       />
 
-      {/* Q3: Operational Description */}
+      {/* Q3 — Operational Description ---------------------------------------- */}
       <Controller
         name="description"
         control={control}
         rules={{ required: "Event description is required" }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
-            <FieldLabel required>Please provide a detailed operational description of the event activities</FieldLabel>
+            <FieldLabel required>
+              Please provide a detailed operational description of the event activities
+            </FieldLabel>
             <Text type="secondary" style={{ display: "block", marginTop: 4, marginBottom: 8 }}>
               Include logistics, programming details, and flow of the event
             </Text>
@@ -182,12 +189,16 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               placeholder="Enter the event operational details here"
               status={fieldState.error ? "error" : ""}
             />
-            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+            {fieldState.error && (
+              <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                {fieldState.error.message}
+              </Text>
+            )}
           </div>
         )}
       />
 
-      {/* Q4: Co-hosting Organizations */}
+      {/* Q4 — Co-hosting Organizations (optional) ---------------------------- */}
       <Controller
         name="organization_id"
         control={control}
@@ -195,7 +206,7 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
               <FieldLabel>Are you co-hosting with another organization?</FieldLabel>
-              <Text type="secondary" style={{}}>(Optional)</Text>
+              <Text type="secondary">(Optional)</Text>
             </div>
 
             <Select
@@ -221,13 +232,13 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
         )}
       />
 
-      {/* Q5: Expected Number of Attendees */}
+      {/* Q5 — Expected Attendees --------------------------------------------- */}
       <Controller
         name="attendees"
         control={control}
         rules={{
           required: "Expected number of attendees is required",
-          min: { value: 1, message: "Must be at least 1 attendee" }
+          min: { value: 1, message: "Must be at least 1 attendee" },
         }}
         render={({ field, fieldState }) => (
           <div style={{ marginBottom: 24 }}>
@@ -240,7 +251,11 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               status={fieldState.error ? "error" : ""}
               style={{ marginTop: 8, width: "100%" }}
             />
-            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+            {fieldState.error && (
+              <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                {fieldState.error.message}
+              </Text>
+            )}
           </div>
         )}
       />

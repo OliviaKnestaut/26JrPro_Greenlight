@@ -16,6 +16,7 @@ mutation UpdateEvent($id: ID!, $input: UpdateEventInput!) {
         title
         eventDate
         eventStatus
+        submittedAt
     }
 }
 
@@ -27,6 +28,7 @@ mutation ChangeEventStatus($id: ID!, $status: EventStatus!) {
     changeEventStatus(id: $id, status: $status) {
         id
         eventStatus
+        submittedAt
     }
 }
 

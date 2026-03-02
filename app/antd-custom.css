@@ -1,4 +1,7 @@
-/* *Font Declarations */
+/* =============================================================================
+   FONT DECLARATIONS
+   Variable fonts — single file covers all weights (100–900).
+============================================================================= */
 
 @font-face {
 	font-family: "Pangea";
@@ -16,28 +19,24 @@
 	font-display: swap;
 }
 
-body {
-	box-sizing: border-box;
-}
 
-/* Theme Variables */
+/* =============================================================================
+   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   Organised into:
+     1. Primitive palette  — raw colour steps
+     2. Semantic tokens    — purpose-named aliases of the palette
+     3. Legacy tokens      — old variable names kept for backward compat
+     4. Typography tokens  — font-family references
+============================================================================= */
+
 :root {
 
-	/* OLD VARIABLES */
-	--background: #FAFAFA;
-	--background-2: #FFFFFF;
-	--primary: #045966;
-	--primary-active: #0D7F8C;
-	--primary-disabled: #447A7E;
-	--accent-gray-light: #D6D6D6;
-	--accent-gray-medium: #A0A0A0;
-	--accent-gray-dark: #919191;
-	--Work-Sans: "Work Sans", sans-serif;
+	/* -------------------------------------------------------------------------
+	   1. PRIMITIVE PALETTE
+	   Each colour scale runs 1 (lightest) → 10 (darkest).
+	------------------------------------------------------------------------- */
 
-	/* COLOR PALETTE */
-
-	/* Primary */
-
+	/* Primary — Sea Green */
 	--sea-green-1: #E4F2F1;
 	--sea-green-2: #B3E6E2;
 	--sea-green-3: #86D9D6;
@@ -49,6 +48,7 @@ body {
 	--sea-green-9: #003540;
 	--sea-green-10: #00141A;
 
+	/* Neutral — Gray */
 	--gray-1: #FFFFFF;
 	--gray-2: #FAFAFA;
 	--gray-3: #F5F5F5;
@@ -63,8 +63,7 @@ body {
 	--gray-12: #141414;
 	--gray-13: #000000;
 
-	/* Secondary */
-
+	/* Secondary — Sage */
 	--sage-1: #E4F1E0;
 	--sage-2: #F3FFE0;
 	--sage-3: #E6F2E4;
@@ -76,8 +75,7 @@ body {
 	--sage-9: #3B5938;
 	--sage-10: #213322;
 
-	/* Tertiary */
-
+	/* Tertiary — Gold */
 	--gold-1: #FFFBE6;
 	--gold-2: #FFF1B8;
 	--gold-3: #FFE58F;
@@ -89,6 +87,7 @@ body {
 	--gold-9: #874D00;
 	--gold-10: #613400;
 
+	/* Tertiary — Lavender */
 	--lavender-1: #FCF0FF;
 	--lavender-2: #F9E6FF;
 	--lavender-3: #EDDBFF;
@@ -100,6 +99,7 @@ body {
 	--lavender-9: #4C0E82;
 	--lavender-10: #32095C;
 
+	/* Status — Green */
 	--green-1: #F6FFED;
 	--green-2: #D9F7BE;
 	--green-3: #B7EB8F;
@@ -111,6 +111,7 @@ body {
 	--green-9: #135200;
 	--green-10: #092B00;
 
+	/* Status — Red */
 	--red-1: #FFF1F0;
 	--red-2: #FFCCC7;
 	--red-3: #FFA39E;
@@ -123,11 +124,10 @@ body {
 	--red-10: #5C0011;
 
 
-	/* ! COLOR TOKENS (SEMANTIC)  */
-
-	/* NEW  */
-
-	/* ========== SEMANTIC TOKENS ========== */
+	/* -------------------------------------------------------------------------
+	   2. SEMANTIC TOKENS
+	   Purpose-named aliases — use these in component styles, not raw colours.
+	------------------------------------------------------------------------- */
 
 	/* Backgrounds */
 	--color-bg-layout: var(--gray-2);
@@ -158,9 +158,14 @@ body {
 	--color-status-info: var(--sea-green-5);
 
 
-	/* OLD */
+	/* -------------------------------------------------------------------------
+	   3. LEGACY TOKENS
+	   Kept for backward compatibility — prefer semantic tokens for new work.
+	------------------------------------------------------------------------- */
+
 	--background: #F9FAFB;
 	--background-2: #FFFFFF;
+
 	--primary: #045966;
 	--primary-active: #003540;
 	--primary-disabled: #447A7E;
@@ -181,16 +186,38 @@ body {
 	--color-message-transparent: rgba(51, 51, 51, 0.6);
 	--color-message-transparent-2: rgba(51, 51, 51, 0.4);
 
-	/* ! FONT FAMILIES */
+
+	/* -------------------------------------------------------------------------
+	   4. TYPOGRAPHY TOKENS
+	   Font-family stacks used across all text rules.
+	------------------------------------------------------------------------- */
+
 	--font-heading: "Pangea", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 	--font-body: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	--Work-Sans: "Work Sans", sans-serif;
+	/* legacy — prefer --font-body */
+}
+
+
+/* =============================================================================
+   BASE / RESET
+============================================================================= */
+
+body {
+	box-sizing: border-box;
 }
 
 .ap-wrapper {
 	padding: 12px;
 }
 
-/* Ant System Typography */
+
+/* =============================================================================
+   TYPOGRAPHY
+   Ant Design heading/body overrides + plain semantic element fallbacks.
+============================================================================= */
+
+/* --- Ant Design typography components --- */
 
 h1.ant-typography {
 	font-family: var(--font-heading);
@@ -227,21 +254,8 @@ h5.ant-typography {
 	line-height: 24px;
 }
 
-
-p.ant-typography {
-	font-family: var(--font-body);
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 22px;
-}
-
-.ant-typography-ellipsis {
-	font-family: var(--font-body);
-	font-weight: 400;
-	font-size: 14px;
-	line-height: 22px;
-}
-
+p.ant-typography,
+.ant-typography-ellipsis,
 .ant-typography {
 	font-family: var(--font-body);
 	font-weight: 400;
@@ -249,7 +263,7 @@ p.ant-typography {
 	line-height: 22px;
 }
 
-/* Semantic Fallback Typography */
+/* --- Semantic HTML elements (outside Ant components) --- */
 
 h1 {
 	font-family: var(--font-heading);
@@ -293,6 +307,8 @@ p {
 	line-height: 22px;
 }
 
+/* --- Card & list typography --- */
+
 .ant-card li {
 	font-family: var(--font-body);
 	font-weight: 500;
@@ -314,6 +330,15 @@ p {
 	font-family: var(--font-body);
 }
 
+.ant-table,
+.ant-table-thead>tr>th,
+.ant-table-tbody>tr>td,
+.ant-tag {
+	font-family: var(--font-body);
+}
+
+/* --- Font-weight utility classes --- */
+
 .regular {
 	font-weight: 400 !important;
 }
@@ -326,7 +351,10 @@ p {
 	font-weight: 600 !important;
 }
 
-/*NAVIGATION*/
+
+/* =============================================================================
+   NAVIGATION
+============================================================================= */
 
 .ant-drawer-header {
 	height: 64px !important;
@@ -338,20 +366,37 @@ p {
 	background-color: var(--primary);
 }
 
-/* ! FORM COMPONENTS  */
 
-.ant-collapse-header {
-	border-radius: 2px !important;
+/* =============================================================================
+   BUTTONS
+============================================================================= */
+
+/* Primary button hover — lighter teal */
+.ant-btn-primary:hover {
+	background-color: var(--sea-green-7) !important;
+	border-color: var(--sea-green-7) !important;
 }
 
+/* Default / secondary button hover */
+.ant-btn-default:hover {
+	color: var(--sea-green-8) !important;
+	border-color: var(--sea-green-8) !important;
+	background-color: var(--sea-green-1) !important;
+}
+
+
+/* =============================================================================
+   FORM COMPONENTS
+   Inputs, selects, pickers, collapse panels, and file upload.
+============================================================================= */
+
+/* Sharp corners on all form inputs */
+.ant-collapse-header,
 .ant-collapse-item {
 	border-radius: 2px !important;
 }
 
-.ant-input {
-	border-radius: 0;
-}
-
+.ant-input,
 .ant-input-textarea .ant-input {
 	border-radius: 0 !important;
 }
@@ -366,6 +411,7 @@ p {
 	border-radius: 0 !important;
 }
 
+/* Checkbox and radio groups stack vertically */
 .ant-checkbox-group,
 .ant-radio-group {
 	display: flex;
@@ -373,6 +419,7 @@ p {
 	gap: 0.5rem;
 }
 
+/* Upload button styling */
 .ant-upload-select {
 	display: flex;
 	padding: 0.3125rem 1rem;
@@ -382,17 +429,66 @@ p {
 	border-radius: 0.125rem;
 	border: 1px solid var(--Neutral-5, #D9D9D9);
 	background: var(--Neutral-1, #FFF);
-
-	/* drop-shadow/button-secondary */
 	box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.02);
 	cursor: pointer;
 }
 
+/* Upload list — tighten filename padding and always show delete action */
+.ant-upload-wrapper .ant-upload-list-item .ant-upload-list-item-name {
+	padding: 0 4px !important;
+	flex: 0 1 auto !important;
+}
+
+.ant-upload-wrapper .ant-upload-list-item .ant-upload-list-item-action {
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* Select chevron colour */
 .ant-select-suffix {
 	color: var(--gray-8) !important;
 }
 
-/* TAGS */
+/* Alert — always sharp-cornered */
+.ant-alert {
+	border-radius: 0;
+}
+
+.ant-alert-warning {
+	background-color: var(--gold-1) !important;
+	border-color: var(--gold-5) !important;
+	color: var(--gold-9) !important;
+}
+
+
+/* =============================================================================
+   COLLAPSE
+============================================================================= */
+
+.ant-collapse {
+	background: var(--background-2);
+	border: 1px solid var(--accent-gray-light-2);
+	width: 100%;
+}
+
+.ant-collapse-content {
+	border-top: none !important;
+}
+
+.ant-collapse-content-box {
+	padding-top: 0 !important;
+}
+
+.ant-collapse-expand-icon {
+	height: 28px !important;
+}
+
+
+/* =============================================================================
+   TAGS
+   eventDetailTag — small pill used on Overview/Calendar event info strips.
+   statusTag      — wider pill used for event status badges.
+============================================================================= */
 
 .eventDetailTag {
 	font-family: var(--font-body);
@@ -401,6 +497,7 @@ p {
 	line-height: 22px;
 	color: var(--gray-8) !important;
 	background-color: var(--color-bg-layout);
+	background: var(--gray-1) !important;
 	border: 1px solid var(--gray-5);
 	padding: 4px 8px;
 	margin-right: 4px;
@@ -421,7 +518,6 @@ p {
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 22px;
-
 	width: fit-content;
 	border: none;
 	padding: 4px 12px;
@@ -431,6 +527,7 @@ p {
 	overflow: hidden;
 }
 
+/* Status colour variants */
 .inReviewTag {
 	color: #874D00;
 	background-color: #FFF1B8;
@@ -461,34 +558,31 @@ p {
 	background-color: #FFCCC7;
 }
 
-/* DIVIDER */
+/* The close icon inside status tags should inherit the tag's text colour */
+.inDraftTag .ant-tag-close-icon,
+.inReviewTag .ant-tag-close-icon,
+.approvedTag .ant-tag-close-icon,
+.cancelledTag .ant-tag-close-icon,
+.pastTag .ant-tag-close-icon,
+.deniedTag .ant-tag-close-icon {
+	color: inherit !important;
+}
+
+
+/* =============================================================================
+   DIVIDER
+============================================================================= */
 
 .divider {
 	border-block-start: 2px solid var(--accent-gray-light-2) !important;
 	margin: 16px 0 !important;
 }
 
-/* COLLAPSE */
 
-.ant-collapse {
-	background: var(--background-2);
-	border: 1px solid var(--accent-gray-light-2);
-	width: 100%;
-}
-
-.ant-collapse-content {
-	border-top: none !important;
-}
-
-.ant-collapse-content-box {
-	padding-top: 0 !important;
-}
-
-.ant-collapse-expand-icon {
-	height: 28px !important;
-}
-
-/* CALENDAR */
+/* =============================================================================
+   CALENDAR
+   Ant Design CalendarPicker cell overrides + custom event-highlight layers.
+============================================================================= */
 
 .ant-picker-cell .ant-picker-cell-inner:hover {
 	border-radius: 0.125rem;
@@ -501,11 +595,17 @@ p {
 	border-radius: 0;
 }
 
-/* Make room for custom event-highlighting and keep contents above the highlight */
+/* Position cell content above the highlight pseudo-element */
 .styled-calendar-wrapper .ant-picker-cell-inner {
 	position: relative;
 }
 
+.styled-calendar-wrapper .ant-picker-cell-inner>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Base highlight shared pattern — overridden per status below */
 .styled-calendar-wrapper .ant-picker-cell-inner:has(.gc-event-date)::before {
 	content: '';
 	position: absolute;
@@ -517,7 +617,7 @@ p {
 	pointer-events: none;
 }
 
-/* Approved events: green highlight */
+/* Approved events — green highlight */
 .styled-calendar-wrapper .ant-picker-cell-inner:has(.gc-event-approved)::before {
 	content: '';
 	position: absolute;
@@ -529,7 +629,7 @@ p {
 	pointer-events: none;
 }
 
-/* In-review events: yellow highlight */
+/* In-review events — gold/yellow highlight */
 .styled-calendar-wrapper .ant-picker-cell-inner:has(.gc-event-in-review)::before {
 	content: '';
 	position: absolute;
@@ -541,11 +641,7 @@ p {
 	pointer-events: none;
 }
 
-.styled-calendar-wrapper .ant-picker-cell-inner>* {
-	position: relative;
-	z-index: 1;
-}
-
+/* Don't highlight the selected cell when it also has an event */
 .styled-calendar-wrapper .ant-picker-cell.ant-picker-cell-selected .ant-picker-cell-inner:not(:has(.gc-today)) {
 	background: transparent !important;
 	box-shadow: none !important;
@@ -553,13 +649,56 @@ p {
 	color: var(--color-text-primary);
 }
 
-/* Restyle the "today" date marker inside our calendar wrapper */
+/* "Today" date marker */
 .styled-calendar-wrapper .ant-picker-calendar-date-today {
 	font-weight: 700;
 	color: var(--sea-green-9, #003540);
 }
 
-/* STATISTICS CARD (EVENT FORM AND BUDGET) */
+/* =============================================================================
+   WEEKLY CALENDAR HEADER
+   Month and year Select dropdowns styled to match the sea-green-7 button theme.
+============================================================================= */
+
+/* Border box — sea-green-7 fill, white text, 8px radius to match buttons */
+.calendar-header-select .ant-select-selector {
+	background-color: var(--sea-green-7) !important;
+	border-color: var(--sea-green-7) !important;
+	border-radius: 8px !important;
+}
+
+/* Border on hover */
+.calendar-header-select:hover .ant-select-selector {
+	background-color: var(--sea-green-8) !important;
+	border-color: var(--sea-green-8) !important;
+}
+
+/* Border when open / focused */
+.calendar-header-select.ant-select-focused .ant-select-selector {
+	background-color: var(--sea-green-8) !important;
+	border-color: var(--sea-green-8) !important;
+	box-shadow: 0 0 0 2px rgba(4, 89, 102, 0.15) !important;
+}
+
+/* Selected value label — white on dark bg */
+.calendar-header-select .ant-select-selection-item {
+	color: white;
+}
+
+/* Arrow icon — white on dark bg */
+.calendar-header-select .ant-select-arrow {
+	color: white !important;
+}
+
+/* Arrow SVG fill fallback for antd v5 */
+.calendar-header-select .ant-select-arrow .anticon svg {
+	fill: white;
+}
+
+/* =============================================================================
+   STATISTICS CARD
+   Used on Event Overview and Budget pages for key metric callouts.
+============================================================================= */
 
 .ant-statistic {
 	display: flex;
@@ -588,19 +727,10 @@ p {
 	line-height: 32px !important;
 }
 
-/* TABLE STYLING */
 
-.ant-table {
-	font-family: var(--font-body);
-}
-
-.ant-table-thead>tr>th {
-	font-family: var(--font-body);
-}
-
-.ant-table-tbody>tr>td {
-	font-family: var(--font-body);
-}
+/* =============================================================================
+   TABLE
+============================================================================= */
 
 .ant-table-tbody>tr:nth-child(odd)>td {
 	background: var(--background);
@@ -614,11 +744,40 @@ p {
 	padding: 8px 16px !important;
 }
 
-.ant-tag {
-	font-family: var(--font-body);
+.ant-table-tbody>tr:hover>td:first-child {
+	background: #D8E3D6 !important;
 }
 
-/* BRAINSTORM */
+
+/* =============================================================================
+   DROPDOWN
+============================================================================= */
+
+.ant-dropdown-menu {
+	border-radius: 0 !important;
+	padding: 0;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ant-dropdown-menu-item,
+.ant-dropdown-menu-submenu-title {
+	border-radius: 0 !important;
+	margin: 0 !important;
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+}
+
+.ant-dropdown-menu-item:hover,
+.ant-dropdown-menu-submenu-title:hover {
+	border-radius: 0 !important;
+}
+
+
+/* =============================================================================
+   BRAINSTORM PAGE
+============================================================================= */
+
+/* Toggle nav pill (Docs / Sheets switcher) */
 .toggle-nav {
 	width: 206px;
 	height: 36px;
@@ -653,10 +812,9 @@ p {
 	justify-content: space-between;
 }
 
-
+/* Document card */
 .custom-doc-card {
 	max-width: 275px;
-
 }
 
 .custom-doc-card .ant-card-body {
@@ -690,73 +848,4 @@ p {
 
 .docs-more {
 	margin-top: 24px;
-}
-
-.ant-alert {
-	border-radius: 0;
-}
-
-.ant-table-tbody>tr:hover>td:first-child {
-	background: #D8E3D6 !important;
-}
-
-/* Primary button hover — lighter teal */
-.ant-btn-primary:hover {
-	background-color: var(--sea-green-7) !important;
-	border-color: var(--sea-green-7) !important;
-}
-
-/* Default/secondary button hover — for "New Brainstorm" style buttons */
-.ant-btn-default:hover {
-	color: var(--sea-green-8) !important;
-	border-color: var(--sea-green-8) !important;
-	background-color: var(--sea-green-1) !important;
-}
-
-.ant-dropdown-menu {
-	border-radius: 0 !important;
-	padding: 0;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.ant-dropdown-menu-item,
-.ant-dropdown-menu-submenu-title {
-	border-radius: 0 !important;
-	margin: 0 !important;
-	width: 100%;
-	padding: 0.5rem 0.75rem;
-}
-
-.ant-dropdown-menu-item:hover,
-.ant-dropdown-menu-submenu-title:hover {
-	border-radius: 0 !important;
-}
-
-.eventDetailTag {
-	background: var(--gray-1) !important;
-}
-
-.ant-alert-warning {
-	background-color: var(--gold-1) !important;
-	border-color: var(--gold-5) !important;
-	color: var(--gold-9) !important;
-}
-
-.inDraftTag .ant-tag-close-icon,
-.inReviewTag .ant-tag-close-icon,
-.approvedTag .ant-tag-close-icon,
-.cancelledTag .ant-tag-close-icon,
-.pastTag .ant-tag-close-icon,
-.deniedTag .ant-tag-close-icon {
-	color: inherit !important;
-}
-
-.ant-upload-wrapper .ant-upload-list-item .ant-upload-list-item-name {
-  padding: 0 4px !important;   /* reduce from 8px */
-  flex: 0 1 auto !important;   /* prevent stretching */
-}
-
-.ant-upload-wrapper .ant-upload-list-item .ant-upload-list-item-action {
-  opacity: 1 !important;
-  visibility: visible !important;
 }

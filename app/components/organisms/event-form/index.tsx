@@ -1,20 +1,26 @@
-import React, { useState, useEffect, useRef } from "react";
+// ── React & Third-Party Libraries ───────────────────────────────────────────
+import { useState, useEffect, useRef } from "react";
 import { Alert, Form, Button, Collapse, Typography, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams, useBlocker } from "react-router";
+import dayjs from "dayjs";
+
+// ── Internal: Auth, GraphQL & Context ───────────────────────────────────────
 import { useAuth } from "~/auth/AuthProvider";
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useGetOnCampusQuery, useGetEventByIdQuery } from "~/lib/graphql/generated";
 import { calculateEventLevel } from "~/vendor/calendar/components/utils";
 import { useEventForm } from "~/context/eventFormContext";
+
+// ── Internal: Styles, Layout & Section Components ───────────────────────────
 import styles from "./eventform.module.css";
+import ScrollToTop from "../../atoms/ScrollToTop";
+import DiscardModal from "../../molecules/event-flow/discard-modal";
+import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
 import EventDetailsSection from "../event-form/sections/EventDetailsSection";
 import DateLocationSection from "../event-form/sections/DateLocationSection";
 import EventElementsSection from "../event-form/sections/EventElementsSection";
 import BudgetPurchaseSection from "../event-form/sections/BudgetPurchasesSection";
-import DiscardModal from "../../molecules/event-flow/discard-modal";
-import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
-import ScrollToTop from "../../atoms/ScrollToTop";
 import NestFoodSection from "./sections/nestedSections/elementNest/nestFood";
 import OnCampusSection from "./sections/nestedSections/locationNest/nestOn";
 import OffCampusSection from "./sections/nestedSections/locationNest/nestOff";
@@ -24,13 +30,17 @@ import MoviesSection from "./sections/nestedSections/elementNest/nestMovies";
 import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
 import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
 import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
-import moment from "moment";
-import dayjs from "dayjs";
 
-const { Title, Link, Paragraph } = Typography;
+const { Title, Link } = Typography;
 const { Panel } = Collapse;
 
-// Define the branching logic for nested panels based on form values
+// ─────────────────────────────────────────────────────────────────────────────
+// FORM BRANCHING & NESTING CONFIG
+// Each entry in formBranching maps a watched field + value → the nested panel
+// and component that should appear.  formNesting() walks this list recursively
+// so panels can nest arbitrarily deep (e.g. an element sub-form inside a
+// location sub-form) without hardcoded JSX trees.
+// ─────────────────────────────────────────────────────────────────────────────
 const formBranching = [
     { when: "location_type", is: "On-Campus", key: "onCampus", parent: "dateLocation", header: "On-Campus Details", component: OnCampusSection, indent: 32 },
     { when: "location_type", is: "Off-Campus", key: "offCampus", parent: "dateLocation", header: "Off-Campus Details", component: OffCampusSection, indent: 32 },
@@ -43,7 +53,9 @@ const formBranching = [
     { when: "form_data.elements.sorc_games", is: true, key: "sorc_games", parent: "eventElements", header: "SORC Games Details", component: SORCGamesSection, indent: 32 },
 ];
 
-// Recursively render nested panels based on branching logic and current form values
+// Recursively renders all nested <Panel> children for a given parent section.
+// For each matching rule it mounts the associated component, then recurses to
+// support deeper nesting (e.g. a food-detail panel nested inside eventElements).
 const formNesting = (parentKey: string, isSelected: Record<string, any>, control: any, setValue: any) => {
     return formBranching.filter((panel) => panel.parent === parentKey).map((panel) => {
         const fieldPath = panel.when.split('.');
@@ -61,47 +73,62 @@ const formNesting = (parentKey: string, isSelected: Record<string, any>, control
     });
 };
 
-// Main EventForm component
+// ─────────────────────────────────────────────────────────────────────────────
+// EventForm
+// Main event creation / editing form.  Handles new events and pre-populated
+// drafts, client-side image resizing + upload, full RHF validation, and a
+// navigation guard that prompts the user before discarding unsaved work.
+// ─────────────────────────────────────────────────────────────────────────────
 export function EventForm() {
+
+    // ── Router & Auth ──────────────────────────────────────────────────────
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { id } = useParams();
+    const { id } = useParams(); // present when editing an existing draft
+
+    // ── UI / Modal State ───────────────────────────────────────────────────
     const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-    const [isExplicitDiscard, setIsExplicitDiscard] = useState(false);
+    const [isExplicitDiscard, setIsExplicitDiscard] = useState(false);   // true = user clicked "Discard" button
     const [draftAlertMessage, setDraftAlertMessage] = useState<'created' | 'updated' | ''>('');
-    const [draftId, setDraftId] = useState<string | null>(id || null);
+
+    // ── Draft Identity ─────────────────────────────────────────────────────
+    const [draftId, setDraftId] = useState<string | null>(id || null);   // DB id once saved
+
+    // ── GraphQL Mutations & Queries ────────────────────────────────────────
     const [createEvent] = useCreateEventMutation();
-    const [updateEvent, { loading: isUpdatingDraft }] = useUpdateEventMutation();
+    const [updateEvent] = useUpdateEventMutation();
     const [deleteEvent] = useDeleteEventMutation();
     const { data: locationsData } = useGetOnCampusQuery({ variables: { limit: 5000, offset: 0 } });
     const { data: existingEventData, loading: loadingEvent } = useGetEventByIdQuery({
         variables: { id: id ?? '' },
         skip: !id,
     });
+
+    // ── React Hook Form ────────────────────────────────────────────────────
     const { control, getValues, reset, watch, setValue, trigger, formState: { errors }, clearErrors, setError } = useForm({ mode: "onChange", shouldUnregister: false });
     const { setFormData: setContextFormData } = useEventForm();
-    const isSelected = useWatch({ control });
+    const isSelected = useWatch({ control }); // live watched values for branching logic
+
+    // ── Collapse & Section Navigation State ───────────────────────────────
     const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
     const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
     const [visitedSections, setVisitedSections] = useState<string[]>([]);
-    const allowNavigationRef = useRef(false);
-    const hasPopulatedRef = useRef(false);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
-    // Block navigation if there are unsaved changes
+    // ── Refs ───────────────────────────────────────────────────────────────
+    const allowNavigationRef = useRef(false);  // bypass the navigation blocker after confirm
+    const hasPopulatedRef = useRef(false);     // prevent reset() re-firing on Apollo cache updates
+
+    // ── Navigation Blocker ─────────────────────────────────────────────────
+    // Intercepts in-app route changes so we can prompt the user before they
+    // accidentally leave with unsaved work.
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
         if (allowNavigationRef.current) return false;
         return currentLocation.pathname !== nextLocation.pathname;
     });
 
-    const formatTimeSafe = (timeStr: string | null | undefined) => {
-        if (!timeStr) return null;
-        // Try parsing standard 24h format from DB, then 12h as a fallback
-        const m = moment(timeStr, "HH:mm:ss", true).isValid()
-            ? moment(timeStr, "HH:mm:ss")
-            : moment(timeStr, "hh:mm A");
-        return m.isValid() ? m : null;
-    };
+    // ── Effects ────────────────────────────────────────────────────────────
+
     // When blocker state changes to "blocked", show the discard confirmation modal
     useEffect(() => {
         if (blocker.state === "blocked") {
@@ -327,61 +354,15 @@ export function EventForm() {
 
     }, [currentEditingSection]);
 
-    // Resize an image File on the client to fit within max dimensions.
-    const resizeImageFile = async (file: File, maxWidth = 1300, maxHeight = 780, quality = 0.85): Promise<File> => {
-        try {
-            if (!file || !file.type.startsWith('image/')) return file;
-
-            // Use createImageBitmap when available for performance
-            const bitmap = await createImageBitmap(file);
-            let { width, height } = bitmap;
-
-            const ratio = Math.min(1, maxWidth / width, maxHeight / height);
-            const targetW = Math.round(width * ratio);
-            const targetH = Math.round(height * ratio);
-
-            if (ratio === 1) {
-                // No resize needed
-                return file;
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = targetW;
-            canvas.height = targetH;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return file;
-            ctx.drawImage(bitmap, 0, 0, targetW, targetH);
-
-            const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-            const blob: Blob | null = await new Promise((resolve) => {
-                canvas.toBlob((b) => resolve(b), mime, quality);
-            });
-            if (!blob) return file;
-
-            const baseName = file.name.replace(/\.[^.]+$/, '');
-            const ext = mime === 'image/png' ? '.png' : '.jpg';
-            const resizedFile = new File([blob], `${baseName}-resized${ext}`, { type: blob.type });
-            return resizedFile;
-        } catch (err) {
-            console.warn('resizeImageFile failed, uploading original', err);
-            return file;
-        }
-    };
+    // ── Image Upload Helpers ────────────────────────────────────────────────
 
     // Helper: upload image to server endpoint and return the public url and filename
     const uploadImage = async (file: File, desiredName?: string) => {
         const fd = new FormData();
         fd.append('event_img', file);
         if (desiredName) fd.append('desired_name', desiredName);
-        const getUploadUrl = () => {
-            if (import.meta.env.DEV) {
-                return '/~ojk25/graphql/upload_event_image.php';
-            } else {
-                return '/~ojk25/graphql/upload_event_image.php';
-            }
-        };
 
-        const resp = await fetch(getUploadUrl(), {
+        const resp = await fetch('/~ojk25/graphql/upload_event_image.php', {
             method: 'POST',
             body: fd
         });
@@ -445,37 +426,21 @@ export function EventForm() {
 
         if (typeof rawValue === "string") return rawValue;
 
-        if (rawValue?.originFileObj instanceof File) {
-            rawValue = rawValue.originFileObj;
-        }
+        const fileToUpload = rawValue?.originFileObj instanceof File
+            ? rawValue.originFileObj
+            : rawValue;
 
-        let fileToUpload = rawValue;
-        if (rawValue?.originFileObj instanceof File) {
-            fileToUpload = rawValue.originFileObj;
-        }
+        if (!(fileToUpload instanceof File)) return undefined;
 
-        // Only upload if it's a real File object
-        if (fileToUpload instanceof File) {
-            // Skip actual upload in dev — the PHP endpoint isn't available locally
-            if (import.meta.env.DEV) {
-                console.warn("💡 DEV mode: skipping image upload, returning placeholder filename");
-                return `${desiredName}.jpg`;
-            }
-            const uploadResp = await uploadImage(fileToUpload, desiredName);
-            return uploadResp.filename || uploadResp.url || uploadResp.path;
+        if (import.meta.env.DEV) {
+            console.warn("💡 DEV mode: skipping image upload, returning placeholder filename");
+            return `${desiredName}.jpg`;
         }
-
-        if (rawValue instanceof File) {
-            if (import.meta.env.DEV) {
-                console.warn("💡 Skipping image upload in DEV, returning local filename");
-                return `${desiredName}.jpg`; // or just rawValue.name
-            }
-            const uploadResp = await uploadImage(rawValue, desiredName);
-            return uploadResp.filename || uploadResp.url || uploadResp.path;
-        }
-
-        return undefined;
+        const uploadResp = await uploadImage(fileToUpload, desiredName);
+        return uploadResp.filename || uploadResp.url || uploadResp.path;
     };
+
+    // ── Mutation Input Builders ─────────────────────────────────────────────
 
     // Prepare the input for create/update mutation by processing form data, handling image upload, and enforcing schema requirements. This function ensures that the event image is properly handled whether it's a new upload or an existing filename, and constructs the final input object for the GraphQL mutation.
     const prepareMutationInput = async (
@@ -611,6 +576,8 @@ export function EventForm() {
 
         return mutationInput;
     };
+
+    // ── Action Handlers ────────────────────────────────────────────────────
 
     // Helper to allow navigation after confirming discard of changes, ensuring that the blocker is properly bypassed and the user is taken to the intended destination without being stuck in a navigation loop or having to click multiple times. This function centralizes the logic for safely navigating away from the form after handling unsaved changes, providing a smooth user experience.
     const navigateSafely = (path: string) => {
@@ -772,8 +739,8 @@ export function EventForm() {
                 'sorc_games': 'sorc_games',
                 'travel': 'offCampus',
                 'location': currentLocationType === 'On-Campus' ? 'onCampus'
-                          : currentLocationType === 'Off-Campus' ? 'offCampus'
-                          : '',
+                    : currentLocationType === 'Off-Campus' ? 'offCampus'
+                        : '',
             };
 
             // Collect ALL panels that have errors (major + nested) so every
@@ -843,7 +810,10 @@ export function EventForm() {
         }
     };
 
-    // Render the form with collapsible sections, progress timeline, and action buttons, along with modals and alerts for user interactions. This JSX structure defines the layout and interactive elements of the event form, ensuring that users have a clear and intuitive interface for entering their event details, navigating between sections, and managing their draft.
+    // ── Render ─────────────────────────────────────────────────────────────
+    // Renders the collapsible section form, progress timeline, action buttons,
+    // the draft-saved alert banner, the discard confirmation modal, and the
+    // scroll-to-top utility.
     return (
         <div className="container"  >
             <Title level={5}>

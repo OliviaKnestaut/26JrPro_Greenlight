@@ -1,12 +1,23 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
-import { Radio, Checkbox, Typography, Input, Upload, Alert, Select } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Radio, Checkbox, Typography, Input, Alert, Select } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import { useGetUsersQuery } from "~/lib/graphql/generated";
 import FieldLabel from "../../../components/FieldLabel";
 import { formatPhoneNumber } from "~/lib/formatters";
 
-const { Text } = Typography;
+// ─── Ant Design sub-components ────────────────────────────────────────────────
+const { Text }     = Typography;
 const { TextArea } = Input;
+
+// =============================================================================
+// OffCampusSection
+// Nested section inside DateLocationSection — shown when location type is
+// "Off-Campus". Collects: off-campus address, optional Google Maps link,
+// travel type, transportation method, trip leader and emergency contacts,
+// and lodging details for domestic overnight travel.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -76,7 +87,7 @@ export default function OffCampusSection({ control, setValue }: Props) {
                     <div style={{ marginBottom: 16 }}>
                         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                             <FieldLabel>Google Maps Link</FieldLabel>
-                            <Text type="secondary" style={{}}>Provide a link to help locate the venue (Optional)</Text>
+                            <Text type="secondary">Provide a link to help locate the venue (Optional)</Text>
                         </div>
                         <Input
                             {...field}
@@ -277,37 +288,6 @@ export default function OffCampusSection({ control, setValue }: Props) {
                 />
             )}
 
-            {/* Emergency Action Plan Upload - Show only for regional and domestic_overnight */}
-            {/* {(travelType === "regional" || travelType === "domestic_overnight") && (
-                <Controller
-                    name="form_data.travel.eap_file"
-                    control={control}
-                    rules={{ required: "Emergency Action Plan is required for travel events" }}
-                    render={({ field, fieldState }) => (
-                        <div style={{ marginBottom: 16 }}>
-                            <FieldLabel required>Upload an Emergency Action Plan (Required for Travel Events)</FieldLabel>
-                            <Upload
-                                beforeUpload={() => false}
-                                maxCount={1}
-                                onChange={(info) => {
-                                    const file = info.fileList[0]?.originFileObj;
-                                    field.onChange(file);
-                                }}
-                                style={{ marginTop: 8 }}
-                            >
-                                <div>
-                                    <UploadOutlined /> Click to Upload
-                                </div>
-                            </Upload>
-                            {fieldState.error && (
-                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                    {fieldState.error.message}
-                                </Text>
-                            )}
-                        </div>
-                    )}
-                />
-            )} */}
         </div>
     );
 }
