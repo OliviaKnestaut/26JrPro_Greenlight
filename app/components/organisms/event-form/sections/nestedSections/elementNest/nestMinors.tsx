@@ -1,11 +1,22 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
-import { InputNumber, Input, Upload, Typography, Select, Radio } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { InputNumber, Input, Typography, Select, Radio } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import { useGetUsersQuery } from "~/lib/graphql/generated";
 import FieldLabel from "../../../components/FieldLabel";
 
-const { Text } = Typography;
+// ─── Ant Design sub-components ────────────────────────────────────────────────
+const { Text }     = Typography;
 const { TextArea } = Input;
+
+// =============================================================================
+// MinorsSection
+// Nested section inside EventElementsSection — shown when "Minors Present"
+// is selected. Collects: student contact (roster picker), external partners,
+// audience recruitment plan, expected minor counts by grade level, overnight
+// housing, Drexel transportation, and parent/guardian attendance requirement.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -247,36 +258,6 @@ export default function MinorsSection({ control }: Props) {
                     </div>
                 )}
             />
-
-            {/* MN4 — Documentation Upload */}
-            {/* <Controller
-                name="form_data.minors.file"
-                control={control}
-                rules={{ required: "Minors documentation is required" }}
-                render={({ field, fieldState }) => (
-                    <div style={{ marginBottom: 16 }}>
-                        <FieldLabel required>Upload Required Minors Documentation</FieldLabel>
-                        <Upload
-                            beforeUpload={() => false}
-                            maxCount={1}
-                            onChange={(info) => {
-                                const file = info.fileList[0]?.originFileObj;
-                                field.onChange(file);
-                            }}
-                            style={{ marginTop: 8 }}
-                        >
-                            <div>
-                                <UploadOutlined /> Click to Upload
-                            </div>
-                        </Upload>
-                        {fieldState.error && (
-                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                {fieldState.error.message}
-                            </Text>
-                        )}
-                    </div>
-                )}
-            /> */}
 
         </div>
     );

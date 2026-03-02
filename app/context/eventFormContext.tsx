@@ -1,17 +1,28 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+// =============================================================================
+// EventFormContext
+// Provides shared form data across the event-form wizard (review, submission).
+// Persists to localStorage under "eventFormReview" so a page refresh doesn't
+// lose in-progress data.  Call clearFormData() after a successful submission.
+// =============================================================================
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 type EventFormContextType = {
     formData: any;
     setFormData: React.Dispatch<React.SetStateAction<any>>;
     clearFormData: () => void;
 };
 
+// ─── Context ──────────────────────────────────────────────────────────────────
 const EventFormContext = createContext<EventFormContextType | undefined>(undefined);
 
+// ─── Provider ─────────────────────────────────────────────────────────────────
 export const EventFormProvider = ({ children }: { children: React.ReactNode }) => {
     const [formData, setFormData] = useState<any>(null);
 
-    // Hydrate once from localStorage (optional safety)
+    // Hydrate from localStorage on first mount so refreshes don't lose data
     useEffect(() => {
         const saved = localStorage.getItem("eventFormReview");
         if (saved) {
@@ -23,13 +34,14 @@ export const EventFormProvider = ({ children }: { children: React.ReactNode }) =
         }
     }, []);
 
-    // Persist automatically whenever formData changes
+    // Keep localStorage in sync whenever formData changes
     useEffect(() => {
         if (formData) {
             localStorage.setItem("eventFormReview", JSON.stringify(formData));
         }
     }, [formData]);
 
+    // Clears both the state and any persisted keys on submission / cancel
     const clearFormData = () => {
         setFormData(null);
         localStorage.removeItem("eventFormReview");
@@ -43,6 +55,7 @@ export const EventFormProvider = ({ children }: { children: React.ReactNode }) =
     );
 };
 
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 export const useEventForm = () => {
     const context = useContext(EventFormContext);
     if (!context) {

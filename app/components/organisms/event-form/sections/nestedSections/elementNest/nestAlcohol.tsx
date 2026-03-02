@@ -1,10 +1,22 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller } from "react-hook-form";
 import { Radio, Input, Typography, Checkbox } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../../../components/FieldLabel";
 import { formatPhoneNumber } from "~/lib/formatters";
 
-const { Text } = Typography;
+// ─── Ant Design sub-components ────────────────────────────────────────────────
+const { Text }    = Typography;
 const { TextArea } = Input;
+
+// =============================================================================
+// AlcoholSection
+// Nested section inside EventElementsSection — shown when "Alcohol" is
+// selected. Collects: vendor, event type, faculty/staff contact, under-21
+// guests, ID procedure, food description, policy agreement checklist,
+// and an electronic signature.
+// =============================================================================
 
 type Props = {
     control: any;

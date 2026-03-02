@@ -31,6 +31,7 @@ button {
 @media (width >= 40rem) {
   .container {
     max-width: 100% !important;
+
   }
 }
 

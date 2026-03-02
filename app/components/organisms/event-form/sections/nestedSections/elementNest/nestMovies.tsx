@@ -1,11 +1,22 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
-import { Radio, Upload, Typography, Input } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Radio, Typography, Input } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../../../components/FieldLabel";
 import { formatPhoneNumber } from "~/lib/formatters";
 
-const { Text } = Typography;
+// ─── Ant Design sub-components ────────────────────────────────────────────────
+const { Text }     = Typography;
 const { TextArea } = Input;
+
+// =============================================================================
+// MoviesSection
+// Nested section inside EventElementsSection — shown when
+// "Movies / TV / Copyrighted Media" is selected.
+// Presents four copyright-compliance options and renders the appropriate
+// sub-form (contact details, facilitator info, etc.) based on the choice.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -161,34 +172,6 @@ export default function MoviesSection({ control }: Props) {
                         )}
                     />
 
-                    {/* <Controller
-                        name="form_data.movies.option_1.permission_file"
-                        control={control}
-                        rules={{ required: "Written permission documentation is required" }}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required>Upload Written Permission Documentation</FieldLabel>
-                                <Upload
-                                    beforeUpload={() => false}
-                                    maxCount={1}
-                                    onChange={(info) => {
-                                        const file = info.fileList[0]?.originFileObj;
-                                        field.onChange(file);
-                                    }}
-                                    style={{ marginTop: 8 }}
-                                >
-                                    <div>
-                                        <UploadOutlined /> Click to Upload
-                                    </div>
-                                </Upload>
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    /> */}
                 </>
             )}
 
@@ -288,34 +271,6 @@ export default function MoviesSection({ control }: Props) {
                         />
                     </div>
 
-                    {/* <Controller
-                        name="form_data.movies.option_2.purchase_documentation"
-                        control={control}
-                        rules={{ required: "Purchase documentation is required" }}
-                        render={({ field, fieldState }) => (
-                            <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required>Upload Purchase Documentation</FieldLabel>
-                                <Upload
-                                    beforeUpload={() => false}
-                                    maxCount={1}
-                                    onChange={(info) => {
-                                        const file = info.fileList[0]?.originFileObj;
-                                        field.onChange(file);
-                                    }}
-                                    style={{ marginTop: 8 }}
-                                >
-                                    <div>
-                                        <UploadOutlined /> Click to Upload
-                                    </div>
-                                </Upload>
-                                {fieldState.error && (
-                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
-                                        {fieldState.error.message}
-                                    </Text>
-                                )}
-                            </div>
-                        )}
-                    /> */}
                 </>
             )}
 

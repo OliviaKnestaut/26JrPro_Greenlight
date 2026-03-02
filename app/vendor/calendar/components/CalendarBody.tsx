@@ -99,7 +99,7 @@ function Calendar<T extends GenericEvent>({
       ref={tableContainerRef}
 
       style={{
-        height: '70vh',
+        height: '84vh',
         width: 'calc(100% - 0.5rem)',
          // Set a fixed height for the container
         overflow: 'auto', // Allow both vertical and horizontal scrolling within the container only
@@ -123,7 +123,7 @@ function Calendar<T extends GenericEvent>({
         }}
 
       />
-    </div>
+    </div >
   );
 }
 

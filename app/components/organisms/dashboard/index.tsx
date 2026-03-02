@@ -180,7 +180,7 @@ export function DashboardContent() {
                                         location={e.location ?? ''}
                                         startTime={e.startTime ?? ''}
                                         description={e.description ?? ''}
-                                        submissionDate={formatDateMDY(e.submittedAt)}
+                                        submissionDate={formatDateMDY(e.submittedAt ?? e.createdAt)}
                                         status={serverToUi(e.eventStatus)}
                                     />);
                                 });

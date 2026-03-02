@@ -1,8 +1,19 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
 import { Radio, Input, Typography } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../../../components/FieldLabel";
 
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { Text } = Typography;
+
+// =============================================================================
+// FireSafetySection
+// Nested section inside EventElementsSection — shown when "Open Flame / Fire"
+// is selected. Collects: fire source type, fire-pit package agreement (if
+// applicable), and a detailed fire safety plan.
+// =============================================================================
 
 type Props = {
     control: any;

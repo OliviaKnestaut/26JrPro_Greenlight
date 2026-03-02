@@ -1,12 +1,24 @@
+// ─── Third-party ──────────────────────────────────────────────────────────────
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Controller, useWatch, useFieldArray } from "react-hook-form";
 import { Input, Select, Checkbox, Typography, InputNumber, Button, Radio } from "antd";
+
+// ─── Local ────────────────────────────────────────────────────────────────────
 import { useGetOnCampusQuery } from "~/lib/graphql/generated";
 import FieldLabel from "../../../components/FieldLabel";
 
+// ─── Ant Design sub-components ────────────────────────────────────────────────
 const { TextArea } = Input;
-const { Text } = Typography;
-const { Option } = Select;
+const { Text }     = Typography;
+const { Option }   = Select;
+
+// =============================================================================
+// OnCampusSection
+// Nested section inside DateLocationSection — shown when location type is
+// "On-Campus". Collects: building/room selection (with capacity filtering and
+// pagination), optional room type, room setup, furniture (repeater), A/V needs,
+// utilities, rain plan (outdoor), and special-space alignment statement.
+// =============================================================================
 
 type Props = {
     control: any;
@@ -264,7 +276,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                             <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                                 <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                                     <FieldLabel>What kind of room do you want to use?</FieldLabel>
-                                    <Text type="secondary" style={{}}>(Optional)</Text>
+                                    <Text type="secondary">(Optional)</Text>
                                 </div>
 
                                 <Select
@@ -357,7 +369,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     render={({ field }) => (
                         <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                             <FieldLabel>Will your room need any additional setup?</FieldLabel>
-                            <Text type="secondary" style={{}}>(Optional)</Text>
+                            <Text type="secondary">(Optional)</Text>
                             <Select {...field} value={field.value} placeholder="Select room setup" style={{ width: 300, marginTop: 8 }}>
                                 {indoorRoomOptions.map((opt) => (
                                     <Option key={opt} value={opt}>{opt}</Option>
@@ -373,7 +385,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                 <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                         <FieldLabel>Will your event require any additional furniture?</FieldLabel>
-                        <Text type="secondary" style={{}}>(Optional)</Text>
+                        <Text type="secondary">(Optional)</Text>
                     </div>
                     {furnitureFields.map((f, index) => (
                         <div key={f.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -424,7 +436,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                         <div style={{ marginBottom: 16 }}>
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                                 <FieldLabel>What A/V equipment will you need?</FieldLabel>
-                                <Text type="secondary" style={{}}>(Optional)</Text>
+                                <Text type="secondary">(Optional)</Text>
                             </div>
                             <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>Select all that apply</Text>
                             <Checkbox.Group
@@ -446,7 +458,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                         <div style={{ marginBottom: 16 }}>
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
                                 <FieldLabel>Will your event require any additional power sources?</FieldLabel>
-                                <Text type="secondary" style={{}}>(Optional)</Text>
+                                <Text type="secondary">(Optional)</Text>
                             </div>
                             <Radio.Group
                                 options={[

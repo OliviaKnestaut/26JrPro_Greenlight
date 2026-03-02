@@ -1,34 +1,60 @@
+// ── React & Third-Party Libraries ──────────────────────────────────────────
 import React, { useState, useEffect } from "react";
 import { Typography, Card, Button, message, Alert } from "antd";
-import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useGetOnCampusQuery, useGetUserQuery, useGetUsersQuery } from '~/lib/graphql/generated';
+
+// ── Internal: Auth, GraphQL & Utilities ────────────────────────────────────
+import { useAuth } from "~/auth/AuthProvider";
+import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useGetOnCampusQuery, useGetUserQuery } from '~/lib/graphql/generated';
+import { calculateEventLevel } from "~/vendor/calendar/components/utils";
+import { formatTime, formatDateMDY, formatDuration } from '~/lib/formatters';
+import { useEventForm } from "~/context/eventFormContext";
+
+// ── Internal: Components ────────────────────────────────────────────────────
 import ProgressTimeline from "../../molecules/event-flow/progress-timeline";
 import SuccessModal from "../../molecules/event-flow/success-modal";
 import DiscardModal from "../../molecules/event-flow/discard-modal";
 import ScrollToTop from "../../atoms/ScrollToTop";
-import { useAuth } from "~/auth/AuthProvider";
-import { formatTime, formatDateMDY, formatDuration } from '~/lib/formatters';
-import { calculateEventLevel } from "~/vendor/calendar/components/utils";
-import { useEventForm } from "~/context/eventFormContext";
 
-const { Title, Paragraph, Link, Text } = Typography;
+const { Title, Paragraph, Link } = Typography;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// EventReview
+// Pre-submission review page.  Reads the ephemeral form snapshot out of
+// EventFormContext (written by EventForm before navigating here), remaps it
+// into a flat display shape, and presents every section as a read-only card
+// with an Edit shortcut.  Handles final image upload, draft save, discard,
+// and the submit-for-review mutation.
+// ─────────────────────────────────────────────────────────────────────────────
 export function EventReview() {
+
+    // ── Router, Auth & URL Params ───────────────────────────────────────────
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { id } = useParams();
+    const { id } = useParams(); // present when editing an existing draft
+
+    // ── UI State ────────────────────────────────────────────────────────────
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
     const [createdEventId, setCreatedEventId] = useState<string | null>(null);
     const [draftAlertMessage, setDraftAlertMessage] = useState<'created' | 'updated' | ''>('');
+
+    // ── GraphQL Mutations & Queries ────────────────────────────────────────
     const [createEvent, { loading: isSubmitting }] = useCreateEventMutation();
     const [updateEvent] = useUpdateEventMutation();
     const [deleteEvent] = useDeleteEventMutation();
     const { data: locationsData } = useGetOnCampusQuery({ variables: { limit: 5000, offset: 0 } });
+
+    // ── Form Context & Display State ──────────────────────────────────────
+    // rawFormData holds the original RHF getValues() snapshot from EventForm.
+    // formData is a remapped version shaped for display (different key names).
     const { formData: rawFormData, setFormData: setContextFormData, clearFormData } = useEventForm();
     const [formData, setFormData] = useState<any>(null);
 
+    // ── Data Mapping Effect ─────────────────────────────────────────────────
+    // Normalize rawFormData (RHF field names) into the flat `formData` display shape
+    // matching the structure that event-overview also uses.
     // Normalize formData to match Overview structure
     useEffect(() => {
         if (!rawFormData) return;
@@ -93,6 +119,10 @@ export function EventReview() {
         setFormData(mapped);
     }, [rawFormData]);
 
+    // ── Render Helper ──────────────────────────────────────────────────────────
+
+    // Renders a labelled read-only field row.  Returns null for empty/undefined
+    // values so callers can use it unconditionally without producing blank rows.
     const renderField = (
         label: string,
         value: any,
@@ -130,9 +160,9 @@ export function EventReview() {
         );
     };
 
-    // PRETTY LABELS
+    // ── Sub-Data & Lookups ───────────────────────────────────────────────────
 
-    // If there's a trip leader ID in the form data, fetch their user data to display their name instead of just the ID
+    // Fetch the trip leader's full display name for off-campus travel events
     const tripLeaderId = formData?.form_data?.travel?.trip_leader_id;
     const { data: tripLeaderData } = useGetUserQuery({
         variables: { id: tripLeaderId as string },
@@ -140,7 +170,7 @@ export function EventReview() {
     });
     const tripLeader = tripLeaderData?.user || null;
 
-    // Pretty labels for SORC game types
+    // Human-readable labels for SORC game type keys
     const gameLabels: Record<string, string> = {
         mechanical_bull: "Mechanical Bull",
         velcro_wall: "Velcro Wall",
@@ -158,7 +188,7 @@ export function EventReview() {
         inflatable_sports_games: "Inflatable Sports Games",
     };
 
-    // Pretty labels for non-vendor service types
+    // Human-readable labels for non-vendor service type keys
     const nonVendorServiceLabels: Record<string, string> = {
         av_support: "A/V Support",
         custodial_safety: "Custodial & Safety",
@@ -169,52 +199,7 @@ export function EventReview() {
         furniture_rental: "University Furniture Rental"
     };
 
-    const creatorUsername = formData?.event?.createdBy;
-    const { data: userData, loading: userLoading } = useGetUsersQuery({
-        variables: { limit: 1, offset: 0, username: creatorUsername },
-        skip: !creatorUsername || creatorUsername === 'N/A'
-    });
-
-    const creatorUser = userData?.users?.[0];
-
-    const calculateEstimatedCost = (formData: any): string => {
-        let total = 0;
-        let hasCosts = false;
-
-        // Add non-food vendor costs.
-        // Food-type vendors are excluded because the food section's estimated_cost
-        // already captures that spend — counting both would double the food cost.
-        if (formData?.form_data?.vendors && Array.isArray(formData.form_data.vendors)) {
-            formData.form_data.vendors.forEach((vendor: any) => {
-                if (vendor.type === "food") return; // skip — covered by food section
-                const cost = parseFloat(vendor.estimatedCost);
-                if (!isNaN(cost) && cost > 0) {
-                    total += cost;
-                    hasCosts = true;
-                }
-            });
-        }
-
-        // Add food section cost
-        if (formData?.form_data?.food?.estimated_cost) {
-            const cost = parseFloat(formData.form_data.food.estimated_cost);
-            if (!isNaN(cost) && cost > 0) {
-                total += cost;
-                hasCosts = true;
-            }
-        }
-
-        // Add raffle prize cost (field is raffles.estimated_cost)
-        if (formData?.form_data?.raffles?.estimated_cost) {
-            const cost = parseFloat(formData.form_data.raffles.estimated_cost);
-            if (!isNaN(cost) && cost > 0) {
-                total += cost;
-                hasCosts = true;
-            }
-        }
-
-        return hasCosts ? total.toFixed(2) : 'N/A';
-    };
+    // ── Mutation Input Builder ─────────────────────────────────────────────
 
     // Pass rawFormData (the original RHF getValues() snapshot) to the ProgressTimeline
     // so that defaultIsSectionComplete can check fields by their real form field names
@@ -223,6 +208,8 @@ export function EventReview() {
     // evaluate as incomplete.
     const getValues = () => rawFormData || {};
 
+    // Navigates back to EventForm with the target section pre-opened for editing.
+    // Stores the section key in localStorage so EventForm can read it on mount.
     const handleEditSection = (sectionKey: string) => {
         try {
             // Keep EventForm compatible by updating the existing localStorage key
@@ -238,6 +225,8 @@ export function EventReview() {
         }
     };
 
+    // Builds the GraphQL mutation input from raw form values, handling time
+    // conversion, location mapping, event-level calculation, and org metadata.
     const buildMutationInput = (data: any, eventStatus: string = "REVIEW", isUpdate: boolean = false) => {
         if (!user) {
             throw new Error("User must be authenticated to build mutation input");
@@ -340,6 +329,7 @@ export function EventReview() {
         return mutationInput;
     };
 
+    // URL-friendly slug used for generating event image filenames.
     const slugify = (str: string) => {
         return (str || 'event')
             .toString()
@@ -350,25 +340,24 @@ export function EventReview() {
             .substring(0, 120);
     };
 
+    // ── Image Upload Helpers ────────────────────────────────────────────────
+
+    // Converts a base64 / object-URL data string back into a File so it can be
+    // passed to the multipart upload endpoint.
     const dataUrlToFile = async (dataUrl: string, filename: string): Promise<File> => {
         const res = await fetch(dataUrl);
         const blob = await res.blob();
         return new File([blob], filename, { type: blob.type || 'image/jpeg' });
     };
 
+    // Uploads an image File to the server endpoint and returns the parsed JSON
+    // response (containing filename / url / path).
     const uploadImage = async (file: File, desiredName?: string) => {
         const fd = new FormData();
         fd.append('event_img', file);
         if (desiredName) fd.append('desired_name', desiredName);
-        const getUploadUrl = () => {
-            if (import.meta.env.DEV) {
-                return '/~ojk25/graphql/upload_event_image.php';
-            } else {
-                return '/~ojk25/graphql/upload_event_image.php';
-            }
-        };
 
-        const resp = await fetch(getUploadUrl(), {
+        const resp = await fetch('/~ojk25/graphql/upload_event_image.php', {
             method: 'POST',
             body: fd
         });
@@ -400,6 +389,9 @@ export function EventReview() {
         throw new Error(`Upload succeeded but returned invalid JSON: ${text}`);
     };
 
+    // Resolves the event image from its various possible formats (saved filename
+    // string, Ant Upload object, raw File, or base64 preview) and uploads it if
+    // needed, returning the stored filename for the mutation.
     const prepareEventImage = async (data: any, desiredName: string) => {
         let rawValue = data.event_img;
 
@@ -443,6 +435,10 @@ export function EventReview() {
         return undefined;
     };
 
+    // ── Action Handlers ──────────────────────────────────────────────────────
+
+    // Saves the current review snapshot back to the DB as a DRAFT without
+    // submitting it for review.
     const handleSaveDraft = async () => {
         if (!user || !formData) return;
         const dataToUse = { ...formData };
@@ -471,6 +467,8 @@ export function EventReview() {
         }
     };
 
+    // Deletes the uploaded image from the server, then removes the draft DB
+    // record and clears context/localStorage before navigating home.
     const deleteEventImage = async (filename: string) => {
         if (!filename || import.meta.env.DEV) return;
         try {
@@ -503,6 +501,8 @@ export function EventReview() {
         navigate("/");
     };
 
+    // Submits the event for review (status = REVIEW), clears form state,
+    // and opens the success modal on success.
     const handleSubmit = async () => {
         if (!user || !formData) {
             message.error("Missing user or form data");
@@ -547,6 +547,10 @@ export function EventReview() {
 
     if (!formData) return <div className="container mx-auto p-8">Loading...</div>;
 
+    // ── Render ─────────────────────────────────────────────────────────────
+    // Read-only cards for each form section, a progress timeline locked to the
+    // "review" step, action buttons (Submit / Save Draft / Discard), the
+    // draft-saved alert banner, success modal, and discard confirmation modal.
     return (
         <div className="container m-8 w-auto">
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
