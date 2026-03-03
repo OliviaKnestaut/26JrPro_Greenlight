@@ -1,6 +1,6 @@
 // ─── Third-party ──────────────────────────────────────────────────────────────
 import { Controller, useWatch } from "react-hook-form";
-import { Radio, Input, Typography, InputNumber } from "antd";
+import { Radio, Input, Typography } from "antd";
 import { useEffect, useMemo, useRef } from "react";
 
 // ─── Local ────────────────────────────────────────────────────────────────────
@@ -128,22 +128,25 @@ export default function FoodSection({ control, setValue }: Props) {
             </Text>
           )}
 
-          <InputNumber
-            {...field}
-            step={1}
-            style={{ display: "block", marginTop: 8, width: "100%" }}
-            formatter={(value) =>
-              value
-                ? `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                : ""
-            }
-            parser={(value) =>
-              value
-                ? Number(value.replace(/\$\s?|(,*)/g, ""))
-                : undefined
-            }
+          <Input
+            prefix="$"
+            inputMode="decimal"
+            value={field.value ?? ""}
+            placeholder="0"
+            style={{ display: "flex", marginTop: 8, width: "100%", borderRadius: 0 }}
             status={fieldState.error ? "error" : ""}
-            onChange={(value) => field.onChange(value)} // explicit pass-through
+            onWheel={(e) => e.currentTarget.blur()}
+            onKeyDown={(e) => {
+              const allowed =
+                /^[0-9.]$/.test(e.key) ||
+                ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End"].includes(e.key) ||
+                e.ctrlKey || e.metaKey;
+              if (!allowed) e.preventDefault();
+            }}
+            onChange={(e) => {
+              const val = e.target.value;
+              field.onChange(val === "" ? null : val);
+            }}
           />
 
           {fieldState.error && (

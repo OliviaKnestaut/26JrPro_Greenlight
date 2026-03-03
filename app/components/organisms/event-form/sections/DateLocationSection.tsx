@@ -249,7 +249,7 @@ export default function DateLocationSection({ control, getValues }: Props) {
                             }}
                         >
                             <FieldLabel>
-                                Does your event require additional setup or takedown time?
+                                Does your event require additional setup or takedown time? (in minutes)
                             </FieldLabel>
                             <Text type="secondary">(Optional)</Text>
                         </div>
@@ -257,11 +257,14 @@ export default function DateLocationSection({ control, getValues }: Props) {
                         <InputNumber
                             {...field}
                             min={0}
-                            placeholder="Ex: 30"
+                            placeholder="Ex: 30 minutes"
+                            formatter={(value) => value != null && value !== '' ? `${value} minutes` : ''}
+                            parser={(value) => value ? Number(value.replace(/\s*minutes/g, '')) : undefined}
                             style={{
                                 display: "block",
                                 width: "49%",
                             }}
+                            onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
                         />
                     </div>
                 )}

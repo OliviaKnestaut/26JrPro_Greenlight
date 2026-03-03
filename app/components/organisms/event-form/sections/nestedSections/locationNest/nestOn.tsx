@@ -9,8 +9,8 @@ import FieldLabel from "../../../components/FieldLabel";
 
 // ─── Ant Design sub-components ────────────────────────────────────────────────
 const { TextArea } = Input;
-const { Text }     = Typography;
-const { Option }   = Select;
+const { Text } = Typography;
+const { Option } = Select;
 
 // =============================================================================
 // OnCampusSection
@@ -25,7 +25,7 @@ type Props = {
     setValue?: (name: string, value: any, options?: { shouldDirty?: boolean; shouldValidate?: boolean }) => void;
 };
 
-const indoorRoomOptions = [
+const allRoomSetupOptions = [
     "Auditorium/Theater",
     "Classroom",
     "Conference/Boardroom",
@@ -34,6 +34,31 @@ const indoorRoomOptions = [
     "Vendor/Fair",
     "Empty/Open Space",
 ];
+
+const getSetupOptionsForRoomType = (roomType: string | undefined): string[] => {
+    switch (roomType) {
+        case "AUD":   // Large theaters, assembly halls, performance stages
+            return ["Auditorium/Theater"];
+        case "CLASS": // General instruction, lecture rooms
+            return ["Classroom", "Circle", "U-Shape", "Empty/Open Space"];
+        case "CONF":  // Meeting rooms, boardrooms, huddle spaces
+            return ["Conference/Boardroom", "U-Shape", "Circle"];
+        case "DIN":   // Cafeterias, food courts, kitchenettes
+            return ["Vendor/Fair", "Empty/Open Space"];
+        case "EXT":   // Lawns, plazas, patios, quadrangles, tabling spaces
+            return ["Vendor/Fair", "Empty/Open Space"];
+        case "FAITH": // Chapels, reflection rooms, prayer spaces
+            return ["Auditorium/Theater", "Circle", "Empty/Open Space"];
+        case "LAB":   // Research labs, computer labs, class labs
+            return ["Empty/Open Space"];
+        case "LOBBY": // Receptions, foyers, breakout areas
+            return ["Vendor/Fair", "Empty/Open Space"];
+        case "STUDY": // Lounges, study rooms, community areas
+            return ["Circle", "Empty/Open Space"];
+        default:
+            return allRoomSetupOptions;
+    }
+};
 
 const furnitureOptions = [
     "Chairs",
@@ -109,6 +134,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
     }, [allLocations.length, hasMoreData, loadMoreLocations]);
 
     const selectedLocation = useWatch({ control, name: "form_data.location.selected" });
+    const selectedRoomTitle = useWatch({ control, name: "form_data.location.room_title" });
     const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
     const attendeeCountRaw = useWatch({ control, name: "attendees" });
     const attendeeCountNested = useWatch({ control, name: "form_data.event.attendees" });
@@ -182,17 +208,23 @@ export default function OnCampusSection({ control, setValue }: Props) {
     }, [filteredLocations]);
 
     const roomTitleOptions = useMemo(() => {
-        const scopedLocations = selectedRoomType
-            ? filteredLocations.filter((loc) => loc?.roomType === selectedRoomType)
-            : filteredLocations;
-        const titles = scopedLocations
+        const titles = filteredLocations
             .map((loc) => loc?.roomTitle)
             .filter((title): title is string => Boolean(title));
         return Array.from(new Set(titles)).sort((a, b) => a.localeCompare(b));
-    }, [filteredLocations, selectedRoomType]);
+    }, [filteredLocations]);
 
     const isSpecialSpace = specialSpacesList.includes(selectedLocation);
-    const selectedRoomTitle = useWatch({ control, name: "form_data.location.room_title" });
+
+    // Derive the selected room's DB roomType synchronously so there's no
+    // render-delay between picking a room and getting filtered setup options.
+    const derivedRoomType = useMemo(() => {
+        if (!selectedLocation || !selectedRoomTitle) return undefined;
+        const loc = allLocations.find(
+            l => l.buildingDisplayName === selectedLocation && l.roomTitle === selectedRoomTitle
+        );
+        return loc?.roomType as string | undefined;
+    }, [selectedLocation, selectedRoomTitle, allLocations]);
 
     const isOutdoor = useMemo(() => {
         if (!selectedLocation || !selectedRoomTitle) return false;
@@ -228,6 +260,25 @@ export default function OnCampusSection({ control, setValue }: Props) {
         }
     }, [selectedLocation, setValue]);
 
+    // Auto-derive room_type from the selected room title so the user doesn't
+    // have to pick it manually — it's silently populated from the DB record.
+    useEffect(() => {
+        if (!selectedRoomTitle || !selectedLocation) return;
+        if (derivedRoomType) {
+            setValue?.("form_data.location.room_type", derivedRoomType);
+        }
+    }, [selectedRoomTitle, selectedLocation, derivedRoomType, setValue]);
+
+    // Clear room_setup when the room changes so stale incompatible setups don't persist.
+    useEffect(() => {
+        setValue?.("form_data.location.room_setup", undefined);
+    }, [selectedRoomTitle, setValue]);
+
+    const setupOptions = useMemo(() => {
+        if (isOutdoor) return ["Vendor/Fair", "Empty/Open Space"];
+        return getSetupOptionsForRoomType(derivedRoomType);
+    }, [isOutdoor, derivedRoomType]);
+
     return (
         <div >
             {/* Q10: Campus Space */}
@@ -242,7 +293,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                             {...field}
                             value={field.value}
                             placeholder="Select building and room"
-                            style={{ width: 300, marginTop: 8 }}
+                            style={{ width: "49%", marginTop: 8 }}
                             loading={buildingsLoading}
                             status={fieldState.error ? "error" : ""}
                             onChange={(value) => {
@@ -266,63 +317,30 @@ export default function OnCampusSection({ control, setValue }: Props) {
                 )}
             />
 
-            {/* Select Room Type or Room Title based on maxCapacity and Campus Space Selection*/}
-            <div style={{ display: "flex", flexDirection: "row", gap: 16, marginBottom: 16 }}>
-                {(isIndoor || isOutdoor) && (
-                    <Controller
-                        name="form_data.location.room_type"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                                    <FieldLabel>What kind of room do you want to use?</FieldLabel>
-                                    <Text type="secondary">(Optional)</Text>
-                                </div>
-
-                                <Select
-                                    {...field}
-                                    value={field.value}
-                                    placeholder="Select room type (optional)"
-                                    style={{ width: 300 }}
-                                    loading={buildingsLoading}
-                                    options={roomTypeOptions.map((type) => ({ value: type, label: type }))}
-                                    onChange={(value) => {
-                                        field.onChange(value);
-                                        setValue?.("form_data.location.room_title", undefined, {
-                                            shouldDirty: true,
-                                            shouldValidate: true,
-                                        });
-                                    }}
-                                />
-                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
-                            </div>
-                        )}
-                    />
-                )}
-
-                {(isIndoor || isOutdoor) && (
-                    <Controller
-                        name="form_data.location.room_title"
-                        control={control}
-                        rules={{ required: "Room number or title is required" }}
-                        render={({ field, fieldState }) => (
-                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                                <FieldLabel required>What is the room number or title?</FieldLabel>
-                                <Select
-                                    {...field}
-                                    value={field.value}
-                                    placeholder="Select room"
-                                    style={{ width: 300, marginTop: 8 }}
-                                    loading={buildingsLoading}
-                                    status={fieldState.error ? "error" : ""}
-                                    options={roomTitleOptions.map((title) => ({ value: title, label: title }))}
-                                />
-                                {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
-                            </div>
-                        )}
-                    />
-                )}
-            </div>
+            {/* Room selection — room type is auto-derived after the user picks a room */}
+            {(isIndoor || isOutdoor) && selectedLocation && (
+                <Controller
+                    name="form_data.location.room_title"
+                    control={control}
+                    rules={{ required: "Room number or title is required" }}
+                    render={({ field, fieldState }) => (
+                        <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
+                            <FieldLabel required>What is the room number or title?</FieldLabel>
+                            <Select
+                                {...field}
+                                key={selectedLocation}
+                                value={field.value ?? undefined}
+                                placeholder="Select room"
+                                style={{ width: "49%", marginTop: 8 }}
+                                loading={buildingsLoading}
+                                status={fieldState.error ? "error" : ""}
+                                options={roomTitleOptions.map((title) => ({ value: title, label: title }))}
+                            />
+                            {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
+                        </div>
+                    )}
+                />
+            )}
 
             {/* Q11: Space Alignment Statement */}
             {isSpecialSpace && (
@@ -368,10 +386,12 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     control={control}
                     render={({ field }) => (
                         <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                            <FieldLabel>Will your room need any additional setup?</FieldLabel>
-                            <Text type="secondary">(Optional)</Text>
-                            <Select {...field} value={field.value} placeholder="Select room setup" style={{ width: 300, marginTop: 8 }}>
-                                {indoorRoomOptions.map((opt) => (
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                <FieldLabel>Will your location need any additional setup?</FieldLabel>
+                                <Text type="secondary">(Optional)</Text>
+                            </div>
+                            <Select {...field} value={field.value} placeholder="Select location setup" style={{ width: "49%", marginTop: 8 }}>
+                                {setupOptions.map((opt) => (
                                     <Option key={opt} value={opt}>{opt}</Option>
                                 ))}
                             </Select>
@@ -409,6 +429,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                         min={1}
                                         placeholder="Qty"
                                         style={{ width: "12.5%" }}
+                                        onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
                                     />
                                 )}
                             />

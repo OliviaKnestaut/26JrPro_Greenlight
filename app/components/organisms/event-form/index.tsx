@@ -259,6 +259,10 @@ export function EventForm() {
     // When the form values that control branching logic change, automatically open the relevant nested panels
     const prevSelectedRef = useRef<any>(null);
 
+    // Holds the full set of panels (major + nested) to open when validation fails.
+    // The currentEditingSection useEffect reads this to avoid overriding error panels.
+    const pendingErrorPanelsRef = useRef<string[]>([]);
+
     useEffect(() => {
         const current = isSelected;
         const previous = prevSelectedRef.current;
@@ -320,8 +324,15 @@ export function EventForm() {
             prev.includes(currentEditingSection) ? prev : [...prev, currentEditingSection]
         );
 
-        // Open the corresponding collapse panel first
-        setActiveCollapseKey([currentEditingSection]);
+        // Open the corresponding collapse panel first.
+        // If validation just failed, use the full set of error panels (major + nested);
+        // otherwise just open the single editing section.
+        if (pendingErrorPanelsRef.current.length > 0) {
+            setActiveCollapseKey(pendingErrorPanelsRef.current);
+            pendingErrorPanelsRef.current = [];
+        } else {
+            setActiveCollapseKey([currentEditingSection]);
+        }
 
         // Wait for Collapse animation + DOM layout
         setTimeout(() => {
@@ -763,10 +774,11 @@ export function EventForm() {
             });
 
             if (keysToOpen.size > 0) {
-                setActiveCollapseKey([...keysToOpen]);
-                // Set the editing section to the first major section found
+                // Store all error panels (including nested) so the useEffect
+                // doesn't narrow activeCollapseKey to just the major section.
                 const majorSections = ['eventDetails', 'dateLocation', 'eventElements', 'budgetPurchase'];
                 const firstMajor = majorSections.find(s => keysToOpen.has(s)) || 'eventDetails';
+                pendingErrorPanelsRef.current = [...keysToOpen];
                 setCurrentEditingSection(firstMajor);
             }
 

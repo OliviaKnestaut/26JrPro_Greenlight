@@ -313,6 +313,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                         value ? Number(value.replace(/\$\s?|(,*)/g, "")) : 0
                                     }
                                     status={fieldState.error ? "error" : ""}
+                                    onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
                                 />
                                 {fieldState.error && (
                                     <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>

@@ -43,12 +43,12 @@
 }
 
 .timeline :global(.ant-steps-item-process .ant-steps-item-icon) {
-	border: 1px solid var(--sea-green-6, #19A9B3);
-	background: var(--sea-green-6, #19A9B3);
+	border: 1px solid var(--sea-green-6, #19A9B3) !important;
+	background: var(--sea-green-6, #19A9B3) !important;
 }
 
 .timeline :global(.ant-steps-item-process .ant-steps-icon) {
-	color: var(--gray-1, #ffffff);
+	color: var(--gray-1, #ffffff) !important;
 }
 
 .timeline :global(.ant-steps-item-wait .ant-steps-item-icon) {

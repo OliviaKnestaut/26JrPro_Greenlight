@@ -12,6 +12,7 @@ import FieldLabel from "../components/FieldLabel";
 const { TextArea } = Input;
 const { Text }    = Typography;
 const { Option }  = Select;
+const { Dragger } = Upload;
 
 // =============================================================================
 // EventDetailsSection
@@ -76,8 +77,9 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               Upload a high-resolution cover photo for your event (1300px × 780px) under 5MB
             </FieldLabel>
 
-            <Upload
+            <Dragger
               maxCount={1}
+              accept="image/jpeg,image/jpg,image/png"
               fileList={
                 field.value
                   ? [{
@@ -133,10 +135,12 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               }}
               style={{ marginTop: 8 }}
             >
-              <div>
-                <UploadOutlined /> Click to Upload
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+                <UploadOutlined />
+                <span>Click to Upload</span>
+                <Text type="secondary" style={{ fontSize: 12 }}>or drag and drop here</Text>
               </div>
-            </Upload>
+            </Dragger>
 
             {fieldState.error && (
               <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
@@ -250,6 +254,7 @@ export default function EventDetailsSection({ control, getValues, setValue, setE
               min={1}
               status={fieldState.error ? "error" : ""}
               style={{ marginTop: 8, width: "100%" }}
+              onWheel={(e) => e.currentTarget.blur()}
             />
             {fieldState.error && (
               <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>

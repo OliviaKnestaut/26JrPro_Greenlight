@@ -330,7 +330,7 @@ export function EventOverviewContent() {
         <div className="container m-8 w-auto">
             <div className="container">
                 <Title level={5}>
-                    <Link onClick={() => navigate(-1)}><ArrowLeftOutlined /> Back </Link>
+                    <Link onClick={() => navigate('/event-submissions')}><ArrowLeftOutlined /> Back </Link>
                 </Title>
             </div>
             {

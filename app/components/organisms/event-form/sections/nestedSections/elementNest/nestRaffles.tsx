@@ -88,6 +88,7 @@ export default function RafflesSection({ control }: Props) {
                             style={{ marginTop: 8, width: "100%" }}
                             prefix="$"
                             status={fieldState.error ? "error" : ""}
+                            onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
                         />
                         {fieldState.error && (
                             <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>

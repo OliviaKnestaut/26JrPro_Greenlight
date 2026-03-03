@@ -56,10 +56,14 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			const hasNoElements = elements.no_additional_elements === true;
 			// Complete if user selected elements OR explicitly said no elements
 			return hasElements || hasNoElements;
-		case "budgetPurchase":
-			// Budget section is optional but always complete since it's informational.
-			// The level-0 / visited gate is handled inside the component where visitedSections is in scope.
-			return true;
+		case "budgetPurchase": {
+			const elements = values.form_data?.elements || {};
+			const noAdditionalElements = elements.no_additional_elements === true;
+			const level0Confirmed = values.form_data?.level0_confirmed === true;
+			// Auto-complete only when the user has explicitly confirmed no elements are needed
+			// (level 0 event or "no additional elements" checked and confirmed).
+			return noAdditionalElements && level0Confirmed;
+		}
 		case "review":
 			// Never auto-complete — this step only becomes active when the user is
 			// actually on the review page (currentEditingSection="review" drives the UI).
@@ -149,47 +153,31 @@ export default function ProgressTimeline({
 				}}
 				items={validSteps.map((step, index) => {
 					let status: "finish" | "process" | "wait" | "error" = "wait";
-					
-					try {
-						const hasErrors = hasSectionErrors(step.key, errors);
-				let baseComplete = isSectionComplete(step.key, values);
-				// If visitedSections explicitly includes this step, force it complete
-				// (e.g. "review" on the review page).
-				if (visitedSections?.includes(step.key)) {
-					baseComplete = true;
-				}
 
-				// Budget gate: auto-complete only once the user has explicitly selected
-				// non-level-0 elements. On a fresh form (nothing selected) or a confirmed
-				// level-0 event, the section stays incomplete until the user visits it.
-				if (step.key === "budgetPurchase" && baseComplete && visitedSections !== undefined) {
-					const elements = values.form_data?.elements || {};
-					const hasNonLevel0Elements = Object.keys(elements).some(
-						(k) => k !== "no_additional_elements" && elements[k] === true
-					);
-					if (!hasNonLevel0Elements && !visitedSections.includes("budgetPurchase")) {
-						baseComplete = false;
-					}
-				}
-				const isComplete = baseComplete && !hasErrors;
-						if (hasErrors) {
-							// Always show the X icon when a section has active validation errors
-							status = "error";
-						} else if (isComplete) {
-							status = "finish";
-						} else if (index === activeStep) {
+					try {
+						const isActive = step.key === currentEditingSection || index === activeStep;
+
+						// Active is always blue — checked before everything else
+						if (isActive) {
 							status = "process";
+						} else {
+							const hasErrors = hasSectionErrors(step.key, errors);
+							const isComplete = isSectionComplete(step.key, values) && !hasErrors;
+							const wasVisited = visitedSections?.includes(step.key) ?? false;
+
+							if (isComplete) {
+								status = "finish";
+							} else if (wasVisited || hasErrors) {
+								// Visited but not finished → X
+								status = "error";
+							}
+							// else stays "wait" (gray — not yet visited)
 						}
 					} catch (err) {
 						console.warn(`Error calculating status for section ${step.key}:`, err);
-						status = "wait";
 					}
-					
-					return {
-						key: step.key,
-						title: step.title,
-						status: status,
-					};
+
+					return { key: step.key, title: step.title, status };
 				})}
 			/>
 		</div>
