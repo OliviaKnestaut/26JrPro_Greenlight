@@ -247,6 +247,20 @@ export function EventOverviewContent() {
                             funding_source: '',
                         },
 
+                        // Budget (mirrors any existing budget; falls back to funding/account)
+                        budget:
+                            parsedFormData?.form_data?.budget ||
+                            parsedFormData?.budget || {
+                                source:
+                                    parsedFormData?.form_data?.funding?.funding_source ??
+                                    parsedFormData?.funding?.funding_source ??
+                                    '',
+                                account_number:
+                                    parsedFormData?.form_data?.funding?.account_number ??
+                                    parsedFormData?.funding?.account_number ??
+                                    parsedFormData?.account ??
+                                    '',
+                            },
                         // Element selection flags (used when detail objects are absent)
                         elements: parsedFormData?.form_data?.elements || parsedFormData?.elements || null,
                     },
