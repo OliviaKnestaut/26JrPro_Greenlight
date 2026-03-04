@@ -114,3 +114,9 @@
 .noHover.pastCard:hover {
     border-color: var(--accent-gray-light-2) !important;
 }
+
+.card :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
