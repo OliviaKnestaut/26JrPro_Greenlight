@@ -138,6 +138,9 @@ export default function OnCampusSection({ control, setValue }: Props) {
     const selectedRoomType = useWatch({ control, name: "form_data.location.room_type" });
     const attendeeCountRaw = useWatch({ control, name: "attendees" });
     const attendeeCountNested = useWatch({ control, name: "form_data.event.attendees" });
+    const needsRoomSetup  = useWatch({ control, name: "form_data.location.needs_room_setup" }) === "yes";
+    const needsFurniture  = useWatch({ control, name: "form_data.location.needs_furniture" }) === "yes";
+    const needsAV         = useWatch({ control, name: "form_data.location.needs_av" }) === "yes";
     const { fields: furnitureFields, append, remove } = useFieldArray({
         control,
         name: "form_data.location.furniture",
@@ -381,39 +384,99 @@ export default function OnCampusSection({ control, setValue }: Props) {
 
             {/* Q13: Room Setup */}
             {(isIndoor || isOutdoor) && (
-                <Controller
-                    name="form_data.location.room_setup"
-                    control={control}
-                    render={({ field }) => (
-                        <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                                <FieldLabel>Will your location need any additional setup?</FieldLabel>
-                                <Text type="secondary">(Optional)</Text>
+                <>
+                    <Controller
+                        name="form_data.location.needs_room_setup"
+                        control={control}
+                        rules={{ required: "Please indicate whether your location needs additional setup" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                    <FieldLabel required>Will your location need any additional setup?</FieldLabel>
+                                </div>
+                                <Radio.Group
+                                    {...field}
+                                    onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        if (e.target.value === "no") setValue?.("form_data.location.room_setup", undefined);
+                                    }}
+                                >
+                                    <Radio value="yes">Yes</Radio>
+                                    <Radio value="no">No</Radio>
+                                </Radio.Group>
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
                             </div>
-                            <Select {...field} value={field.value} placeholder="Select location setup" style={{ width: "49%", marginTop: 8 }}>
-                                {setupOptions.map((opt) => (
-                                    <Option key={opt} value={opt}>{opt}</Option>
-                                ))}
-                            </Select>
-                        </div>
+                        )}
+                    />
+                    {needsRoomSetup && (
+                        <Controller
+                            name="form_data.location.room_setup"
+                            control={control}
+                            rules={{ required: "Please select your setup type" }}
+                            render={({ field, fieldState }) => (
+                                <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                                    <FieldLabel required style={{ marginBottom: 8 }}>What type of setup will you need?</FieldLabel>
+                                    <Select {...field} value={field.value} placeholder="Select location setup" style={{ width: "49%", marginTop: 8 }} status={fieldState.error ? "error" : ""}>
+                                        {setupOptions.map((opt) => (
+                                            <Option key={opt} value={opt}>{opt}</Option>
+                                        ))}
+                                    </Select>
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                    )}
+                                </div>
+                            )}
+                        />
                     )}
-                />
+                </>
             )}
 
             {/* Q14: Furniture Repeater */}
             {(isIndoor || isOutdoor) && (
-                <div style={{ display: "flex", flexDirection: "column", marginBottom: 16 }}>
-                    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                        <FieldLabel>Will your event require any additional furniture?</FieldLabel>
-                        <Text type="secondary">(Optional)</Text>
-                    </div>
-                    {furnitureFields.map((f, index) => (
+                <>
+                    <Controller
+                        name="form_data.location.needs_furniture"
+                        control={control}
+                        rules={{ required: "Please indicate whether your event requires additional furniture" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                    <FieldLabel required>Will your event require any additional furniture?</FieldLabel>
+                                </div>
+                                <Radio.Group
+                                    {...field}
+                                    onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        if (e.target.value === "no") {
+                                            setValue?.("form_data.location.furniture", []);
+                                        } else {
+                                            // Auto-add one row so the user sees the inputs immediately
+                                            if (furnitureFields.length === 0) append({ type: undefined, quantity: 1 });
+                                        }
+                                    }}
+                                >
+                                    <Radio value="yes">Yes</Radio>
+                                    <Radio value="no">No</Radio>
+                                </Radio.Group>
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
+                            </div>
+                        )}
+                    />
+                    {needsFurniture && (
+                        <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                            <FieldLabel required style={{ marginBottom: 8 }}>What kind of furniture do you need, and in what quantities?</FieldLabel>
+                            {furnitureFields.map((f, index) => (
                         <div key={f.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
                             <Controller
                                 name={`form_data.location.furniture.${index}.type`}
                                 control={control}
-                                render={({ field }) => (
-                                    <Select {...field} value={field.value} placeholder="Furniture Type" style={{ width: "25%" }}>
+                                rules={{ required: "Furniture type is required" }}
+                                render={({ field, fieldState }) => (
+                                    <Select {...field} value={field.value} placeholder="Furniture Type" style={{ width: "25%" }} status={fieldState.error ? "error" : ""}>
                                         {furnitureOptions.map((opt) => (
                                             <Option key={opt} value={opt}>{opt}</Option>
                                         ))}
@@ -423,12 +486,14 @@ export default function OnCampusSection({ control, setValue }: Props) {
                             <Controller
                                 name={`form_data.location.furniture.${index}.quantity`}
                                 control={control}
-                                render={({ field }) => (
+                                rules={{ required: "Quantity is required", min: { value: 1, message: "Must be at least 1" } }}
+                                render={({ field, fieldState }) => (
                                     <InputNumber
                                         {...field}
                                         min={1}
                                         placeholder="Qty"
                                         style={{ width: "12.5%" }}
+                                        status={fieldState.error ? "error" : ""}
                                         onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
                                     />
                                 )}
@@ -445,41 +510,73 @@ export default function OnCampusSection({ control, setValue }: Props) {
                     >
                         + Add Furniture
                     </Button>
-                </div>
+                        </div>
+                    )}
+                </>
             )}
 
             {/* Q15: A/V Needs */}
             {isIndoor && (
-                <Controller
-                    name="form_data.location.av_needs"
-                    control={control}
-                    render={({ field }) => (
-                        <div style={{ marginBottom: 16 }}>
-                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                                <FieldLabel>What A/V equipment will you need?</FieldLabel>
-                                <Text type="secondary">(Optional)</Text>
+                <>
+                    <Controller
+                        name="form_data.location.needs_av"
+                        control={control}
+                        rules={{ required: "Please indicate whether your event requires A/V equipment" }}
+                        render={({ field, fieldState }) => (
+                            <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                    <FieldLabel required>Will your event require any A/V equipment?</FieldLabel>
+                                </div>
+                                <Radio.Group
+                                    {...field}
+                                    onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        if (e.target.value === "no") setValue?.("form_data.location.av_needs", []);
+                                    }}
+                                >
+                                    <Radio value="yes">Yes</Radio>
+                                    <Radio value="no">No</Radio>
+                                </Radio.Group>
+                                {fieldState.error && (
+                                    <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                )}
                             </div>
-                            <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>Select all that apply</Text>
-                            <Checkbox.Group
-                                options={avOptions}
-                                value={field.value}
-                                onChange={(value) => field.onChange(value)}
-                                style={{ display: "flex", flexDirection: "column" }}
-                            />
-                        </div>
+                        )}
+                    />
+                    {needsAV && (
+                        <Controller
+                            name="form_data.location.av_needs"
+                            control={control}
+                            rules={{ required: "Please select at least one A/V equipment option" }}
+                            render={({ field, fieldState }) => (
+                                <div style={{ marginBottom: 24 }}>
+                                    <FieldLabel required style={{ marginBottom: 8 }}>What A/V equipment will you need?</FieldLabel>
+                                    <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>Select all that apply</Text>
+                                    <Checkbox.Group
+                                        options={avOptions}
+                                        value={field.value}
+                                        onChange={(value) => field.onChange(value)}
+                                        style={{ display: "flex", flexDirection: "column" }}
+                                    />
+                                    {fieldState.error && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                                    )}
+                                </div>
+                            )}
+                        />
                     )}
-                />
+                </>
             )}
 
             {(isIndoor || isOutdoor) && (
                 <Controller
                     name="form_data.location.utilities"
                     control={control}
-                    render={({ field }) => (
-                        <div style={{ marginBottom: 16 }}>
+                    rules={{ validate: (value) => value != null || "Please indicate whether your event requires additional power sources" }}
+                    render={({ field, fieldState }) => (
+                        <div style={{ marginBottom: 24 }}>
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                                <FieldLabel>Will your event require any additional power sources?</FieldLabel>
-                                <Text type="secondary">(Optional)</Text>
+                                <FieldLabel required>Will your event require any additional power sources?</FieldLabel>
                             </div>
                             <Radio.Group
                                 options={[
@@ -489,6 +586,9 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                 value={field.value}
                                 onChange={(e) => field.onChange(e.target.value)}
                             />
+                            {fieldState.error && (
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
+                            )}
                         </div>
                     )}
                 />

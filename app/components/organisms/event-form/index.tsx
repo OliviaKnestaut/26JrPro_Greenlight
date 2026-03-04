@@ -1,7 +1,7 @@
 // ── React & Third-Party Libraries ───────────────────────────────────────────
 import { useState, useEffect, useRef } from "react";
-import { Alert, Form, Button, Collapse, Typography, message } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Alert, Form, Button, Collapse, Typography, Popover, message } from "antd";
+import { ArrowLeftOutlined, InfoCircleOutlined, LockOutlined } from "@ant-design/icons";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams, useBlocker } from "react-router";
 import dayjs from "dayjs";
@@ -31,7 +31,7 @@ import RafflesSection from "./sections/nestedSections/elementNest/nestRaffles";
 import FireSafetySection from "./sections/nestedSections/elementNest/nestFire";
 import SORCGamesSection from "./sections/nestedSections/elementNest/nestGames";
 
-const { Title, Link } = Typography;
+const { Title, Link, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ const formBranching = [
     { when: "form_data.elements.minors", is: true, key: "minors", parent: "eventElements", header: "Minors Details", component: MinorsSection, indent: 32 },
     { when: "form_data.elements.movies", is: true, key: "movies", parent: "eventElements", header: "Movies/Media Details", component: MoviesSection, indent: 32 },
     { when: "form_data.elements.raffles", is: true, key: "raffles", parent: "eventElements", header: "Raffles/Prizes Details", component: RafflesSection, indent: 32 },
-    { when: "form_data.elements.fire", is: true, key: "fire", parent: "eventElements", header: "Fire Safety Details", component: FireSafetySection, indent: 32 },
+    { when: "form_data.elements.fire", is: true, key: "fire", parent: "eventElements", header: "Fire Pit/Grill Details", component: FireSafetySection, indent: 32 },
     { when: "form_data.elements.sorc_games", is: true, key: "sorc_games", parent: "eventElements", header: "SORC Games Details", component: SORCGamesSection, indent: 32 },
 ];
 
@@ -110,10 +110,16 @@ export function EventForm() {
     const isSelected = useWatch({ control }); // live watched values for branching logic
 
     // ── Collapse & Section Navigation State ───────────────────────────────
-    const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(["eventDetails"]);
-    const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>("eventDetails");
+    const [activeCollapseKey, setActiveCollapseKey] = useState<string[]>(() => {
+        try { const s = localStorage.getItem("editingSection"); return [s || "eventDetails"]; } catch { return ["eventDetails"]; }
+    });
+    const [currentEditingSection, setCurrentEditingSection] = useState<string | undefined>(() => {
+        try { return localStorage.getItem("editingSection") || "eventDetails"; } catch { return "eventDetails"; }
+    });
     const [visitedSections, setVisitedSections] = useState<string[]>([]);
     const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+    // scrollTarget is null on mount — only set by explicit user navigation actions
+    const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
     // ── Refs ───────────────────────────────────────────────────────────────
     const allowNavigationRef = useRef(false);  // bypass the navigation blocker after confirm
@@ -144,12 +150,9 @@ export function EventForm() {
     useEffect(() => {
         const loadDraft = async () => {
             try {
-                const editingSection = localStorage.getItem("editingSection");
-                if (editingSection) {
-                    setActiveCollapseKey([editingSection]);
-                    setCurrentEditingSection(editingSection);
-                    localStorage.removeItem("editingSection");
-                }
+                // State is already seeded from localStorage in useState initializers;
+                // just clean up the key so it doesn't persist across navigations.
+                if (localStorage.getItem("editingSection")) localStorage.removeItem("editingSection");
             } catch (err) {
                 console.error("❌ Error accessing editingSection from localStorage:", err);
             }
@@ -315,14 +318,17 @@ export function EventForm() {
 
     }, [isSelected]);
 
-    // Scroll to and open a specific section when currentEditingSection changes (e.g. when user clicks on a step in the ProgressTimeline)
+    // Track visited sections whenever currentEditingSection changes (drives timeline X/check logic)
     useEffect(() => {
         if (!currentEditingSection) return;
-
-        // Track which sections the user has actually opened
         setVisitedSections(prev =>
             prev.includes(currentEditingSection) ? prev : [...prev, currentEditingSection]
         );
+    }, [currentEditingSection]);
+
+    // Scroll to a section only when scrollTarget is explicitly set by a user action
+    useEffect(() => {
+        if (!scrollTarget) return;
 
         // Open the corresponding collapse panel first.
         // If validation just failed, use the full set of error panels (major + nested);
@@ -331,18 +337,17 @@ export function EventForm() {
             setActiveCollapseKey(pendingErrorPanelsRef.current);
             pendingErrorPanelsRef.current = [];
         } else {
-            setActiveCollapseKey([currentEditingSection]);
+            setActiveCollapseKey([scrollTarget]);
         }
 
         // Wait for Collapse animation + DOM layout
         setTimeout(() => {
             const mainContent = document.querySelector('main');
-            const el = document.getElementById(`panel-${currentEditingSection}`);
+            const el = document.getElementById(`panel-${scrollTarget}`);
 
             if (!mainContent || !el) return;
 
             const targetTop = el.offsetTop - 16;
-
             const duration = 400;
             const start = mainContent.scrollTop;
             const startTime = performance.now();
@@ -351,19 +356,15 @@ export function EventForm() {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-
-                const scrollTo = start + (targetTop - start) * easeOutCubic;
-                mainContent.scrollTop = scrollTo;
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateScroll);
-                }
+                mainContent.scrollTop = start + (targetTop - start) * easeOutCubic;
+                if (progress < 1) requestAnimationFrame(animateScroll);
             };
 
             requestAnimationFrame(animateScroll);
         }, 50);
 
-    }, [currentEditingSection]);
+        setScrollTarget(null);
+    }, [scrollTarget]);
 
     // ── Image Upload Helpers ────────────────────────────────────────────────
 
@@ -720,7 +721,7 @@ export function EventForm() {
             // Maps form_data sub-key → major collapse panel key
             const formDataFieldToPanelMap: Record<string, string> = {
                 'elements': 'eventElements',
-                'level0_confirmed': 'eventElements',
+                'level0_confirmed': 'budgetPurchase',
                 'food': 'eventElements',
                 'alcohol': 'eventElements',
                 'minors': 'eventElements',
@@ -729,6 +730,7 @@ export function EventForm() {
                 'fire': 'eventElements',
                 'sorc_games': 'eventElements',
                 'location': 'dateLocation',
+                'needs_setup_time': 'dateLocation',
                 'travel': 'dateLocation',
                 'budget': 'budgetPurchase',
                 'vendors': 'budgetPurchase',
@@ -780,10 +782,10 @@ export function EventForm() {
                 const firstMajor = majorSections.find(s => keysToOpen.has(s)) || 'eventDetails';
                 pendingErrorPanelsRef.current = [...keysToOpen];
                 setCurrentEditingSection(firstMajor);
+                setScrollTarget(firstMajor);
             }
 
             message.error('Please complete all required fields before proceeding to review.');
-            setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100);
             return;
         }
 
@@ -840,7 +842,26 @@ export function EventForm() {
                 <p style={{ margin: "0", padding: "0" }}> All required fields are marked with an asterisk (<span style={{ color: 'var(--red-6)' }}>*</span>). You must complete all required fields before proceeding to review.</p>
             </div>
             <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", padding: "1rem 0rem" }}>
-                <ProgressTimeline getValues={getValues} errors={errors} visitedSections={visitedSections} currentEditingSection={currentEditingSection} onSectionClick={setCurrentEditingSection} />
+                <ProgressTimeline
+                    getValues={getValues}
+                    errors={errors}
+                    visitedSections={visitedSections}
+                    currentEditingSection={currentEditingSection}
+                    onSectionClick={(key) => {
+                        if (key === "budgetPurchase") {
+                            const elements = getValues("form_data.elements") || {};
+                            const isElementsComplete = Object.keys(elements).some(
+                                k => k !== "no_additional_elements" && elements[k] === true
+                            ) || elements.no_additional_elements === true;
+                            if (!isElementsComplete) {
+                                message.warning("Please complete the Event Elements section before accessing Budget & Purchases.");
+                                return;
+                            }
+                        }
+                        setCurrentEditingSection(key);
+                        setScrollTarget(key);
+                    }}
+                />
             </div>
             <div style={{ padding: "0 8rem" }} className={styles.collapseWrapper}>
                 <Form layout="vertical">
@@ -855,6 +876,20 @@ export function EventForm() {
                                 "eventElements",
                                 "budgetPurchase"
                             ];
+
+                            // Guard: Budget & Purchases requires Event Elements to be complete
+                            const isElementsComplete = (() => {
+                                const elements = getValues("form_data.elements") || {};
+                                const hasElements = Object.keys(elements).some(
+                                    k => k !== "no_additional_elements" && elements[k] === true
+                                );
+                                return hasElements || elements.no_additional_elements === true;
+                            })();
+
+                            if (keyArray.includes("budgetPurchase") && !activeCollapseKey.includes("budgetPurchase") && !isElementsComplete) {
+                                message.warning("Please complete the Event Elements section before accessing Budget & Purchases.");
+                                return;
+                            }
 
                             // Build nested → parent map dynamically
                             const nestedToParentMap: Record<string, string> = {};
@@ -885,16 +920,60 @@ export function EventForm() {
                                 );
                             }
 
+                            // 🧹 When a major section is closed, also close all its nested children
+                            const closedMajors = majorSectionKeys.filter(k => !finalKeys.includes(k));
+                            if (closedMajors.length > 0) {
+                                const childKeysToClose = formBranching
+                                    .filter(panel => closedMajors.includes(panel.parent))
+                                    .map(panel => panel.key);
+                                finalKeys = finalKeys.filter(k => !childKeysToClose.includes(k));
+                            }
+
                             setActiveCollapseKey(finalKeys);
 
                             const activeMajor = finalKeys.find(k => majorSectionKeys.includes(k));
                             if (activeMajor) {
                                 setCurrentEditingSection(activeMajor);
+                                // No setScrollTarget here — Collapse header click doesn't need auto-scroll
                             }
                         }}
                         expandIconPosition="end"
                     >
                         <Panel header={<h4 style={{ margin: 0 }}>Event Details</h4>} key="eventDetails">
+                            <Paragraph type="secondary">
+                                Enter the basic details about your event, including its title, description, expected attendance, hosting organization, and an optional cover image. Note: the number of attendees may affect your event's approval level.{" "}
+                                <Popover
+                                    title="Event Approval Levels"
+                                    trigger="click"
+                                    content={
+                                        <div style={{ maxWidth: 400 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                <li style={{ marginBottom: 4 }}>
+                                                    <Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text>
+                                                </li>
+                                                <li style={{ marginBottom: 4 }}>
+                                                    <Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text>
+                                                </li>
+                                                <li style={{ marginBottom: 4 }}>
+                                                    <Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text>
+                                                </li>
+                                                <li style={{ marginBottom: 4 }}>
+                                                    <Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    }
+                                >
+                                    <InfoCircleOutlined
+                                        style={{
+                                            marginLeft: 8,
+                                            color: "var(--blue-6)",
+                                            cursor: "pointer",
+                                            fontSize: 16
+                                        }}
+                                    />
+                                </Popover>
+                            </Paragraph>
                             <div id="panel-eventDetails">
                                 <EventDetailsSection
                                     control={control}
@@ -906,18 +985,100 @@ export function EventForm() {
                             </div>
                         </Panel>
                         <Panel header={<h4 style={{ margin: 0 }}>Date & Location</h4>} key="dateLocation">
+                            <Paragraph type="secondary">
+                                Specify when and where your event will take place, including the date, start and end times, setup time, and location type. Additional details will appear based on your location selection. Your location may have an effect on your event's level.{" "}
+                                <Popover
+                                    title="Event Approval Levels"
+                                    trigger="click"
+                                    content={
+                                        <div style={{ maxWidth: 400 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                            </ul>
+                                        </div>
+                                    }
+                                >
+                                    <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
+                                </Popover>
+                            </Paragraph>
                             <div id="panel-dateLocation">
-                                <DateLocationSection control={control} getValues={getValues} />
+                                <DateLocationSection control={control} getValues={getValues} setValue={setValue} trigger={trigger} />
                             </div>
                         </Panel>
                         {formNesting("dateLocation", isSelected, control, setValue)}
                         <Panel header={<h4 style={{ margin: 0 }}>Event Elements</h4>} key="eventElements">
+                            <Paragraph type="secondary">
+                                Specify the elements that will be part of your event, such as food, decorations, or activities. Note: the elements you select may affect your event's level.{" "}
+                                <Popover
+                                    title="Event Approval Levels"
+                                    trigger="click"
+                                    content={
+                                        <div style={{ maxWidth: 400 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                            </ul>
+                                        </div>
+                                    }
+                                >
+                                    <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
+                                </Popover>
+                            </Paragraph>
                             <div id="panel-eventElements">
                                 <EventElementsSection control={control} setValue={setValue} />
                             </div>
                         </Panel>
                         {formNesting("eventElements", isSelected, control, setValue)}
-                        <Panel header={<h4 style={{ margin: 0 }}>Budget & Purchases</h4>} key="budgetPurchase">
+                        <Panel
+                            header={(() => {
+                                const elements = getValues("form_data.elements") || {};
+                                const isElementsComplete = Object.keys(elements).some(
+                                    k => k !== "no_additional_elements" && elements[k] === true
+                                ) || elements.no_additional_elements === true;
+                                return isElementsComplete
+                                    ? <h4 style={{ margin: 0 }}>Budget & Purchases</h4>
+                                    : (
+                                        <Popover content="Complete Event Elements first" trigger="hover">
+                                            <h4 style={{ margin: 0, color: "var(--gray-6)", cursor: "not-allowed", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                                                Budget & Purchases
+                                                <LockOutlined style={{ fontSize: 13 }} />
+                                            </h4>
+                                        </Popover>
+                                    );
+                            })()}
+                            key="budgetPurchase"
+                            collapsible={(() => {
+                                const elements = getValues("form_data.elements") || {};
+                                const isElementsComplete = Object.keys(elements).some(
+                                    k => k !== "no_additional_elements" && elements[k] === true
+                                ) || elements.no_additional_elements === true;
+                                return isElementsComplete ? undefined : "disabled";
+                            })()}
+                        >
+                            <Paragraph type="secondary">
+                                Provide details about your event's budget and any planned purchases or vendor services. Itemized expenses and vendor information may be required depending on your event's scope.{" "}
+                                <Popover
+                                    title="Event Approval Levels"
+                                    trigger="click"
+                                    content={
+                                        <div style={{ maxWidth: 400 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                            </ul>
+                                        </div>
+                                    }
+                                >
+                                    <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
+                                </Popover>
+                            </Paragraph>
                             <div id="panel-budgetPurchase">
                                 <BudgetPurchaseSection control={control} setValue={setValue} />
                             </div>

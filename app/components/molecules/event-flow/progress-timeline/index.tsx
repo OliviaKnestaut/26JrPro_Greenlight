@@ -54,8 +54,20 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 				key => key !== 'no_additional_elements' && elements[key] === true
 			);
 			const hasNoElements = elements.no_additional_elements === true;
-			// Complete if user selected elements OR explicitly said no elements
-			return hasElements || hasNoElements;
+			if (hasNoElements) return true;
+			if (!hasElements) return false;
+			// Each checked element opens a nested section — all must have their
+			// primary required field filled before eventElements is considered complete
+			const nestedComplete = [
+				{ el: 'food',       ok: !!values.form_data?.food?.type },
+				{ el: 'alcohol',    ok: !!values.form_data?.alcohol?.vendor },
+				{ el: 'minors',     ok: !!values.form_data?.minors?.student_contact_id },
+				{ el: 'movies',     ok: !!values.form_data?.movies?.option_type },
+				{ el: 'raffles',    ok: !!values.form_data?.raffles?.items_and_purchase_plan },
+				{ el: 'fire',       ok: !!values.form_data?.fire?.type },
+				{ el: 'sorc_games', ok: !!(values.form_data?.sorc_games?.selected?.length) && !!values.form_data?.sorc_games?.location },
+			].every(({ el, ok }) => !elements[el] || ok);
+			return nestedComplete;
 		case "budgetPurchase": {
 			const elements = values.form_data?.elements || {};
 			const noAdditionalElements = elements.no_additional_elements === true;
@@ -83,7 +95,7 @@ const sectionTopLevelErrorFields: Record<string, string[]> = {
 
 // form_data sub-keys whose errors belong to each section
 const sectionFormDataErrorKeys: Record<string, string[]> = {
-	dateLocation: ['location', 'travel'],
+	dateLocation: ['location', 'needs_setup_time', 'travel'],
 	eventElements: ['elements', 'level0_confirmed', 'food', 'alcohol', 'minors', 'movies', 'raffles', 'fire', 'sorc_games'],
 	budgetPurchase: ['budget', 'vendors', 'vendors_notice_acknowledged', 'non_vendor_services', 'non_vendor_services_notes', 'non_vendor_services_acknowledged'],
 	eventDetails: [],
@@ -154,6 +166,9 @@ export default function ProgressTimeline({
 				items={validSteps.map((step, index) => {
 					let status: "finish" | "process" | "wait" | "error" = "wait";
 
+					// Budget & Purchases is locked until Event Elements is complete
+					const isLocked = step.key === "budgetPurchase" && !isSectionComplete("eventElements", values);
+
 					try {
 						const isActive = step.key === currentEditingSection || index === activeStep;
 
@@ -177,7 +192,12 @@ export default function ProgressTimeline({
 						console.warn(`Error calculating status for section ${step.key}:`, err);
 					}
 
-					return { key: step.key, title: step.title, status };
+					return {
+						key: step.key,
+						title: step.title,
+						status,
+						disabled: isLocked,
+					};
 				})}
 			/>
 		</div>

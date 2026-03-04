@@ -2,6 +2,7 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Input, DatePicker, TimePicker, InputNumber, Radio, Typography } from "antd";
 import dayjs from "dayjs";
+import { useRef } from "react";
 
 // ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../components/FieldLabel";
@@ -19,13 +20,19 @@ const { Text } = Typography;
 type Props = {
     control: any;
     getValues: any;
+    setValue?: any;
+    trigger?: any;
 };
 
-export default function DateLocationSection({ control, getValues }: Props) {
+export default function DateLocationSection({ control, getValues, setValue, trigger }: Props) {
 
     // ── Watched fields ───────────────────────────────────────────────────────
     // Track location type so we can conditionally show the virtual link field
     const locationType = useWatch({ control, name: "location_type" });
+    // Track whether user opted in to setup time
+    const needsSetupTime = useWatch({ control, name: "form_data.needs_setup_time" }) === "yes";
+    // Track start time so end time picker can mirror its AM/PM period
+    const startTimeValue = useWatch({ control, name: "start_time" });
 
     // ── Derived values ───────────────────────────────────────────────────────
     // Used to prevent selecting past dates in the DatePicker
@@ -114,13 +121,11 @@ export default function DateLocationSection({ control, getValues }: Props) {
                                     use12Hours
                                     needConfirm={false}
                                     minuteStep={5}
-                                    onChange={(time) =>
-                                        field.onChange(
-                                            time
-                                                ? time.format("h:mm A")
-                                                : null
-                                        )
-                                    }
+                                    onChange={(time) => {
+                                        field.onChange(time ? time.format("h:mm A") : null);
+                                        // Re-validate end time whenever start changes
+                                        trigger?.("end_time");
+                                    }}
                                     style={{
                                         display: "block",
                                         width: "100%",
@@ -195,13 +200,34 @@ export default function DateLocationSection({ control, getValues }: Props) {
                                     use12Hours
                                     minuteStep={5}
                                     needConfirm={false}
-                                    onChange={(time) =>
-                                        field.onChange(
-                                            time
-                                                ? time.format("h:mm A")
-                                                : null
-                                        )
-                                    }
+                                    defaultOpenValue={(() => {
+                                        // When the picker opens with no value, mirror start time's AM/PM
+                                        if (startTimeValue) {
+                                            const start = dayjs(startTimeValue, "h:mm A");
+                                            const isPM = start.hour() >= 12;
+                                            return isPM ? dayjs().hour(12).minute(0) : dayjs().hour(8).minute(0);
+                                        }
+                                        return dayjs().hour(8).minute(0);
+                                    })()}
+                                    onChange={(time) => {
+                                        field.onChange(time ? time.format("h:mm A") : null);
+                                        trigger?.("end_time");
+                                    }}
+                                    disabledTime={() => {
+                                        const startVal = getValues("start_time");
+                                        if (!startVal) return {};
+                                        const startDayjs = dayjs(startVal, "h:mm A");
+                                        const startHour = startDayjs.hour();
+                                        const startMinute = startDayjs.minute();
+                                        return {
+                                            disabledHours: () =>
+                                                Array.from({ length: startHour }, (_, i) => i),
+                                            disabledMinutes: (selectedHour: number) =>
+                                                selectedHour === startHour
+                                                    ? Array.from({ length: startMinute + 5 }, (_, i) => i)
+                                                    : [],
+                                        };
+                                    }}
                                     style={{
                                         display: "block",
                                         width: "100%",
@@ -227,48 +253,68 @@ export default function DateLocationSection({ control, getValues }: Props) {
                 </div>
             </div>
 
-            {/* Q8 — Setup / Takedown Time (optional) ---------------------- */}
+            {/* Q8 — Setup / Takedown Time ---------------------------------- */}
             <Controller
-                name="setup_time"
+                name="form_data.needs_setup_time"
                 control={control}
-                render={({ field }) => (
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            marginBottom: 24,
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "center",
-                                gap: 4,
-                                marginBottom: 8,
+                rules={{ required: "Please indicate whether your event requires additional setup or takedown time" }}
+                render={({ field, fieldState }) => (
+                    <div style={{ marginBottom: needsSetupTime ? 16 : 24 }}>
+                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                            <FieldLabel required>Does your event require additional setup or takedown time?</FieldLabel>
+                        </div>
+                        <Radio.Group
+                            {...field}
+                            onChange={(e) => {
+                                field.onChange(e.target.value);
+                                if (e.target.value === "no") {
+                                    setValue("setup_time", null);
+                                }
                             }}
                         >
-                            <FieldLabel>
-                                Does your event require additional setup or takedown time? (in minutes)
-                            </FieldLabel>
-                            <Text type="secondary">(Optional)</Text>
-                        </div>
-
-                        <InputNumber
-                            {...field}
-                            min={0}
-                            placeholder="Ex: 30 minutes"
-                            formatter={(value) => value != null && value !== '' ? `${value} minutes` : ''}
-                            parser={(value) => value ? Number(value.replace(/\s*minutes/g, '')) : undefined}
-                            style={{
-                                display: "block",
-                                width: "49%",
-                            }}
-                            onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
-                        />
+                            <Radio value="yes">Yes</Radio>
+                            <Radio value="no">No</Radio>
+                        </Radio.Group>
+                        {fieldState.error && (
+                            <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                {fieldState.error.message}
+                            </Text>
+                        )}
                     </div>
                 )}
             />
+
+            {needsSetupTime && (
+                <Controller
+                    name="setup_time"
+                    control={control}
+                    rules={{ required: "Please enter the estimated setup and takedown time" }}
+                    render={({ field, fieldState }) => (
+                        <div style={{ display: "flex", flexDirection: "column", marginBottom: 24 }}>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                <FieldLabel required>
+                                    Enter the estimated TOTAL amount of additional setup and takedown time (in minutes)
+                                </FieldLabel>
+                            </div>
+                            <InputNumber
+                                {...field}
+                                min={0}
+                                placeholder="Ex: 30 minutes"
+                                formatter={(value) => value != null && value !== '' ? `${value} minutes` : ''}
+                                parser={(value) => value ? Number(value.replace(/\s*minutes/g, '')) : undefined}
+                                style={{ display: "block", width: "49%" }}
+                                status={fieldState.error ? "error" : ""}
+                                onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()}
+                            />
+                            {fieldState.error && (
+                                <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>
+                                    {fieldState.error.message}
+                                </Text>
+                            )}
+                        </div>
+                    )}
+                />
+            )}
 
             {/* Q9 — Location Type ----------------------------------------- */}
             <Controller

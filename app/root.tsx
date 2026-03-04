@@ -4,7 +4,6 @@ import {
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
 } from "react-router";
 import { ApolloProvider } from "@apollo/client/react";
 
@@ -40,7 +39,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <ScrollRestoration />
         <Scripts />
       </body>
     </html>

@@ -1,5 +1,5 @@
 // ─── Third-party ──────────────────────────────────────────────────────────────
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
 import { Input, Button, Select, Typography, InputNumber, Radio, Checkbox, Alert, Popover, Divider } from "antd";
 import { PlusOutlined, MinusCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
@@ -33,11 +33,30 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
     const selectedElements = useWatch({ control, name: "form_data.elements" });
     const level0Confirmed  = useWatch({ control, name: "form_data.level0_confirmed" });
     const selectedServices = useWatch({ control, name: "form_data.non_vendor_services" });
+    const locationType     = useWatch({ control, name: "location_type" });
+    const attendees        = useWatch({ control, name: "attendees" });
 
     // ── Derived State ────────────────────────────────────────────────────────
     const hasVendors  = vendorFields && vendorFields.length > 0;
     const hasElements = selectedElements && Object.values(selectedElements).some(Boolean);
     const hasServices = selectedServices && Object.values(selectedServices).some(Boolean);
+
+    // ── Level 0 Eligibility ──────────────────────────────────────────────────
+    const noAdditionalElements = selectedElements?.no_additional_elements;
+    const hasOtherElements     = selectedElements && Object.keys(selectedElements).some(
+        key => key !== "no_additional_elements" && selectedElements[key] === true
+    );
+    const isOffCampus          = locationType === "Off-Campus";
+    const hasHighAttendance    = attendees && parseInt(attendees) >= 150;
+    const hasLevel0Conflicts   = hasOtherElements || isOffCampus || hasHighAttendance;
+    const isLevel0Eligible     = noAdditionalElements && !hasLevel0Conflicts;
+
+    // Clear level 0 confirmation if the event no longer qualifies
+    useEffect(() => {
+        if (!isLevel0Eligible && level0Confirmed) {
+            setValue("form_data.level0_confirmed", false);
+        }
+    }, [isLevel0Eligible, level0Confirmed, setValue]);
 
     // ── Vendor Repeater ──────────────────────────────────────────────────────
     const { fields, append: appendVendor, remove: removeVendor } = useFieldArray({
@@ -50,11 +69,69 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
     // or manually via the "Add special services" link.
     const [showSpecialServices, setShowSpecialServices] = useState(false);
     const canRevealSpecialServices  = hasVendors || hasElements || hasServices;
-    const shouldShowSpecialServices = !level0Confirmed && (canRevealSpecialServices || showSpecialServices);
+    const shouldShowSpecialServices = !level0Confirmed && !isLevel0Eligible && (canRevealSpecialServices || showSpecialServices);
 
     // ── Render ───────────────────────────────────────────────────────────────
     return (
         <div style={{ marginBottom: 24 }}>
+
+            {/* Level 0 Confirmation — shown when event qualifies for Level 0 */}
+            {isLevel0Eligible && (
+                <Controller
+                    name="form_data.level0_confirmed"
+                    control={control}
+                    rules={{
+                        required: "You must confirm this is a level 0 event",
+                        validate: (value) => value === true || "Please check the box to confirm"
+                    }}
+                    render={({ field, fieldState }) => (
+                        <div style={{ marginBottom: 24 }}>
+                            <Alert
+                                message="Level 0 Event Confirmation"
+                                description={
+                                    <div>
+                                        <Text>
+                                            You have indicated your event requires no extra elements (food, alcohol, etc.) and no travel.
+                                            Can you confirm this is a level 0 event?{" "}
+                                            <Popover
+                                                title="Event Approval Levels"
+                                                trigger="click"
+                                                content={
+                                                    <div style={{ maxWidth: 400 }}>
+                                                        <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                                        </ul>
+                                                    </div>
+                                                }
+                                            >
+                                                <InfoCircleOutlined style={{ marginLeft: 4, color: "var(--blue-6)", cursor: "pointer", fontSize: 14 }} />
+                                            </Popover>
+                                        </Text>
+                                        <div style={{ marginTop: 12 }}>
+                                            <Checkbox
+                                                {...field}
+                                                checked={field.value}
+                                            >
+                                                Yes, I confirm this is a level 0 event <span style={{ color: "var(--red-5)" }}>*</span>
+                                            </Checkbox>
+                                        </div>
+                                        {fieldState.error && (
+                                            <Text type="danger" style={{ display: "block", marginTop: 8, color: "var(--red-6)" }}>
+                                                {fieldState.error.message}
+                                            </Text>
+                                        )}
+                                    </div>
+                                }
+                                type="warning"
+                                showIcon
+                            />
+                        </div>
+                    )}
+                />
+            )}
 
             {/* Level 0 alert — replaces entire section with an info notice */}
             {level0Confirmed && (
@@ -68,7 +145,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
             )}
 
             {/* Section header — hidden for Level 0 events */}
-            {!level0Confirmed && (
+            {!level0Confirmed && !isLevel0Eligible && (
                 <>
                     <h5 style={{ display: "block", marginBottom: 8 }}>
                         Vendors
@@ -375,7 +452,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
             ))}
 
             {/* Add Vendor button — hidden for Level 0 events */}
-            {!level0Confirmed && (
+            {!level0Confirmed && !isLevel0Eligible && (
                 <Button
                     type="dashed"
                     onClick={() => appendVendor({
@@ -424,7 +501,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
 
             {/* \u2500\u2500 Special Services \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
             {/* "Add special services" link \u2014 lets users reveal the section manually */}
-            {!level0Confirmed && !shouldShowSpecialServices && (
+            {!level0Confirmed && !isLevel0Eligible && !shouldShowSpecialServices && (
                 <Button type="link" onClick={() => setShowSpecialServices(true)} style={{ paddingLeft: 0 }}>
                     Add special services or equipment
                 </Button>
@@ -445,7 +522,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
 
             {/* ── Account Funding ───────────────────────────────────────────── */}
             {/* Shown when there are vendors/elements/services on a non-Level-0 event */}
-            {(hasVendors || hasElements || hasServices) && !level0Confirmed && (
+            {(hasVendors || hasElements || hasServices) && !level0Confirmed && !isLevel0Eligible && (
                 <>
                     <Divider style={{ borderColor: "var(--gray-5)", marginTop: 72, marginBottom: 45 }} />
                     <h5 style={{ display: "block", marginTop: 24, marginBottom: 8 }}>

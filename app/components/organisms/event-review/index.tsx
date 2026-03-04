@@ -1288,85 +1288,89 @@ export function EventReview() {
                         formData?.form_data?.level0_confirmed ? "Yes" : "No"
                     )}
 
-                    {formData?.form_data?.vendors?.map((vendor: any, index: number) => (
-                        <div key={index} style={{ marginBottom: 16 }}>
+                    {!formData?.form_data?.level0_confirmed && (
+                        <>
+                            {formData?.form_data?.vendors?.map((vendor: any, index: number) => (
+                                <div key={index} style={{ marginBottom: 16 }}>
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Type`,
+                                        vendor?.type
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Company Name`,
+                                        vendor?.companyName
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Contact Person`,
+                                        vendor?.contactPersonName
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Contact Email`,
+                                        vendor?.contactEmail
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Contact Phone`,
+                                        vendor?.contactPhone
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Worked With Before`,
+                                        vendor?.workedBefore
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Drexel Student`,
+                                        vendor?.isDrexelStudent
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Amount`,
+                                        vendor?.amount
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Description`,
+                                        vendor?.description
+                                    )}
+
+                                    {renderField(
+                                        `Vendor ${index + 1} Org Providing`,
+                                        vendor?.org_providing
+                                    )}
+
+                                </div>
+                            ))}
 
                             {renderField(
-                                `Vendor ${index + 1} Type`,
-                                vendor?.type
+                                "Vendor Letter Notice Acknowledged",
+                                formData?.form_data?.vendors_notice_acknowledged ? "Yes" : "No"
+                            )}
+
+                            {/* NON VENDOR */}
+
+                            {renderField(
+                                "Non-Vendor Services Selected",
+                                Object.entries(formData?.form_data?.non_vendor_services || {})
+                                    .filter(([_, value]) => value === true)
+                                    .map(([key]) => nonVendorServiceLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+                                    .join(", ")
                             )}
 
                             {renderField(
-                                `Vendor ${index + 1} Company Name`,
-                                vendor?.companyName
+                                "Non-Vendor Services Notes",
+                                formData?.form_data?.non_vendor_services_notes
                             )}
 
                             {renderField(
-                                `Vendor ${index + 1} Contact Person`,
-                                vendor?.contactPersonName
+                                "Non-Vendor Charges Acknowledged",
+                                formData?.form_data?.non_vendor_services_acknowledged ? "Yes" : "No"
                             )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Contact Email`,
-                                vendor?.contactEmail
-                            )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Contact Phone`,
-                                vendor?.contactPhone
-                            )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Worked With Before`,
-                                vendor?.workedBefore
-                            )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Drexel Student`,
-                                vendor?.isDrexelStudent
-                            )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Amount`,
-                                vendor?.amount
-                            )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Description`,
-                                vendor?.description
-                            )}
-
-                            {renderField(
-                                `Vendor ${index + 1} Org Providing`,
-                                vendor?.org_providing
-                            )}
-
-                        </div>
-                    ))}
-
-                    {renderField(
-                        "Vendor Letter Notice Acknowledged",
-                        formData?.form_data?.vendors_notice_acknowledged ? "Yes" : "No"
-                    )}
-
-                    {/* NON VENDOR */}
-
-                    {renderField(
-                        "Non-Vendor Services Selected",
-                        Object.entries(formData?.form_data?.non_vendor_services || {})
-                            .filter(([_, value]) => value === true)
-                            .map(([key]) => nonVendorServiceLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
-                            .join(", ")
-                    )}
-
-                    {renderField(
-                        "Non-Vendor Services Notes",
-                        formData?.form_data?.non_vendor_services_notes
-                    )}
-
-                    {renderField(
-                        "Non-Vendor Charges Acknowledged",
-                        formData?.form_data?.non_vendor_services_acknowledged ? "Yes" : "No"
+                        </>
                     )}
 
                     {renderField(

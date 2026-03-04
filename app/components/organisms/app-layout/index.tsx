@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { Layout } from 'antd';
 import { useLocation } from 'react-router';
 import { Header } from '../../molecules/header/index';
@@ -30,11 +30,18 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
 	const location = useLocation();
 
+	// Disable browser's native scroll restoration so it doesn't override our position
 	useEffect(() => {
+		if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+	}, []);
+
+	// useLayoutEffect fires before paint — reset scroll synchronously on every route change
+	useLayoutEffect(() => {
+		window.scrollTo({ top: 0, left: 0 });
+		document.documentElement.scrollTop = 0;
+		document.body.scrollTop = 0;
 		const main = document.querySelector('main');
-		if (main) {
-			main.scrollTop = 0;
-		}
+		if (main) main.scrollTop = 0;
 	}, [location.pathname]);
 	return (
 		<Layout className={styles.appLayout}>

@@ -1,7 +1,6 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Checkbox, Typography, Alert } from "antd";
 import FieldLabel from "../components/FieldLabel";
-import { useEffect } from "react";
 
 const { Text } = Typography;
 
@@ -58,21 +57,6 @@ export default function EventElementsSection({ control, setValue }: Props) {
 
     // Check if user has selected ANY elements (including no_additional_elements)
     const hasSelectedElements = selectedElements && Object.values(selectedElements).some(Boolean);
-
-    // Watch for level 0 confirmation
-    const level0Confirmed = useWatch({
-        control,
-        name: "form_data.level0_confirmed",
-    });
-
-    // Clear level 0 confirmation if user adds disqualifying factors
-    useEffect(() => {
-        // If event no longer qualifies for Level 0,
-        // automatically clear the confirmation
-        if ((!noAdditionalElements || hasLevel0Conflicts) && level0Confirmed) {
-            setValue("form_data.level0_confirmed", false);
-        }
-    }, [noAdditionalElements, hasLevel0Conflicts, level0Confirmed, setValue]);
 
     return (
         <>
@@ -155,48 +139,6 @@ export default function EventElementsSection({ control, setValue }: Props) {
                     );
                 }}
             />
-
-            {/* Level 0 Confirmation - shows when ONLY no additional elements is checked AND no conflicts */}
-            {noAdditionalElements && !hasLevel0Conflicts && (
-                <Controller
-                    name="form_data.level0_confirmed"
-                    control={control}
-                    rules={{
-                        required: "You must confirm this is a level 0 event",
-                        validate: (value) => value === true || "Please check the box to confirm"
-                    }}
-                    render={({ field, fieldState }) => (
-                        <div style={{ marginBottom: 24 }}>
-                            <Alert
-                                message="Level 0 Event Confirmation"
-                                description={
-                                    <div>
-                                        <Text>
-                                            You have indicated your event requires no extra elements (food, alcohol, etc.) and no travel.
-                                            Can you confirm this is a level 0 event?
-                                        </Text>
-                                        <div style={{ marginTop: 12 }}>
-                                            <Checkbox
-                                                {...field}
-                                                checked={field.value}
-                                            >
-                                                Yes, I confirm this is a level 0 event <span style={{ color: "var(--red-5)" }}>*</span>
-                                            </Checkbox>
-                                        </div>
-                                        {fieldState.error && (
-                                            <Text type="danger" style={{ display: "block", marginTop: 8, color: "var(--red-6)" }}>
-                                                {fieldState.error.message}
-                                            </Text>
-                                        )}
-                                    </div>
-                                }
-                                type="warning"
-                                showIcon
-                            />
-                        </div>
-                    )}
-                />
-            )}
 
             {/* Warning when user has disqualifying factors even with no other elements */}
             {noAdditionalElements && hasLevel0Conflicts && (
