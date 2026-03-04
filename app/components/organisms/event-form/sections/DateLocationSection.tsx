@@ -2,7 +2,6 @@
 import { Controller, useWatch } from "react-hook-form";
 import { Input, DatePicker, TimePicker, InputNumber, Radio, Typography } from "antd";
 import dayjs from "dayjs";
-import { useRef } from "react";
 
 // ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../components/FieldLabel";
@@ -268,7 +267,7 @@ export default function DateLocationSection({ control, getValues, setValue, trig
                             onChange={(e) => {
                                 field.onChange(e.target.value);
                                 if (e.target.value === "no") {
-                                    setValue("setup_time", null);
+                                    setValue?.("setup_time", null);
                                 }
                             }}
                         >

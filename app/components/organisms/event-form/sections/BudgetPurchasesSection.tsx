@@ -47,7 +47,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
         key => key !== "no_additional_elements" && selectedElements[key] === true
     );
     const isOffCampus          = locationType === "Off-Campus";
-    const hasHighAttendance    = attendees && parseInt(attendees) >= 150;
+    const hasHighAttendance    = attendees && parseInt(attendees) >= 100;
     const hasLevel0Conflicts   = hasOtherElements || isOffCampus || hasHighAttendance;
     const isLevel0Eligible     = noAdditionalElements && !hasLevel0Conflicts;
 
