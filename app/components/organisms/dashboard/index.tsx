@@ -112,7 +112,7 @@ export function DashboardContent() {
                 </div>
                 <div className="w-full md:w-3/5">
                     <CardAnnouncements
-                        title="Announcements"
+                        title="Updates"
                         items={[
                             {
                                 id: "a1",
@@ -121,6 +121,7 @@ export function DashboardContent() {
                                     <Link href="#">“Coffee Chat With Women in Tech”</Link> has 1 new comment; update submission
                                 </span>
                                 ),
+                                description: "3/4/26 | 2:45 PM",
                             },
                             {
                                 id: "a2",
@@ -129,6 +130,7 @@ export function DashboardContent() {
                                     John Doe has submitted <Link href="#">“Public Speaking Workshop”</Link> for review
                                 </span>
                                 ),
+                                description: "2/26/26 | 11:20 AM",
                             },
                         ]}
                     />

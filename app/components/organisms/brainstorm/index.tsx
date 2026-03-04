@@ -12,13 +12,17 @@ export function BrainstormContent() {
 
     let title = "Brainstorm";
     let buttonText = "New";
+    let paragraph = "";
+
     if (location.pathname.includes("/docs")) {
         title = "Docs Overview";
         buttonText = "New Doc";
+        paragraph = "Access all of your org's planning documents.";
     }
     if (location.pathname.includes("/sheets")) {
         title = "Sheets Overview";
         buttonText = "New Sheet";
+        paragraph = "Access all of your org's planning spreadsheets.";
     }
 
     return (
@@ -30,9 +34,10 @@ export function BrainstormContent() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem", width: "100%" }}>
                 <Title level={2} style={{ margin: 0 }}>{title}</Title>
+                <Paragraph>{paragraph}</Paragraph>
             </div>
 
-            <div className="brainstorm-nav">
+            <div className="brainstorm-nav" style={{alignItems: "center"}}>
                 <nav className="mt-4 space-x-4 toggle-nav w-full">
                     <NavLink to="/brainstorm/docs">Docs</NavLink>
                     <NavLink to="/brainstorm/sheets">Sheets</NavLink>

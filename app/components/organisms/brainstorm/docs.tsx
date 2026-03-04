@@ -3,7 +3,7 @@ import { Collapse, Typography, Badge, Card, Grid } from 'antd';
 import doc1 from '../../assets/docs-img.svg';
 import { MoreOutlined } from '@ant-design/icons';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 export function BrainstormDocsContent() {
     const screens = Grid.useBreakpoint();
@@ -13,6 +13,9 @@ export function BrainstormDocsContent() {
                 <Card>
                     <Title level={3}>This page is not available on mobile devices</Title>
                 </Card>
+                <Paragraph>
+                    Access all of your orgs planning documents.
+                </Paragraph>
             </div>
         );
     }
