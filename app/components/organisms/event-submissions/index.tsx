@@ -160,13 +160,13 @@ export function EventSubmissionsContent() {
                             onPressEnter={e => setQuery((e.target as HTMLInputElement).value)}
                             allowClear
                             onClear={() => setQuery('')}
-                            style={{borderRadius: 0}}
+                            style={{ borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                         />
                         <Button
                         type="primary"
                         icon={<SearchOutlined />}
                         onClick={() => setQuery(query)}
-                        style={{borderRadius: 0, border: 0, width: '46px', boxShadow: 'none', height: 40}} />
+                        style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0, borderTopRightRadius: 8, borderBottomRightRadius: 8, border: 0, width: '46px', boxShadow: 'none', height: 40}} />
                     </Space.Compact>
                         <Popover
                             placement="bottom"

@@ -112,7 +112,7 @@ export function DashboardContent() {
                 </div>
                 <div className="w-full md:w-3/5">
                     <CardAnnouncements
-                        title="Announcements"
+                        title="Updates"
                         items={[
                             {
                                 id: "a1",
@@ -121,6 +121,7 @@ export function DashboardContent() {
                                     <Link href="#">“Coffee Chat With Women in Tech”</Link> has 1 new comment; update submission
                                 </span>
                                 ),
+                                description: "3/4/26 | 2:45 PM",
                             },
                             {
                                 id: "a2",
@@ -129,6 +130,7 @@ export function DashboardContent() {
                                     John Doe has submitted <Link href="#">“Public Speaking Workshop”</Link> for review
                                 </span>
                                 ),
+                                description: "2/26/26 | 11:20 AM",
                             },
                         ]}
                     />
@@ -142,10 +144,10 @@ export function DashboardContent() {
                         }}
                 >
                     <div className="flex justify-between items-center " style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions?open=1')}>
-                        <Title level={4} >In-Review <RightOutlined style={{fontSize:"12px"}}/> </Title>
+                        <Title level={4} >In-Review <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }} /> </Title>
                         <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
-                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ marginTop: '0.5rem' }}>
                         {
                             (() => {
                                 const today = new Date();
@@ -199,7 +201,7 @@ export function DashboardContent() {
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                         onClick={() => navigate('/budget')}
                     >
-                        <Title level={4}>Budget <RightOutlined style={{fontSize:"12px"}} /> </Title>
+                        <Title level={4}>Budget <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }}/></Title>
                     </div>
                     <div className="flex gap-4 justify-center items-center flex-wrap mt-8">
                         <ProgressCircle 
@@ -241,10 +243,10 @@ export function DashboardContent() {
                         border: "1px solid var(--accent-gray-light)",
                     }} >
                     <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions?status=draft')}>
-                        <Title level={4}>Drafts <RightOutlined style={{fontSize:"12px"}}/> </Title>
+                        <Title level={4}>Drafts <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }}/> </Title>
                         <Badge count={drafts.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
-                    <div className="flex gap-4 flex-col">
+                    <div className="flex gap-4 flex-col" style={{ marginTop: '0.5rem' }}>
                         {(() => {
                             const today = new Date();
                             today.setHours(0,0,0,0);

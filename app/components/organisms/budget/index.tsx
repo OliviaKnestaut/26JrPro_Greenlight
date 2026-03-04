@@ -60,7 +60,7 @@ export function BudgetContent() {
                                 <Button
                                     type="link"
                                     onClick={() => setShowFull(s => !s)}
-                                    style={{ padding: 0, width: 20 }}
+                                    style={{ padding: 0, width: 20, display: 'flex', alignItems: 'center', marginTop: '4px' }}
                                     icon={showFull ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                                 />
                                 <Select
@@ -98,12 +98,12 @@ export function BudgetContent() {
                         <div className="w-full lg:w-1/2 p-2">
                             <Card>
                                 <Title level={4}>Total Spent</Title>
-                                <img src={spentGraph} alt="Total Spent Graph" style={{ width: '100%' }} />
+                                <img src={spentGraph} alt="Total Spent Graph" style={{ width: '100%', marginTop: '1.5rem' }} />
                             </Card>
                         </div>
                         <div className="w-full lg:w-1/2 p-2">
                             <Card>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom:'1rem'}}>
                                     <Title level={4} style={{ margin: 0 }}>Money Spent</Title>
                                     <Button type="link" style={{ padding: 0 }}>Fall 2025 ▾</Button>
                                 </div>

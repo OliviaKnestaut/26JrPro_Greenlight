@@ -12,13 +12,17 @@ export function BrainstormContent() {
 
     let title = "Brainstorm";
     let buttonText = "New";
+    let paragraph = "";
+
     if (location.pathname.includes("/docs")) {
         title = "Docs Overview";
         buttonText = "New Doc";
+        paragraph = "Access all of your org's planning documents.";
     }
     if (location.pathname.includes("/sheets")) {
         title = "Sheets Overview";
         buttonText = "New Sheet";
+        paragraph = "Access all of your org's planning spreadsheets.";
     }
 
     return (
@@ -30,6 +34,7 @@ export function BrainstormContent() {
             </div>
             <div style={{ display: "flex", flexDirection: "column", margin: 0, gap: "0.5rem", width: "100%" }}>
                 <Title level={2} style={{ margin: 0 }}>{title}</Title>
+                <Paragraph>{paragraph}</Paragraph>
             </div>
 
             <div className="brainstorm-nav">
@@ -51,21 +56,14 @@ export function BrainstormContent() {
                 }
                 allowClear
                 onClear={() => setQuery("")}
-                style={{ borderRadius: 0 }}
+                style={{ borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                 />
 
                 <Button
                 type="primary"
                 icon={<SearchOutlined />}
                 onClick={() => setQuery(query)}
-                style={{
-                    borderRadius: 0,
-                    border: 0,
-                    width: "46px",
-                    boxShadow: "none",
-                    height: 43,
-                }}
-                />
+                style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0, borderTopRightRadius: 8, borderBottomRightRadius: 8, border: 0, width: '46px', boxShadow: 'none', height: 40}} />
             </div>
             <div className="mt-6">
                 <Outlet />
