@@ -59,6 +59,9 @@ export function EventReview() {
     useEffect(() => {
         if (!rawFormData) return;
         const raw = rawFormData;
+        // Treats an empty object {} as null so that element guards like
+        // {formData?.alcohol && ...} don't fire on unselected elements.
+        const ne = (v: any) => (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0) ? null : (v ?? null);
         const mapped = {
             event: {
                 name: raw.title || '',
@@ -78,7 +81,7 @@ export function EventReview() {
                 type: raw.location_type || '',
                 selected: raw.form_data?.location?.selected || '',
                 room_type: raw.form_data?.location?.room_type || '',
-                virtual_link: raw.form_data?.location?.virtual_link || '',
+                virtual_link: raw.form_data?.location?.virtual_link || raw?.virtual_link || '',
             },
 
             onCampus: raw.form_data?.location || null,
@@ -99,13 +102,13 @@ export function EventReview() {
                 offCampus: raw.form_data?.offCampus || {},
             },
 
-            food: raw.form_data?.food || null,
-            alcohol: raw.form_data?.alcohol || null,
-            minors: raw.form_data?.minors || null,
-            movies: raw.form_data?.movies || null,
-            raffles: raw.form_data?.raffles || null,
-            fire: raw.form_data?.fire || null,
-            sorc_games: raw.form_data?.sorc_games || null,
+            food: ne(raw.form_data?.food) ?? ne(raw.food),
+            alcohol: ne(raw.form_data?.alcohol) ?? ne(raw.alcohol),
+            minors: ne(raw.form_data?.minors) ?? ne(raw.minors),
+            movies: ne(raw.form_data?.movies) ?? ne(raw.movies),
+            raffles: ne(raw.form_data?.raffles) ?? ne(raw.raffles),
+            fire: ne(raw.form_data?.fire) ?? ne(raw.fire),
+            sorc_games: ne(raw.form_data?.sorc_games) ?? ne(raw.sorc_games),
 
             vendors: raw.form_data?.vendors || [],
             budget: raw.budget?.total_purchase || raw.form_data?.budget?.total_purchase || '',
@@ -302,6 +305,7 @@ export function EventReview() {
             formData: JSON.stringify({
                 ...data.form_data,
                 attendees: data.attendees,
+                virtual_link: data.virtual_link || undefined,
                 event_img: typeof data.event_img === 'string' ? data.event_img : undefined,
                 event_img_name: data.event_img_name,
                 createdByUser: {
@@ -441,8 +445,12 @@ export function EventReview() {
     // submitting it for review.
     const handleSaveDraft = async () => {
         if (!user || !formData) return;
-        const dataToUse = { ...formData };
-        const desired = id ? `${id}_${slugify(formData.title || '')}` : `${slugify(formData.title || '')}_${Date.now()}`;
+        // Use rawFormData (raw RHF shape) so buildMutationInput receives the correct
+        // field names (e.g. `attendees`, `form_data.alcohol`) rather than the
+        // display-mapped shape (e.g. `event.attendees`) that formData uses for rendering.
+        const dataToUse = rawFormData ? { ...rawFormData } : { ...formData };
+        const eventTitle = rawFormData?.title || formData.event?.name || '';
+        const desired = id ? `${id}_${slugify(eventTitle)}` : `${slugify(eventTitle)}_${Date.now()}`;
         try {
             const filename = await prepareEventImage(dataToUse, desired);
             if (filename) dataToUse.event_img = filename;
@@ -508,8 +516,12 @@ export function EventReview() {
             message.error("Missing user or form data");
             return;
         }
-        const dataToUse = { ...formData };
-        const desired = id ? `${id}_${slugify(formData.title || '')}` : `${slugify(formData.title || '')}_${Date.now()}`;
+        // Use rawFormData (raw RHF shape) so buildMutationInput receives the correct
+        // field names (e.g. `attendees`, `form_data.alcohol`) rather than the
+        // display-mapped shape that formData uses for rendering.
+        const dataToUse = rawFormData ? { ...rawFormData } : { ...formData };
+        const eventTitle = rawFormData?.title || formData.event?.name || '';
+        const desired = id ? `${id}_${slugify(eventTitle)}` : `${slugify(eventTitle)}_${Date.now()}`;
         try {
             const filename = await prepareEventImage(dataToUse, desired);
             if (filename) dataToUse.event_img = filename;
@@ -812,8 +824,13 @@ export function EventReview() {
                         <Title level={3}>Event Elements</Title>
                         <Button type="text" icon={<EditOutlined style={{ color: '#333', fontSize: '18px' }} />} onClick={() => handleEditSection('eventDetails')} />
                     </div>
-                    {/* NONE */}
-                    {!formData?.food && !formData?.alcohol && !formData?.minors && !formData?.movies && !formData?.raffles && !formData?.fire && !formData?.sorc_games && (
+                    {/* NONE: show when Level 0 (no_additional_elements=true) OR when no element
+                         detail data is present (relies only on actual data, not stale flags,
+                         so corrupt saves where elements.food=true but food={} still resolve correctly) */}
+                    {(formData?.form_data?.elements?.no_additional_elements === true ||
+                        (!formData?.food && !formData?.alcohol && !formData?.minors &&
+                            !formData?.movies && !formData?.raffles && !formData?.fire &&
+                            !formData?.sorc_games)) && (
                         <Paragraph>No special elements selected</Paragraph>
                     )}
 

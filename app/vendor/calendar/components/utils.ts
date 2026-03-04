@@ -256,6 +256,6 @@ export const calculateEventLevel = (data: any) => {
     return 1;
   }
 
-  // Default to Level 0 - Requires 12 Business Days
+  // Default to Level 0 - Requires Requires 12 Business Days Notice
   return 0;
 };

@@ -1,7 +1,7 @@
 // ── React & Third-Party Libraries ───────────────────────────────────────────
 import { useState, useEffect, useRef } from "react";
 import { Alert, Form, Button, Collapse, Typography, Popover, message } from "antd";
-import { ArrowLeftOutlined, InfoCircleOutlined, LockOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, InfoCircleOutlined, LockOutlined, StarTwoTone } from "@ant-design/icons";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams, useBlocker } from "react-router";
 import dayjs from "dayjs";
@@ -943,26 +943,26 @@ export function EventForm() {
                             <Paragraph type="secondary">
                                 Enter the basic details about your event, including its title, description, expected attendance, hosting organization, and an optional cover image. Note: the number of attendees may affect your event's approval level.{" "}
                                 <Popover
-                                    title="Event Approval Levels"
-                                    trigger="click"
                                     content={
                                         <div style={{ maxWidth: 400 }}>
                                             <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
                                                 <li style={{ marginBottom: 4 }}>
-                                                    <Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text>
+                                                    <StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text>
                                                 </li>
                                                 <li style={{ marginBottom: 4 }}>
-                                                    <Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text>
+                                                    <StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text>
                                                 </li>
                                                 <li style={{ marginBottom: 4 }}>
-                                                    <Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text>
+                                                    <StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text>
                                                 </li>
                                                 <li style={{ marginBottom: 4 }}>
-                                                    <Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text>
+                                                    <StarTwoTone twoToneColor={["var(--red-5)", "var(--red-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 3</strong> (Requires 8 Weeks Notice): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text>
                                                 </li>
                                             </ul>
                                         </div>
                                     }
+                                    title="Event Approval Levels"
+                                    trigger="click"
                                 >
                                     <InfoCircleOutlined
                                         style={{
@@ -988,18 +988,18 @@ export function EventForm() {
                             <Paragraph type="secondary">
                                 Specify when and where your event will take place, including the date, start and end times, setup time, and location type. Additional details will appear based on your location selection. Your location may have an effect on your event's level.{" "}
                                 <Popover
-                                    title="Event Approval Levels"
-                                    trigger="click"
                                     content={
                                         <div style={{ maxWidth: 400 }}>
                                             <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--red-5)", "var(--red-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 3</strong> (Requires 8 Weeks Notice): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
                                             </ul>
                                         </div>
                                     }
+                                    title="Event Approval Levels"
+                                    trigger="click"
                                 >
                                     <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
                                 </Popover>
@@ -1013,18 +1013,18 @@ export function EventForm() {
                             <Paragraph type="secondary">
                                 Specify the elements that will be part of your event, such as food, decorations, or activities. Note: the elements you select may affect your event's level.{" "}
                                 <Popover
-                                    title="Event Approval Levels"
-                                    trigger="click"
                                     content={
                                         <div style={{ maxWidth: 400 }}>
                                             <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--red-5)", "var(--red-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 3</strong> (Requires 8 Weeks Notice): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
                                             </ul>
                                         </div>
                                     }
+                                    title="Event Approval Levels"
+                                    trigger="click"
                                 >
                                     <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
                                 </Popover>
@@ -1063,18 +1063,18 @@ export function EventForm() {
                             <Paragraph type="secondary">
                                 Provide details about your event's budget and any planned purchases or vendor services. Itemized expenses and vendor information may be required depending on your event's scope.{" "}
                                 <Popover
-                                    title="Event Approval Levels"
-                                    trigger="click"
                                     content={
                                         <div style={{ maxWidth: 400 }}>
                                             <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
-                                                <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--red-5)", "var(--red-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 3</strong> (Requires 8 Weeks Notice): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
                                             </ul>
                                         </div>
                                     }
+                                    title="Event Approval Levels"
+                                    trigger="click"
                                 >
                                     <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
                                 </Popover>

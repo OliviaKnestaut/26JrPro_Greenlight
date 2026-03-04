@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
 import { Input, Button, Select, Typography, InputNumber, Radio, Checkbox, Alert, Popover, Divider } from "antd";
-import { PlusOutlined, MinusCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { PlusOutlined, MinusCircleOutlined, InfoCircleOutlined, StarTwoTone } from "@ant-design/icons";
 
 // ─── Local ────────────────────────────────────────────────────────────────────
 import FieldLabel from "../components/FieldLabel";
@@ -94,20 +94,20 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                             You have indicated your event requires no extra elements (food, alcohol, etc.) and no travel.
                                             Can you confirm this is a level 0 event?{" "}
                                             <Popover
-                                                title="Event Approval Levels"
-                                                trigger="click"
                                                 content={
                                                     <div style={{ maxWidth: 400 }}>
                                                         <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
-                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 0</strong> (12 Business Days): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
-                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 1</strong> (3 Weeks): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
-                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 2</strong> (5 Weeks): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
-                                                            <li style={{ marginBottom: 4 }}><Text><strong>Level 3</strong> (8 Weeks): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
+                                                            <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--red-5)", "var(--red-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 3</strong> (Requires 8 Weeks Notice): International or &gt;150 mile travel. Non-preferred vendors. Any purchase &gt;$4,999.99. Events with alcohol, minors, or animals.</Text></li>
                                                         </ul>
                                                     </div>
                                                 }
+                                                title="Event Approval Levels"
+                                                trigger="click"
                                             >
-                                                <InfoCircleOutlined style={{ marginLeft: 4, color: "var(--blue-6)", cursor: "pointer", fontSize: 14 }} />
+                                                <InfoCircleOutlined style={{ marginLeft: 8, color: "var(--blue-6)", cursor: "pointer", fontSize: 16 }} />
                                             </Popover>
                                         </Text>
                                         <div style={{ marginTop: 12 }}>
