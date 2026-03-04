@@ -267,7 +267,7 @@ export default function DateLocationSection({ control, getValues, setValue, trig
                             onChange={(e) => {
                                 field.onChange(e.target.value);
                                 if (e.target.value === "no") {
-                                    setValue("setup_time", null);
+                                    setValue?.("setup_time", null);
                                 }
                             }}
                         >
