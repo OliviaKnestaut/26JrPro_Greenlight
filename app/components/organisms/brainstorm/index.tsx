@@ -37,7 +37,7 @@ export function BrainstormContent() {
                 <Paragraph>{paragraph}</Paragraph>
             </div>
 
-            <div className="brainstorm-nav" style={{alignItems: "center"}}>
+            <div className="brainstorm-nav">
                 <nav className="mt-4 space-x-4 toggle-nav w-full">
                     <NavLink to="/brainstorm/docs">Docs</NavLink>
                     <NavLink to="/brainstorm/sheets">Sheets</NavLink>

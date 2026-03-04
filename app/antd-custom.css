@@ -779,12 +779,13 @@ p {
 
 /* Toggle nav pill (Docs / Sheets switcher) */
 .toggle-nav {
-	width: 206px;
+	width: 200px;
 	height: 36px;
 	border: solid, 1px, var(--accent-gray-dark);
 	border-radius: 100px;
 	padding: 3px;
 	align-content: center;
+	margin: 0;
 }
 
 .toggle-nav a {
@@ -808,8 +809,10 @@ p {
 }
 
 .brainstorm-nav {
+	margin-top: 12px;
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
 }
 
 /* Document card */

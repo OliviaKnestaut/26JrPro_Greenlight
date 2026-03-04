@@ -54,12 +54,12 @@ export function BrainstormDocsContent() {
                 </div>
                 ),
                 children: (
-                <div className="flex gap-5 flex-wrap item-center">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.5rem' }}>
                     {docs.map(doc => (
                     <Card
                         key={doc.id}
                         hoverable
-                        style={{ width: 'calc(50% - 0.5rem)', marginBottom: '1rem' }}
+                        style={{ margin: 0 }}
                         cover={<img alt={doc.title} src={doc.img} />}
                         className="custom-doc-card"
                     > <div className='card-title-row'>
@@ -74,12 +74,12 @@ export function BrainstormDocsContent() {
             }
             ]}
         />
-        <div className="container w-auto flex gap-4 flex-wrap docs-more">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(235px, 1fr))', gap: '0.75rem' }} className="docs-more">
         {otherDocs.map(doc => (
             <Card
                 key={doc.id}
                 hoverable
-                style={{ width: 'calc(25% - 0.75rem)', marginBottom: '1rem' }}
+                style={{ margin: 0 }}
                 cover={<img alt={doc.title} src={doc.img} />}
                 className="custom-doc-card"
             >
