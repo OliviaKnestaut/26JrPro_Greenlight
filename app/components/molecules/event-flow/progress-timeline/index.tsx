@@ -69,12 +69,39 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			].every(({ el, ok }) => !elements[el] || ok);
 			return nestedComplete;
 		case "budgetPurchase": {
+			const level0Confirmed = values.form_data?.level0_confirmed === true;
+
+			// Level 0 confirmed → nothing else needed in this section
+			if (level0Confirmed) return true;
+
+			// Re-derive Level 0 eligibility (mirrors BudgetPurchasesSection logic).
+			// If the event still qualifies for Level 0 but the user hasn't ticked the
+			// confirmation checkbox, the step is not yet complete.
 			const elements = values.form_data?.elements || {};
 			const noAdditionalElements = elements.no_additional_elements === true;
-			const level0Confirmed = values.form_data?.level0_confirmed === true;
-			// Auto-complete only when the user has explicitly confirmed no elements are needed
-			// (level 0 event or "no additional elements" checked and confirmed).
-			return noAdditionalElements && level0Confirmed;
+			const hasOtherElements = Object.keys(elements).some(k => k !== 'no_additional_elements' && elements[k] === true);
+			const isOffCampus = values.location_type === "Off-Campus";
+			const hasHighAttendance = values.attendees && parseInt(values.attendees) >= 150;
+			const isLevel0Eligible = noAdditionalElements && !hasOtherElements && !isOffCampus && !hasHighAttendance;
+			if (isLevel0Eligible) return false;
+
+			// Non-Level-0: check only the fields that are conditionally required.
+			const vendors = values.form_data?.vendors || [];
+			const nonVendorServices = values.form_data?.non_vendor_services || {};
+			const hasVendors = vendors.length > 0;
+			const hasServices = Object.values(nonVendorServices).some(Boolean);
+
+			// Vendor letter acknowledgement — required when vendors are added
+			if (hasVendors && !values.form_data?.vendors_notice_acknowledged) return false;
+
+			// Non-vendor services acknowledgement — required when services are selected
+			if (hasServices && !values.form_data?.non_vendor_services_acknowledged) return false;
+
+			// Funding source + account number — required when vendors, elements, or services exist
+			if ((hasVendors || hasOtherElements || hasServices) &&
+				(!values.form_data?.budget?.source || !values.form_data?.budget?.account_number)) return false;
+
+			return true;
 		}
 		case "review":
 			// Never auto-complete — this step only becomes active when the user is

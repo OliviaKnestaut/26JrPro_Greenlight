@@ -141,7 +141,8 @@ export default function OnCampusSection({ control, setValue }: Props) {
     const needsRoomSetup  = useWatch({ control, name: "form_data.location.needs_room_setup" }) === "yes";
     const needsFurniture  = useWatch({ control, name: "form_data.location.needs_furniture" }) === "yes";
     const needsAV         = useWatch({ control, name: "form_data.location.needs_av" }) === "yes";
-    const { fields: furnitureFields, append, remove } = useFieldArray({
+    const needsPower      = useWatch({ control, name: "form_data.location.needs_power" }) === true;
+    const { fields: furnitureFields, append, remove, replace: replaceFurniture } = useFieldArray({
         control,
         name: "form_data.location.furniture",
     });
@@ -257,7 +258,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
             setValue?.("form_data.location.room_type", undefined);
             setValue?.("form_data.location.room_title", undefined);
             setValue?.("form_data.location.room_setup", undefined);
-            setValue?.("form_data.location.furniture", []);
+            replaceFurniture([]);
             setValue?.("form_data.location.av_needs", undefined);
             setValue?.("form_data.location.rain_location", undefined);
         }
@@ -450,7 +451,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                     onChange={(e) => {
                                         field.onChange(e.target.value);
                                         if (e.target.value === "no") {
-                                            setValue?.("form_data.location.furniture", []);
+                                            replaceFurniture([]);
                                         } else {
                                             // Auto-add one row so the user sees the inputs immediately
                                             if (furnitureFields.length === 0) append({ type: undefined, quantity: 1 });
@@ -570,7 +571,7 @@ export default function OnCampusSection({ control, setValue }: Props) {
 
             {(isIndoor || isOutdoor) && (
                 <Controller
-                    name="form_data.location.utilities"
+                    name="form_data.location.needs_power"
                     control={control}
                     rules={{ validate: (value) => value != null || "Please indicate whether your event requires additional power sources" }}
                     render={({ field, fieldState }) => (
@@ -584,7 +585,12 @@ export default function OnCampusSection({ control, setValue }: Props) {
                                     { label: "No", value: false }
                                 ]}
                                 value={field.value}
-                                onChange={(e) => field.onChange(e.target.value)}
+                                onChange={(e) => {
+                                    field.onChange(e.target.value);
+                                    if (e.target.value === false) {
+                                        setValue?.("form_data.location.utilities", undefined);
+                                    }
+                                }}
                             />
                             {fieldState.error && (
                                 <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>
@@ -594,37 +600,42 @@ export default function OnCampusSection({ control, setValue }: Props) {
                 />
             )}
 
-            {/* Q16: Power */}
-            <Controller
-                name="form_data.utilities.power_required"
-                control={control}
-                render={({ field }) => (
-                    <div style={{ marginBottom: 16 }}>
-                        <Checkbox {...field} checked={field.value}>Will you need electrical power beyond standard outlets?</Checkbox>
-                    </div>
-                )}
-            />
+            {/* Q16–Q17: Utility details — only shown when needs_power is true */}
+            {(isIndoor || isOutdoor) && needsPower && (
+                <>
+                    {/* Q16: Power */}
+                    <Controller
+                        name="form_data.location.utilities.power_required"
+                        control={control}
+                        render={({ field }) => (
+                            <div style={{ marginBottom: 16 }}>
+                                <Checkbox {...field} checked={field.value}>Will you need electrical power beyond standard outlets?</Checkbox>
+                            </div>
+                        )}
+                    />
 
-            {/* Q16a: Power Details */}
-            {useWatch({ control, name: "form_data.utilities.power_required" }) && (
-                <Controller
-                    name="form_data.utilities.power_details"
-                    control={control}
-                    render={({ field }) => (
-                        <Input {...field} placeholder="Specify amperage or wattage requirements" />
+                    {/* Q16a: Power Details */}
+                    {useWatch({ control, name: "form_data.location.utilities.power_required" }) && (
+                        <Controller
+                            name="form_data.location.utilities.power_details"
+                            control={control}
+                            render={({ field }) => (
+                                <Input {...field} placeholder="Specify amperage or wattage requirements" />
+                            )}
+                        />
                     )}
-                />
-            )}
 
-            {/* Q17: Outdoor Water */}
-            {isOutdoor && (
-                <Controller
-                    name="form_data.utilities.water_required"
-                    control={control}
-                    render={({ field }) => (
-                        <Checkbox {...field} checked={field.value}>Will you need outdoor water access?</Checkbox>
+                    {/* Q17: Outdoor Water */}
+                    {isOutdoor && (
+                        <Controller
+                            name="form_data.location.utilities.water_required"
+                            control={control}
+                            render={({ field }) => (
+                                <Checkbox {...field} checked={field.value}>Will you need outdoor water access?</Checkbox>
+                            )}
+                        />
                     )}
-                />
+                </>
             )}
         </div>
     );
