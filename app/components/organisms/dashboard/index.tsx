@@ -147,7 +147,7 @@ export function DashboardContent() {
                         <Title level={4} >In-Review <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }} /> </Title>
                         <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
-                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4" style={{ marginTop: '0.5rem' }}>
                         {
                             (() => {
                                 const today = new Date();
@@ -246,7 +246,7 @@ export function DashboardContent() {
                         <Title level={4}>Drafts <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }}/> </Title>
                         <Badge count={drafts.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
-                    <div className="flex gap-4 flex-col">
+                    <div className="flex gap-4 flex-col" style={{ marginTop: '0.5rem' }}>
                         {(() => {
                             const today = new Date();
                             today.setHours(0,0,0,0);
