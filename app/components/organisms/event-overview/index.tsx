@@ -914,7 +914,7 @@ export function EventOverviewContent() {
                                             .join(", ")
                                     )}
                                     {renderField("Non-Vendor Services Notes",        formData?.form_data?.non_vendor_services_notes)}
-                                    {renderField("Non-Vendor Charges Acknowledged",  formData?.non_vendor_services_acknowledged ? "Yes" : "No")}
+                                    {renderField("Non-Vendor Charges Acknowledged",  formData?.form_data?.non_vendor_services_acknowledged ? "Yes" : "No")}
                                 </>
                             )}
 
