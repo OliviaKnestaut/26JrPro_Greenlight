@@ -17,6 +17,8 @@ import { ConfigProvider } from "antd";
 import { theme } from "./theme";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: "./public/GreenlightLogo-Light.svg", media: "(prefers-color-scheme: light)" },
+    { rel: "icon", href: "./public/GreenlightLogo.svg", media: "(prefers-color-scheme: dark)" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
