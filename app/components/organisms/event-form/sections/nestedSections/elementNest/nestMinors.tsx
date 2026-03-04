@@ -134,7 +134,7 @@ export default function MinorsSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Text>Early Childhood (infant - Pre-K)</Text>
-                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} />
+                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()} />
                                 {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
                             </div>
                         )}
@@ -147,7 +147,7 @@ export default function MinorsSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Text>Elementary (grades K-5)</Text>
-                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} />
+                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()} />
                                 {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
                             </div>
                         )}
@@ -160,7 +160,7 @@ export default function MinorsSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Text>Middle School (grades 6-8)</Text>
-                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} />
+                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()} />
                                 {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
                             </div>
                         )}
@@ -173,7 +173,7 @@ export default function MinorsSection({ control }: Props) {
                         render={({ field, fieldState }) => (
                             <div>
                                 <Text>High School (grades 9-12)</Text>
-                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} />
+                                <InputNumber {...field} min={0} style={{ display: "block", marginTop: 8, width: "100%" }} onWheel={(e) => (e.currentTarget.querySelector('input') as HTMLInputElement)?.blur()} />
                                 {fieldState.error && <Text type="danger">{fieldState.error.message}</Text>}
                             </div>
                         )}

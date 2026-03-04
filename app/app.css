@@ -3,7 +3,6 @@
 html,
 body {
   background: var(--color-bg-layout);
-  scroll-behavior: smooth;
 }
 
 .ant-modal .ant-modal-content {

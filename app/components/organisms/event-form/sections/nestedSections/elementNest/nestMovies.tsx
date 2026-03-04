@@ -87,11 +87,11 @@ export default function MoviesSection({ control }: Props) {
                     <Controller
                         name="form_data.movies.option_1.company_name"
                         control={control}
-                        rules={{ required: "Company/Individual name is required" }}
+                        rules={{ required: "Name of the company or individual granting permission is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required>Company/Individual Name</FieldLabel>
-                                <Input {...field} placeholder="Enter name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                <FieldLabel required>Who is granting copyright permission? (Company or Individual Name)</FieldLabel>
+                                <Input {...field} placeholder="Enter the name of the company or person granting permission" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
                                 {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
@@ -185,11 +185,11 @@ export default function MoviesSection({ control }: Props) {
                     <Controller
                         name="form_data.movies.option_2.company_name"
                         control={control}
-                        rules={{ required: "Company/Individual name is required" }}
+                        rules={{ required: "Name of the company or individual granting permission is required" }}
                         render={({ field, fieldState }) => (
                             <div style={{ marginBottom: 16 }}>
-                                <FieldLabel required>Company/Individual Name</FieldLabel>
-                                <Input {...field} placeholder="Enter name" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
+                                <FieldLabel required>Who is granting copyright permission? (Company or Individual Name)</FieldLabel>
+                                <Input {...field} placeholder="Enter the name of the company or person granting permission" style={{ marginTop: 8 }} status={fieldState.error ? "error" : ""} />
                                 {fieldState.error && <Text type="danger" style={{ display: "block", marginTop: 4, color: "var(--red-6)" }}>{fieldState.error.message}</Text>}
                             </div>
                         )}
