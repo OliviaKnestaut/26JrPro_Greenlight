@@ -13,7 +13,7 @@ const CardAnnouncements: React.FC<CardAnnouncementsProps> = ({ items = [], child
             dataSource={items}
             renderItem={(it) => (
             <List.Item key={it.id} className={styles.item}>
-                <List.Item.Meta title={it.title} description={it.description} />
+                <List.Item.Meta title={it.title} description={it.description}/>
             </List.Item>
             )}
         />

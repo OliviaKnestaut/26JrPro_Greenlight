@@ -7,6 +7,7 @@
 
 .title{
   margin: 0.5rem 0 !important;
+  font-size: 18px !important;
 }
 
 .submitted {
@@ -113,4 +114,10 @@
 .noHover.cancelledCard:hover,
 .noHover.pastCard:hover {
     border-color: var(--accent-gray-light-2) !important;
+}
+
+.card :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
