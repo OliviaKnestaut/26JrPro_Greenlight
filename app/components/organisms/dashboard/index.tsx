@@ -144,7 +144,7 @@ export function DashboardContent() {
                         }}
                 >
                     <div className="flex justify-between items-center " style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions?open=1')}>
-                        <Title level={4} >In-Review <RightOutlined style={{fontSize:"12px"}}/> </Title>
+                        <Title level={4} >In-Review <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }} /> </Title>
                         <Badge count={inReview.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
                     <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
@@ -201,7 +201,7 @@ export function DashboardContent() {
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                         onClick={() => navigate('/budget')}
                     >
-                        <Title level={4}>Budget <RightOutlined style={{fontSize:"12px"}} /> </Title>
+                        <Title level={4}>Budget <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }}/></Title>
                     </div>
                     <div className="flex gap-4 justify-center items-center flex-wrap mt-8">
                         <ProgressCircle 
@@ -243,7 +243,7 @@ export function DashboardContent() {
                         border: "1px solid var(--accent-gray-light)",
                     }} >
                     <div className="flex justify-between items-center" style={{ cursor: 'pointer' }} onClick={() => navigate('/event-submissions?status=draft')}>
-                        <Title level={4}>Drafts <RightOutlined style={{fontSize:"12px"}}/> </Title>
+                        <Title level={4}>Drafts <RightOutlined style={{ fontSize: "12px", verticalAlign: "middle", marginBottom: "3px" }}/> </Title>
                         <Badge count={drafts.length} style={{ backgroundColor: 'var(--accent-green-light)', color: 'var(--primary)' }} />
                     </div>
                     <div className="flex gap-4 flex-col">
