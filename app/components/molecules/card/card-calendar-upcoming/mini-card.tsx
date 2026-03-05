@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from 'antd';
+import { Card, Tag } from 'antd';
 import { useNavigate } from 'react-router';
 import styles from './index.module.css';
 import { formatTime } from '~/lib/formatters';
@@ -11,9 +11,10 @@ type CardCalendarMiniCardProps = React.ComponentProps<typeof Card> & {
     startTime?: string | Date;
     endTime?: string | Date;
     status?: 'approved' | 'in-review' | string;
+    hideStatusTag?: boolean;
 };
 
-const CardCalendarMiniCard: React.FC<CardCalendarMiniCardProps> = ({ id, title, date, startTime, endTime, status, ...rest }) => {
+const CardCalendarMiniCard: React.FC<CardCalendarMiniCardProps> = ({ id, title, date, startTime, endTime, status, hideStatusTag, ...rest }) => {
     const navigate = useNavigate();
 
     let monthAbbrev = '';
@@ -54,16 +55,24 @@ const CardCalendarMiniCard: React.FC<CardCalendarMiniCardProps> = ({ id, title, 
             role={id ? 'button' : undefined}
             tabIndex={id ? 0 : undefined}
         >
-            <div className={styles.item}>
-                {date && (
-                    <div className={styles.eventDate}>
-                        <div className={styles.eventMonth}>{monthAbbrev}</div>
-                        <div className={styles.eventDay}>{day}</div>
+            <div>
+                <div className={styles.item}>
+                    {date && (
+                        <div className={styles.eventDate}>
+                            <div className={styles.eventMonth}>{monthAbbrev}</div>
+                            <div className={styles.eventDay}>{day}</div>
+                        </div>
+                    )}
+                    <div className={styles.eventTitle}>
+                        <span className={styles.titleText}>{String(title ?? '')}</span>
+                        {displayTime ? <p className={styles.timeText}>{displayTime}</p> : null}
                     </div>
-                )}
-                <div className={styles.eventTitle}>
-                    <span className={styles.titleText}>{String(title ?? '')}</span>
-                    {displayTime ? <p>{displayTime}</p> : null}
+                    {!hideStatusTag && status === 'approved' && (
+                        <Tag className="approvedTag statusTag" style={{ marginLeft: 'auto', alignSelf: 'center' }}>approved</Tag>
+                    )}
+                    {!hideStatusTag && status === 'in-review' && (
+                        <Tag className="inReviewTag statusTag" style={{ marginLeft: 'auto', alignSelf: 'center' }}>in-review</Tag>
+                    )}
                 </div>
             </div>
         </Card>

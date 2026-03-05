@@ -43,7 +43,6 @@
     justify-content: center;
     align-self: center;
     color: #135200;
-    width: 100%;
     min-width: 0;
     overflow: hidden;
 }
@@ -51,6 +50,14 @@
 .eventTitle p{
     font-size: 12px;
     margin: 0px;
+}
+
+.timeText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    width: 100%;
 }
 .eventDate {
     color:#999;

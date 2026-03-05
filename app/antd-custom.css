@@ -1,6 +1,6 @@
 /* =============================================================================
-   FONT DECLARATIONS
-   Variable fonts — single file covers all weights (100–900).
+	FONT DECLARATIONS
+	Variable fonts — single file covers all weights (100–900).
 ============================================================================= */
 
 @font-face {
@@ -21,19 +21,14 @@
 
 
 /* =============================================================================
-   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
-   Organised into:
-     1. Primitive palette  — raw colour steps
-     2. Semantic tokens    — purpose-named aliases of the palette
-     3. Legacy tokens      — old variable names kept for backward compat
-     4. Typography tokens  — font-family references
+	CSS CUSTOM PROPERTIES
 ============================================================================= */
 
 :root {
 
 	/* -------------------------------------------------------------------------
-	   1. PRIMITIVE PALETTE
-	   Each colour scale runs 1 (lightest) → 10 (darkest).
+		1. PRIMITIVE PALETTE
+		Each colour scale runs 1 (lightest) → 10 (darkest).
 	------------------------------------------------------------------------- */
 
 	/* Primary — Sea Green */
@@ -125,8 +120,8 @@
 
 
 	/* -------------------------------------------------------------------------
-	   2. SEMANTIC TOKENS
-	   Purpose-named aliases — use these in component styles, not raw colours.
+		2. SEMANTIC TOKENS
+		Purpose-named aliases — use these in component styles, not raw colours.
 	------------------------------------------------------------------------- */
 
 	/* Backgrounds */
@@ -159,8 +154,8 @@
 
 
 	/* -------------------------------------------------------------------------
-	   3. LEGACY TOKENS
-	   Kept for backward compatibility — prefer semantic tokens for new work.
+		3. LEGACY TOKENS
+		Kept for backward compatibility — prefer semantic tokens for new work.
 	------------------------------------------------------------------------- */
 
 	--background: #F9FAFB;
@@ -188,8 +183,8 @@
 
 
 	/* -------------------------------------------------------------------------
-	   4. TYPOGRAPHY TOKENS
-	   Font-family stacks used across all text rules.
+		4. TYPOGRAPHY TOKENS
+		Font-family stacks used across all text rules.
 	------------------------------------------------------------------------- */
 
 	--font-heading: "Pangea", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -200,7 +195,7 @@
 
 
 /* =============================================================================
-   BASE / RESET
+	BASE / RESET
 ============================================================================= */
 
 body {
@@ -213,8 +208,8 @@ body {
 
 
 /* =============================================================================
-   TYPOGRAPHY
-   Ant Design heading/body overrides + plain semantic element fallbacks.
+	TYPOGRAPHY
+	Ant Design heading/body overrides + plain semantic element fallbacks.
 ============================================================================= */
 
 /* --- Ant Design typography components --- */
@@ -580,19 +575,17 @@ p {
 
 
 /* =============================================================================
-   CALENDAR
-   Ant Design CalendarPicker cell overrides + custom event-highlight layers.
+	CALENDAR
+	Ant Design CalendarPicker cell overrides + custom event-highlight layers.
 ============================================================================= */
 
 .ant-picker-cell .ant-picker-cell-inner:hover {
-	border-radius: 0.125rem;
 	border: 1px solid var(--sea-green-8, #045966);
 }
 
 .ant-picker-cell-inner {
 	height: 2.5rem;
 	width: 90%;
-	border-radius: 0;
 }
 
 /* Position cell content above the highlight pseudo-element */
@@ -643,7 +636,6 @@ p {
 
 /* Don't highlight the selected cell when it also has an event */
 .styled-calendar-wrapper .ant-picker-cell.ant-picker-cell-selected .ant-picker-cell-inner:not(:has(.gc-today)) {
-	background: transparent !important;
 	box-shadow: none !important;
 	border: none !important;
 	color: var(--color-text-primary);
@@ -652,12 +644,13 @@ p {
 /* "Today" date marker */
 .styled-calendar-wrapper .ant-picker-calendar-date-today {
 	font-weight: 700;
-	color: var(--sea-green-9, #003540);
+	background: var(--sea-green-8, #045966) !important;
+	color: white !important;
 }
 
 /* =============================================================================
-   WEEKLY CALENDAR HEADER
-   Month and year Select dropdowns styled to match the sea-green-7 button theme.
+	WEEKLY CALENDAR HEADER
+	Month and year Select dropdowns styled to match the sea-green-7 button theme.
 ============================================================================= */
 
 /* Border box — sea-green-7 fill, white text, 8px radius to match buttons */
@@ -696,8 +689,8 @@ p {
 }
 
 /* =============================================================================
-   STATISTICS CARD
-   Used on Event Overview and Budget pages for key metric callouts.
+	STATISTICS CARD
+	Used on Event Overview and Budget pages for key metric callouts.
 ============================================================================= */
 
 .ant-statistic {

@@ -35,30 +35,34 @@ function Calendar<T extends GenericEvent>({
         fontWeight: 600,
         borderRadius: 0,
         border: 0,
+        whiteSpace: 'nowrap',
       },
     }),
 
     onCell: () => ({
       style: {
         backgroundColor: 'var(--sea-green-1)', // match the header
-        
+        whiteSpace: 'nowrap',
+        minWidth: 96,
+        padding: '6px 8px',
       },
     }),
 
     dataIndex: 'hour',
     key: 'hour',
-    width: screens.xs ? 50 : 1,
+    width: screens.xs ? 70 : 110,
     render: (hour: string, { }, id: number) => {
       return {
         props: {
           style: {
-            width: screens.xs ? '30%' : '10%',
+            width: screens.xs ? '28%' : '8%',
+            minWidth: 96,
           },
         },
         children: SCROLL_TO_ROW === id ? (
-          <div ref={rowRef}>{hour}</div>
+          <div ref={rowRef} style={{ whiteSpace: 'nowrap' }}>{hour}</div>
         ) : (
-          <div>{hour}</div>
+          <div style={{ whiteSpace: 'nowrap' }}>{hour}</div>
         ),
       };
     },
