@@ -16,6 +16,7 @@ type ProgressTimelineProps = {
 	onSectionClick?: (key: string) => void
 	errors?: Record<string, any>
 	visitedSections?: string[]
+	disableReview?: boolean
 }
 
 const defaultSteps: ProgressStep[] = [
@@ -81,7 +82,7 @@ const defaultIsSectionComplete = (key: string, values: Record<string, any>): boo
 			const noAdditionalElements = elements.no_additional_elements === true;
 			const hasOtherElements = Object.keys(elements).some(k => k !== 'no_additional_elements' && elements[k] === true);
 			const isOffCampus = values.location_type === "Off-Campus";
-			const hasHighAttendance = values.attendees && parseInt(values.attendees) >= 150;
+			const hasHighAttendance = values.attendees && parseInt(values.attendees) >= 100;
 			const isLevel0Eligible = noAdditionalElements && !hasOtherElements && !isOffCampus && !hasHighAttendance;
 			if (isLevel0Eligible) return false;
 
@@ -144,6 +145,7 @@ export default function ProgressTimeline({
 	onSectionClick,
 	errors = {},
 	visitedSections,
+	disableReview = false,
 }: ProgressTimelineProps) {
 	// Safely get values and handle null/undefined cases
 	let values: Record<string, any> = {};
@@ -194,7 +196,9 @@ export default function ProgressTimeline({
 					let status: "finish" | "process" | "wait" | "error" = "wait";
 
 					// Budget & Purchases is locked until Event Elements is complete
-					const isLocked = step.key === "budgetPurchase" && !isSectionComplete("eventElements", values);
+					// Review is locked on the event-form page (disableReview=true)
+					const isLocked = (step.key === "budgetPurchase" && !isSectionComplete("eventElements", values))
+						|| (step.key === "review" && disableReview);
 
 					try {
 						const isActive = step.key === currentEditingSection || index === activeStep;
@@ -204,8 +208,12 @@ export default function ProgressTimeline({
 							status = "process";
 						} else {
 							const hasErrors = hasSectionErrors(step.key, errors);
-							const isComplete = isSectionComplete(step.key, values) && !hasErrors;
 							const wasVisited = visitedSections?.includes(step.key) ?? false;
+							// Budget can only show as complete once the user has visited it — without
+							// this guard it auto-resolves to "finish" the moment no vendors/elements
+							// are required, even before the user has ever navigated to the section.
+							const isComplete = isSectionComplete(step.key, values) && !hasErrors
+								&& (step.key !== "budgetPurchase" || wasVisited);
 
 							if (isComplete) {
 								status = "finish";

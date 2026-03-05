@@ -96,7 +96,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                             <Popover
                                                 content={
                                                     <div style={{ maxWidth: 400 }}>
-                                                        <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                        <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                                             <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
                                                             <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
                                                             <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
@@ -227,6 +227,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                     <Input
                                         {...field}
                                         placeholder="Enter vendor or company name, or N/A"
+                                        autoComplete="off"
                                         status={fieldState.error ? "error" : ""}
                                     />
                                     {fieldState.error && (
@@ -249,6 +250,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                     <Input
                                         {...field}
                                         placeholder="Enter contact or performer name"
+                                        autoComplete="off"
                                         style={{ marginTop: 8 }}
                                         status={fieldState.error ? "error" : ""}
                                     />
@@ -280,6 +282,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                     <Input
                                         {...field}
                                         placeholder="vendor@example.com"
+                                        autoComplete="off"
                                         style={{ marginTop: 8 }}
                                         status={fieldState.error ? "error" : ""}
                                     />
@@ -307,6 +310,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                     <Input
                                         {...field}
                                         placeholder="(123) 456-7890"
+                                        autoComplete="off"
                                         maxLength={14}
                                         style={{ marginTop: 8 }}
                                         status={fieldState.error ? "error" : ""}
@@ -571,7 +575,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                         <Text style={{ display: "block", marginBottom: 8 }}>
                                             Your account number should be 10 digits in the format: <strong>XX-XXXXXX</strong>
                                         </Text>
-                                        <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                        <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                             <li style={{ marginBottom: 4 }}>
                                                 <Text><strong>17 Account:</strong> SAFAC funding (cannot be used for members-only events)</Text>
                                             </li>
@@ -617,6 +621,7 @@ export default function BudgetPurchasesSection({ control, setValue }: Props) {
                                 <Input
                                     {...field}
                                     placeholder="XX-XXXXXX (e.g., 17-123456)"
+                                    autoComplete="off"
                                     style={{ width: "49%" }}
                                     status={fieldState.error ? "error" : ""}
                                     maxLength={10}
