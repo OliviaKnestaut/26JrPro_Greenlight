@@ -78,17 +78,17 @@ const StyledCalendar: React.FC<{ events?: StyledCalendarEvent[] }> = ({ events =
             isToday ? 'gc-today' : '',
         ].filter(Boolean).join(' ');
 
-        const popoverContent = (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {dayEvents.map((e) => (
-                    <CardCalendarMiniCard
-                        key={e.id}
-                        {...e}
-                        style={{ flex: '1 1 100%', maxWidth: '100%', boxSizing: 'border-box', cursor: e.id ? 'pointer' : 'default' }}
-                    />
-                ))}
-            </div>
-        );
+                const popoverContent = (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {dayEvents.map((e) => (
+                            <CardCalendarMiniCard
+                                key={e.id}
+                                {...e}
+                                style={{ flex: '1 1 100%', maxWidth: '100%', boxSizing: 'border-box', cursor: e.id ? 'pointer' : 'default' }}
+                            />
+                        ))}
+                    </div>
+                );
 
         return (
             <div className={wrapperClass || undefined} style={{ position: 'absolute', top: '-1.5rem', width: '2.5rem', height: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>

@@ -9,7 +9,8 @@ import type {
 } from './types';
 import { EventBlock } from './Event';
 
-export const SCROLL_TO_ROW = 6;
+// Set to -1 to disable automatic scrolling on load (no row will match)
+export const SCROLL_TO_ROW = -1;
 
 
 

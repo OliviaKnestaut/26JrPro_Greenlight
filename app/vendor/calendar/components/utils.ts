@@ -146,7 +146,7 @@ export const getDayHoursEvents = <T extends GenericEvent>(
     events.push({
       id: i,
       hourObject: hour,
-      hour: format(hour, 'HH:mm'),
+        hour: format(hour, 'h:mm a'),
 
       Sunday:
         weekObject?.sunday?.filter(e =>

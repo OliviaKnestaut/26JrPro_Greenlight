@@ -76,7 +76,6 @@ export const CalendarHeader: React.FunctionComponent<CalendarHeaderProps> = ({
         </Col>
         <Col>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Button.Group>
               <Button
                 style={{ borderColor: 'var(--sea-green-7)', color: 'var(--sea-green-7)' }}
                 onClick={() => setStartWeek(addWeeks(startWeek, -1))}
@@ -89,12 +88,7 @@ export const CalendarHeader: React.FunctionComponent<CalendarHeaderProps> = ({
               >
                 <RightOutlined />
               </Button>
-            </Button.Group>
-            <Button.Group>
-              <Button style={{ borderColor: 'var(--sea-green-7)', color: 'var(--sea-green-7)' }}>Day</Button>
-              <Button style={{ background: 'var(--sea-green-7)', borderColor: 'var(--sea-green-7)', color: 'white' }}>Week</Button>
-              <Button style={{ borderColor: 'var(--sea-green-7)', color: 'var(--sea-green-7)' }}>Month</Button>
-            </Button.Group>
+
           </div>
         </Col>
       </Row>

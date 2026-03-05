@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { Card, Typography } from 'antd';
+import { Card, Typography, Pagination } from 'antd';
 import styles from './index.module.css';
 import StyledCalendar from '../../calendar';
 import CardCalendarMiniCard from './mini-card';
@@ -56,6 +56,15 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const isDashboard = pathname.includes('dashboard') || pathname === '/';
+    const isCalendar = pathname.includes('calendar');
+
+    const itemsPerPage = isDashboard ? 1 : 4;
+    const [page, setPage] = React.useState(1);
+    React.useEffect(() => {
+        setPage(1);
+    }, [filteredEvents.length, itemsPerPage]);
+
+    const paginatedEvents = filteredEvents.slice((page - 1) * itemsPerPage, (page - 1) * itemsPerPage + itemsPerPage);
 
     // Calendar should receive ALL events that are in-review or approved.
     const calendarEvents = events.filter((ev) => ev && (ev.status === 'approved' || ev.status === 'in-review'));
@@ -67,7 +76,7 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
                 <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
                 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    {filteredEvents.slice(0, isDashboard ? 2 : 4).map((e) => (
+                    {paginatedEvents.map((e) => (
                         <CardCalendarMiniCard
                             key={e.id}
                             {...e}
@@ -75,9 +84,27 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
                         />
                     ))}
                 </div>
-                <div style={{ marginTop: 8 }}>
-                    <a href="/~ojk25/jrProjGreenlight/event-submissions?status=in-review%2Capproved">See more...</a>
-                </div>
+                {!isDashboard && filteredEvents.length > itemsPerPage && (
+                    <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
+                        <Pagination
+                            current={page}
+                            pageSize={itemsPerPage}
+                            total={filteredEvents.length}
+                            onChange={(p) => setPage(p)}
+                            size="small"
+                        />
+                    </div>
+                )}
+
+                {!isCalendar && (
+                    <div style={{ marginTop: 8 }}>
+                        {isDashboard ? (
+                            <a onClick={() => navigate('/calendar')} style={{ cursor: 'pointer' }}>See more...</a>
+                        ) : (
+                            <a href="/~ojk25/jrProjGreenlight/event-submissions?status=in-review%2Capproved">See more...</a>
+                        )}
+                    </div>
+                )}
             </>
         );
     }
