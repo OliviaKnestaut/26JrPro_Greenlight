@@ -121,6 +121,7 @@ const CardEvent: React.FC<CardEventProps> = ({ children, title, date, startTime,
             centered
             closable={false}
             maskClosable={false}
+            zIndex={1200}
             classNames={{ content: styles.modalContent }}
         >
             <div className={styles.modalContainer}>
