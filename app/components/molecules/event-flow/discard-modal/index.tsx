@@ -67,6 +67,7 @@ export default function DiscardModal({
             centered
             closable={false}
             maskClosable={false}
+            zIndex={1200}
             classNames={{
                 content: styles.modalContent
             }}
