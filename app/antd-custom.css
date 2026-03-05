@@ -1,6 +1,6 @@
 /* =============================================================================
-	FONT DECLARATIONS
-	Variable fonts — single file covers all weights (100–900).
+   FONT DECLARATIONS
+   Variable fonts — single file covers all weights (100–900).
 ============================================================================= */
 
 @font-face {
@@ -21,14 +21,19 @@
 
 
 /* =============================================================================
-	CSS CUSTOM PROPERTIES
+   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   Organised into:
+     1. Primitive palette  — raw colour steps
+     2. Semantic tokens    — purpose-named aliases of the palette
+     3. Legacy tokens      — old variable names kept for backward compat
+     4. Typography tokens  — font-family references
 ============================================================================= */
 
 :root {
 
 	/* -------------------------------------------------------------------------
-		1. PRIMITIVE PALETTE
-		Each colour scale runs 1 (lightest) → 10 (darkest).
+	   1. PRIMITIVE PALETTE
+	   Each colour scale runs 1 (lightest) → 10 (darkest).
 	------------------------------------------------------------------------- */
 
 	/* Primary — Sea Green */
@@ -120,8 +125,8 @@
 
 
 	/* -------------------------------------------------------------------------
-		2. SEMANTIC TOKENS
-		Purpose-named aliases — use these in component styles, not raw colours.
+	   2. SEMANTIC TOKENS
+	   Purpose-named aliases — use these in component styles, not raw colours.
 	------------------------------------------------------------------------- */
 
 	/* Backgrounds */
@@ -154,8 +159,8 @@
 
 
 	/* -------------------------------------------------------------------------
-		3. LEGACY TOKENS
-		Kept for backward compatibility — prefer semantic tokens for new work.
+	   3. LEGACY TOKENS
+	   Kept for backward compatibility — prefer semantic tokens for new work.
 	------------------------------------------------------------------------- */
 
 	--background: #F9FAFB;
@@ -183,8 +188,8 @@
 
 
 	/* -------------------------------------------------------------------------
-		4. TYPOGRAPHY TOKENS
-		Font-family stacks used across all text rules.
+	   4. TYPOGRAPHY TOKENS
+	   Font-family stacks used across all text rules.
 	------------------------------------------------------------------------- */
 
 	--font-heading: "Pangea", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -195,7 +200,7 @@
 
 
 /* =============================================================================
-	BASE / RESET
+   BASE / RESET
 ============================================================================= */
 
 body {
@@ -208,8 +213,8 @@ body {
 
 
 /* =============================================================================
-	TYPOGRAPHY
-	Ant Design heading/body overrides + plain semantic element fallbacks.
+   TYPOGRAPHY
+   Ant Design heading/body overrides + plain semantic element fallbacks.
 ============================================================================= */
 
 /* --- Ant Design typography components --- */
@@ -636,6 +641,7 @@ p {
 
 /* Don't highlight the selected cell when it also has an event */
 .styled-calendar-wrapper .ant-picker-cell.ant-picker-cell-selected .ant-picker-cell-inner:not(:has(.gc-today)) {
+	background: transparent;
 	box-shadow: none !important;
 	border: none !important;
 	color: var(--color-text-primary);
@@ -644,7 +650,7 @@ p {
 /* "Today" date marker */
 .styled-calendar-wrapper .ant-picker-calendar-date-today {
 	font-weight: 700;
-	background: var(--sea-green-8, #045966) !important;
+	background: var(--sea-green-8, #003540) !important;
 	color: white !important;
 }
 
