@@ -847,6 +847,7 @@ export function EventForm() {
                     errors={errors}
                     visitedSections={visitedSections}
                     currentEditingSection={currentEditingSection}
+                    disableReview
                     onSectionClick={(key) => {
                         if (key === "budgetPurchase") {
                             const elements = getValues("form_data.elements") || {};
@@ -945,7 +946,7 @@ export function EventForm() {
                                 <Popover
                                     content={
                                         <div style={{ maxWidth: 400 }}>
-                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                                 <li style={{ marginBottom: 4 }}>
                                                     <StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text>
                                                 </li>
@@ -990,7 +991,7 @@ export function EventForm() {
                                 <Popover
                                     content={
                                         <div style={{ maxWidth: 400 }}>
-                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
@@ -1015,7 +1016,7 @@ export function EventForm() {
                                 <Popover
                                     content={
                                         <div style={{ maxWidth: 400 }}>
-                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>
@@ -1065,7 +1066,7 @@ export function EventForm() {
                                 <Popover
                                     content={
                                         <div style={{ maxWidth: 400 }}>
-                                            <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                            <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.</Text></li>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--green-6)", "var(--green-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 1</strong> (Requires 3 Weeks Notice): &lt;150 guests (includes external). Regional day trips. Movies or Fire Pits. 1–2 unpaid speakers.</Text></li>
                                                 <li style={{ marginBottom: 4 }}><StarTwoTone twoToneColor={["var(--gold-5)", "var(--gold-1)"]} style={{ marginRight: 6 }} /><Text><strong>Level 2</strong> (Requires 5 Weeks Notice): 150+ guests. Regional overnight trips. Paid contracts (preferred vendors). Grant applications.</Text></li>

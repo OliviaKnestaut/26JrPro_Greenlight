@@ -466,7 +466,7 @@ export function EventOverviewContent() {
                                         trigger="click"
                                         content={
                                             <div style={{ maxWidth: 400 }}>
-                                                <ul style={{ margin: 0, paddingLeft: 20, marginBottom: 8 }}>
+                                                <ul style={{ margin: 0, paddingLeft: 10, marginBottom: 8 }}>
                                                     <li style={{ marginBottom: 4 }}>
                                                         <StarTwoTone twoToneColor={["var(--lavender-6)", "var(--lavender-1)"]} style={{ marginRight: 6 }} />
                                                         <strong>Level 0</strong> (Requires 12 Business Days Notice): &lt;100 Drexel-only guests. 1 space. No travel/contracts/purchases.
