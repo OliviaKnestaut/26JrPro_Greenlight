@@ -73,7 +73,18 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
         return (
             <>
                 <StyledCalendar events={calendarEvents} />
-                <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
+                <div className="flex justify-between items-center">
+                    <Title level={5} style={{ marginTop: '16px', color: "var(--color-brand-primary-active)" }}>Upcoming Events</Title>
+                    {!isCalendar && (
+                        <div style={{ marginTop: 8 }}>
+                            {isDashboard ? (
+                                <a onClick={() => navigate('/calendar')} style={{ cursor: 'pointer' }}>See more...</a>
+                            ) : (
+                                <a href="/~ojk25/jrProjGreenlight/event-submissions?status=in-review%2Capproved">See more...</a>
+                            )}
+                        </div>
+                    )}
+                </div>
                 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {paginatedEvents.map((e) => (
@@ -93,16 +104,6 @@ const CardCalendarUpcoming: React.FC<CardCalendarUpcomingProps> = ({ events = []
                             onChange={(p) => setPage(p)}
                             size="small"
                         />
-                    </div>
-                )}
-
-                {!isCalendar && (
-                    <div style={{ marginTop: 8 }}>
-                        {isDashboard ? (
-                            <a onClick={() => navigate('/calendar')} style={{ cursor: 'pointer' }}>See more...</a>
-                        ) : (
-                            <a href="/~ojk25/jrProjGreenlight/event-submissions?status=in-review%2Capproved">See more...</a>
-                        )}
                     </div>
                 )}
             </>
