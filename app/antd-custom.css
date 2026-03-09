@@ -814,10 +814,6 @@ p {
 }
 
 /* Document card */
-.custom-doc-card {
-	max-width: 275px;
-}
-
 .custom-doc-card .ant-card-body {
 	padding-top: 0px;
 }
