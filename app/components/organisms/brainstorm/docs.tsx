@@ -54,7 +54,7 @@ export function BrainstormDocsContent() {
                 </div>
                 ),
                 children: (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
                     {docs.map(doc => (
                     <Card
                         key={doc.id}
@@ -74,7 +74,7 @@ export function BrainstormDocsContent() {
             }
             ]}
         />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(235px, 1fr))', gap: '0.75rem' }} className="docs-more">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }} className="docs-more">
         {otherDocs.map(doc => (
             <Card
                 key={doc.id}
