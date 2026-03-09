@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Table, Grid } from 'antd';
 
-import type { GenericEvent, CalendarBodyProps } from './types';
+import type { GenericEvent, CalendarBodyProps, EventsObject } from './types';
+import type { ColumnProps } from 'antd/es/table';
 import { getDayHoursEvents, calculateScrollOffset } from './utils';
 import { createDayColumns, SCROLL_TO_ROW } from './columns';
 
@@ -26,7 +27,7 @@ function Calendar<T extends GenericEvent>({
     }
   }, [SCROLL_TO_ROW]);
 
-  const hourColumn = {
+  const hourColumn: ColumnProps<EventsObject<T>> = {
 
     onHeaderCell: () => ({
       style: {
@@ -36,7 +37,11 @@ function Calendar<T extends GenericEvent>({
         borderRadius: 0,
         border: 0,
         whiteSpace: 'nowrap',
-      },
+        position: 'sticky',
+        top: 0,
+        left: 0,
+        zIndex: 50,
+      } as React.CSSProperties,
     }),
 
     onCell: () => ({
@@ -88,15 +93,18 @@ function Calendar<T extends GenericEvent>({
           borderRadius: 0,
           color: prevStyles?.color || 'var(--gray-12)',
           backgroundColor: prevStyles?.backgroundColor || 'var(--sea-green-1)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          backgroundClip: 'padding-box',
 
         },
       };
     },
-  }));
+  })) as ColumnProps<EventsObject<T>>[];
 
 
-
-  const tableColumns = [hourColumn, ...dayColumns];
+  const tableColumns: ColumnProps<EventsObject<T>>[] = [hourColumn, ...dayColumns];
 
   return (
     <div

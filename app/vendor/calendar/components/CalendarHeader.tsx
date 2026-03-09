@@ -38,14 +38,14 @@ export const CalendarHeader: React.FunctionComponent<CalendarHeaderProps> = ({
       : `${format(startWeek, 'MMM d')} – ${format(weekEnd, 'MMM d, yyyy')}`;
   return (
     <>
-      <Row justify="space-between" style={{ marginBottom: '20px' }}>
+      <Row justify="space-between">
         <Col
           style={{
             display: 'flex',
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             {/* Month selector */}
             <Select
               value={currentMonth}
@@ -75,7 +75,7 @@ export const CalendarHeader: React.FunctionComponent<CalendarHeaderProps> = ({
 
         </Col>
         <Col>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <Button
                 style={{ borderColor: 'var(--sea-green-7)', color: 'var(--sea-green-7)' }}
                 onClick={() => setStartWeek(addWeeks(startWeek, -1))}
